@@ -1,0 +1,147 @@
+<!-- dashboard.component.html -->
+<div class="dashboard">
+
+  <!-- ── PAGE HEADER ─────────────────────────────────── -->
+  <div class="dashboard__header">
+    <div>
+      <h1 class="dashboard__title">Dashboard</h1>
+      <p class="dashboard__subtitle">Welcome back to your management dashboard</p>
+    </div>
+    <!-- Filter Toggle Button -->
+    <button class="dashboard__filter-btn" [class.dashboard__filter-btn--active]="hasFilters" (click)="toggleFilters()">
+      <!-- Filter Icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+      </svg>
+      Building
+      <!-- Badge — *ngIf="hasFilters" -->
+      <span class="dashboard__filter-badge">2</span>
+    </button>
+  </div>
+
+  <!-- ── FILTERS BAR — *ngIf="filtersOpen" ──────────── -->
+  <div class="filters-bar" [class.filters-bar--open]="filtersOpen">
+    <div class="filters-bar__inner">
+      <div class="filters-bar__label">
+        <!-- Filter icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
+        <span>Building:</span>
+      </div>
+
+      <!-- Select: Building -->
+      <div class="filter-select">
+        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
+          <option value="">All Buildings</option>
+          <option value="A">Building A</option>
+          <option value="B">Building B</option>
+        </select>
+        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Select: Floor -->
+      <div class="filter-select">
+        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
+          <option value="">All Floors</option>
+          <option value="1">Floor 1</option>
+          <option value="2">Floor 2</option>
+          <option value="3">Floor 3</option>
+          <option value="4">Floor 4</option>
+        </select>
+        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Select: Suite -->
+      <div class="filter-select">
+        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
+          <option value="">All Suites</option>
+          <option value="Suite 1">Suite 1</option>
+          <option value="Suite 2">Suite 2</option>
+          <option value="Suite 3">Suite 3</option>
+        </select>
+        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Select: Status -->
+      <div class="filter-select">
+        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
+          <option value="">All Statuses</option>
+          <option value="available">Available</option>
+          <option value="occupied">Occupied</option>
+          <option value="partial">Partial</option>
+        </select>
+        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+
+      <!-- Reset Button — *ngIf="hasFilters" -->
+      <button class="filters-bar__reset-btn" (click)="resetFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+        Reset
+      </button>
+    </div>
+
+    <!-- Active Filter Chips — *ngIf="hasFilters" -->
+    <div class="filters-bar__chips">
+      <span class="filter-chip">
+        Building A
+        <button class="filter-chip__remove">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </span>
+      <span class="filter-chip">
+        Floor 2
+        <button class="filter-chip__remove">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </span>
+    </div>
+  </div>
+
+  <!-- ── KPI CARDS ───────────────────────────────────── -->
+  <app-kpi-cards></app-kpi-cards>
+
+  <!-- ── ROOM GRID + CHART ───────────────────────────── -->
+  <div class="dashboard__grid-2col">
+    <div class="dashboard__col-wide">
+      <app-room-grid></app-room-grid>
+    </div>
+    <div class="dashboard__col-narrow">
+      <app-occupancy-chart></app-occupancy-chart>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM ROW ──────────────────────────────────── -->
+  <div class="dashboard__grid-3col">
+    <app-quick-actions></app-quick-actions>
+    <app-activity-panel></app-activity-panel>
+    <app-smart-alerts></app-smart-alerts>
+  </div>
+
+</div>

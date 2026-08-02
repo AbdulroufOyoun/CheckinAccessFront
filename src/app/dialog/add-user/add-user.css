@@ -1,0 +1,761 @@
+/* ═══════════════════════════════════════════════════════════
+   ADD USER DIALOG  +  USER DETAIL DIALOG
+═══════════════════════════════════════════════════════════ */
+/* dialog animation */
+.dialog-panel {
+  animation: dialogIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ─── Dialog Panel ───────────────────────────────────────── */
+.dialog-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  animation: dialogIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Wide variant for detail panel */
+/* .dialog-panel--wide {
+  max-width: 580px;
+} */
+
+/* Scrollable variant */
+.dialog-panel--scrollable {
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #E5E7EB transparent;
+}
+
+.dialog-panel--scrollable::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dialog-panel--scrollable::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 99px;
+}
+
+/* RTL */
+.dialog-panel--rtl {
+  direction: rtl;
+  font-family: 'Cairo', sans-serif;
+}
+
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.90) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ─── Dialog Header ──────────────────────────────────────── */
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #F3F4F6;
+  flex-shrink: 0;
+  background: white;
+  /* Sticky for scrollable variant */
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.dialog-header__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dialog-header__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dialog-header__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.dialog-header__subtitle {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin: 2px 0 0;
+}
+
+.dialog-header__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.dialog-header__close:hover {
+  background: #F3F4F6;
+}
+
+/* ─── Dialog Body ────────────────────────────────────────── */
+.dialog-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ─── Form Grid ──────────────────────────────────────────── */
+.dialog-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .dialog-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Form Field ─────────────────────────────────────────── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Full-width field (spans both columns) */
+.form-field--full {
+  grid-column: 1 / -1;
+}
+
+.form-field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.form-field__required {
+  color: #EF4444;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+/* Input wrapper */
+.form-input-wrap {
+  position: relative;
+}
+
+.form-input__prefix-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dialog-panel--rtl .form-input__prefix-icon {
+  left: auto;
+  right: 13px;
+}
+
+/* Text Input */
+.form-input {
+  width: 100%;
+  padding: 10px 13px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+  background: #F9FAFB;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-input--with-icon {
+  padding-left: 38px;
+}
+
+.dialog-panel--rtl .form-input--with-icon {
+  padding-left: 13px;
+  padding-right: 38px;
+}
+
+.form-input:focus {
+  border-color: #2563EB;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.form-input--error {
+  border-color: #EF4444;
+  background: #FFF1F2;
+}
+
+.form-input--error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10);
+}
+
+.form-input::placeholder {
+  color: #9CA3AF;
+}
+
+/* Select */
+.form-select-wrap {
+  position: relative;
+}
+
+.form-select__icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dialog-panel--rtl .form-select__icon {
+  left: auto;
+  right: 13px;
+}
+
+.form-select {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #374151;
+  background: #F9FAFB;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.dialog-panel--rtl .form-select {
+  padding-left: 36px;
+  padding-right: 38px;
+  text-align: right;
+}
+
+.form-select:focus {
+  border-color: #2563EB;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.form-select__chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.dialog-panel--rtl .form-select__chevron {
+  right: auto;
+  left: 12px;
+}
+
+/* ─── Gender Toggle ──────────────────────────────────────── */
+.gender-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.gender-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.12s ease,
+    box-shadow 0.18s ease;
+
+  /* Default (inactive) */
+  background: #F9FAFB;
+  color: #6B7280;
+  border: 1.5px solid #E5E7EB;
+}
+
+.gender-btn:hover {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #2563EB;
+}
+
+.gender-btn:active {
+  transform: scale(0.97);
+}
+
+/* Active state */
+.gender-btn--active {
+  background: #EFF6FF;
+  color: #2563EB;
+  border-color: #BFDBFE;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+  font-weight: 600;
+}
+
+/* ─── Dialog Footer ──────────────────────────────────────── */
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #F3F4F6;
+  flex-shrink: 0;
+  background: white;
+  /* Sticky bottom for scrollable variant */
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* ─── Dialog Buttons ─────────────────────────────────────── */
+.dialog-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.12s ease,
+    opacity 0.18s ease;
+}
+
+.dialog-btn:active {
+  transform: scale(0.98);
+}
+
+/* Secondary (Cancel) */
+.dialog-btn--secondary {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.dialog-btn--secondary:hover {
+  background: #E5E7EB;
+}
+
+/* Primary (Save) */
+.dialog-btn--primary {
+  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.dialog-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+}
+
+/* Disabled */
+.dialog-btn--disabled,
+.dialog-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Loading */
+.dialog-btn--loading {
+  background: #93C5FD;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.dialog-btn--loading:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.dialog-btn__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: dialogSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes dialogSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── User Detail Specific ───────────────────────────────── */
+
+/* Profile Hero */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.user-profile__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 22px;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+
+.user-profile__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-profile__name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px;
+}
+
+.user-profile__meta {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0 0 6px;
+}
+
+.user-profile__res-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 99px;
+  background: #F0FDF4;
+  color: #16A34A;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.user-profile__edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #EFF6FF;
+  color: #2563EB;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid #BFDBFE;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.user-profile__edit-btn:hover {
+  background: #DBEAFE;
+  transform: translateY(-1px);
+}
+
+/* Contact Grid */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 480px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.contact-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: #F9FAFB;
+  border: 1px solid #E8EDF5;
+}
+
+.contact-card__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.contact-card__header span {
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.contact-card__value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1F2937;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Reservation History */
+.res-history__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 12px;
+}
+
+.res-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.res-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 12px;
+  background: #F9FAFB;
+  border: 1px solid #E8EDF5;
+  margin-bottom: 8px;
+  transition: background 0.15s ease;
+}
+
+.res-row:hover {
+  background: #F3F4F6;
+}
+
+.res-row:last-child {
+  margin-bottom: 0;
+}
+
+.res-row__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.res-row__room-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #EFF6FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: #2563EB;
+  flex-shrink: 0;
+}
+
+.res-row__building {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1F2937;
+  margin: 0 0 2px;
+}
+
+.res-row__dates {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.res-row__right {
+  text-align: right;
+}
+
+.res-row__amount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 4px;
+}
+
+/* Status badges */
+.res-row__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.res-row__status--active {
+  background: #F0FDF4;
+  color: #16A34A;
+}
+
+.res-row__status--completed {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.res-row__status--cancelled {
+  background: #FFF1F2;
+  color: #DC2626;
+}
+
+.res-row__status--paused {
+  background: #FFFBEB;
+  color: #D97706;
+}
+
+/* Empty reservation history */
+.res-history__empty {
+  padding: 24px;
+  text-align: center;
+  border-radius: 12px;
+  background: #F9FAFB;
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+/* ─── RTL Adjustments ────────────────────────────────────── */
+.dialog-panel--rtl .res-row__right {
+  text-align: left;
+}
+
+.dialog-panel--rtl .form-field__required {
+  margin-left: 0;
+  margin-right: 2px;
+}
+
+.dialog-panel--rtl .dialog-footer {
+  flex-direction: row-reverse;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .dialog-panel {
+    border-radius: 16px;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .dialog-body {
+    padding: 16px;
+  }
+
+  .dialog-header {
+    padding: 16px;
+  }
+
+  .dialog-footer {
+    padding: 12px 16px;
+  }
+
+  .user-profile {
+    flex-wrap: wrap;
+  }
+
+  .user-profile__edit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

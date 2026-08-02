@@ -1,0 +1,82 @@
+<!-- smart-alerts.component.html -->
+<div class="smart-alerts">
+
+  <!-- Header -->
+  <div class="smart-alerts__header">
+    <div class="smart-alerts__title-row">
+      <!-- Bell icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+           fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <h3 class="smart-alerts__title">Smart Alerts</h3>
+    </div>
+    <span class="smart-alerts__badge">3</span>
+  </div>
+
+  <!-- Alerts List — *ngFor alerts -->
+  <div class="smart-alerts__list">
+
+    <!-- Warning Alert -->
+    <div class="alert-item alert-item--warning">
+      <div class="alert-item__icon">
+        <!-- AlertTriangle -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86
+                   a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="alert-item__body">
+        <p class="alert-item__msg">Room 101 is nearly at full capacity</p>
+        <div class="alert-item__meta">
+          <span class="alert-item__room-badge" style="background: #F59E0B;">101</span>
+          <span class="alert-item__detail">Nearly full capacity</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danger Alert -->
+    <div class="alert-item alert-item--danger">
+      <div class="alert-item__icon">
+        <!-- XCircle -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9"  y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <div class="alert-item__body">
+        <p class="alert-item__msg">Check-out overdue for Room 206</p>
+        <div class="alert-item__meta">
+          <span class="alert-item__room-badge" style="background: #EF4444;">206</span>
+          <span class="alert-item__detail">Overdue by 1 day</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Alert -->
+    <div class="alert-item alert-item--info">
+      <div class="alert-item__icon">
+        <!-- Clock -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="alert-item__body">
+        <p class="alert-item__msg">Reservation ending in 2 days for Room B103</p>
+        <div class="alert-item__meta">
+          <span class="alert-item__room-badge" style="background: #3B82F6;">B103</span>
+          <span class="alert-item__detail">Ends Apr 16</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

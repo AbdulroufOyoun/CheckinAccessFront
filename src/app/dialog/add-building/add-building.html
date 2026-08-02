@@ -1,0 +1,111 @@
+<div class="dialog-panel" [class.dialog-panel--rtl]="isRTL">
+
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="dialog-header__left">
+      <div class="dialog-header__icon">
+        🏢
+      </div>
+
+      <div>
+        <h2 class="dialog-header__title">Add Building</h2>
+        <p class="dialog-header__subtitle">
+          Create a new building
+        </p>
+      </div>
+    </div>
+
+    <button class="dialog-header__close" (click)="close()">
+      ✕
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="dialog-body">
+
+    <!-- Building Name -->
+    <div class="form-field">
+      <label class="form-field__label">
+        Building Name
+        <span class="form-field__required">*</span>
+      </label>
+      <input class="form-input" type="text" [(ngModel)]="buildingName" placeholder="Tower A">
+
+    </div>
+
+    <!-- Building Number -->
+    <div class="form-field">
+
+      <label class="form-field__label">
+        Building Number
+        <span class="form-field__required">*</span>
+      </label>
+
+      <input class="form-input" type="text" [(ngModel)]="buildingNumber" placeholder="B001">
+
+    </div>
+
+    <!-- Create Floors -->
+
+    <div class="floor-box">
+
+      <label class="checkbox">
+
+        <!-- <input type="checkbox" [(ngModel)]="createFloors"> -->
+        <input type="checkbox" [(ngModel)]="createFloors">
+
+        <span>Create floors now</span>
+
+      </label>
+
+      <p class="hint">
+        Optional. You can create floors later.
+      </p>
+
+    </div>
+
+    <div class="form-field form-field--full extra-field" [class.extra-field--show]="createFloors">
+      <label class="form-field__label">
+        Number Floors
+      </label>
+      <input type="number" class="form-input" [(ngModel)]="numberFloor" min="1" placeholder="1">
+    </div>
+
+    <div class="form-field form-field--full extra-field" [class.extra-field--show]="createFloors">
+      <label class="form-field__label">
+        Number of Floors
+      </label>
+      <input type="number" class="form-input" [(ngModel)]="numberOfFloor" min="1" placeholder="5">
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+
+  <div class="dialog-footer">
+
+    <button class="dialog-btn dialog-btn--secondary" (click)="close()">
+
+      Cancel
+
+    </button>
+
+    <button (click)="addBuilding()" class="dialog-btn dialog-btn--primary" [disabled]="isLoading">
+
+      @if(!isLoading){
+
+      Add Building
+
+      }@else{
+
+      <span class="dialog-btn__spinner"></span>
+
+      Adding...
+
+      }
+
+    </button>
+
+  </div>
+
+</div>

@@ -1,0 +1,451 @@
+<div class="management-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Management Building</h1>
+      <p>Manage Buildings, Floors, Suites, Rooms & Facilities</p>
+    </div>
+    <div class="header-actions">
+      <button class="export-btn">Export</button>
+      <button class="new-btn" (click)="openDialogAddBuilding()">Add New</button>
+    </div>
+  </div>
+  <!-- ═══════════ KPI CARDS ═══════════ -->
+  <div class="kpi-grid">
+    <!-- Buildings -->
+    <div class="kpi-card animate-up" style="animation-delay:.04s">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-wrap kpi-blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <path d="M9 22v-4h6v4"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-value">{{ buildings.length }}</div>
+      <div class="kpi-label">Totla Buildings</div>
+    </div>
+    <!-- Floors -->
+    <div class="kpi-card animate-up" style="animation-delay:.08s">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-wrap kpi-teal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 21h18"></path>
+            <path d="M5 21V7l7-4 7 4v14"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-value">45</div>
+      <div class="kpi-label">Totla Floor</div>
+    </div>
+    <!-- Suites -->
+    <div class="kpi-card animate-up" style="animation-delay:.12s">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-wrap kpi-purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
+            <path d="M14 22h6"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="kpi-value">32</div>
+      <div class="kpi-label">Totla Suite</div>
+    </div>
+    <!-- Rooms -->
+    <div class="kpi-card animate-up" style="animation-delay:.16s">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-wrap kpi-amber">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 4v16"></path>
+            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+            <path d="M2 17h20"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-value">54</div>
+      <div class="kpi-label">Total Room</div>
+    </div>
+    <!-- Facilities -->
+    <div class="kpi-card animate-up" style="animation-delay:.20s">
+      <div class="kpi-card-inner">
+        <div class="kpi-icon-wrap kpi-red">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="kpi-value">12</div>
+      <div class="kpi-label">Total Facilitie</div>
+    </div>
+  </div>
+  <!-- Main Layout -->
+  <div class="management-shell">
+    <!-- Left Tree -->
+    <div class="structure-panel">
+      <div class="panel-header">
+        Structure
+      </div>
+      <div class="tree-content">
+        @for (building of buildings; track building.id) {
+        <div class="tree-item building" [class.active-item]="selectedType === 'building' && selectedId === building.id"
+          (click)="
+          selectItem( 'building', building, [building.name]);toggleBuilding(building.id)">
+          <span class="arrow">
+            <svg class="tree-arrow" [class.expanded]="expandedBuildings.includes(building.id)"
+              xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
+          <svg style="margin: 0px 2px 0px 2px; color: rgba(146, 176, 223, 0.925);" xmlns="http://www.w3.org/2000/svg"
+            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <path d="M9 22v-4h6v4"></path>
+            <path d="M8 6h.01"></path>
+            <path d="M16 6h.01"></path>
+            <path d="M8 10h.01"></path>
+            <path d="M16 10h.01"></path>
+            <path d="M8 14h.01"></path>
+            <path d="M16 14h.01"></path>
+          </svg>
+          <span>{{ building.name }}</span>
+        </div>
+        <div class="tree-children" [class.open]="expandedBuildings.includes(building.id)">
+          <div class="tree-children-content">
+            <div class="tree-child">
+              @for (floor of building.floors; track floor.id) {
+              <div class="tree-item floor" [class.active-item]="selectedType === 'floor' && selectedId === floor.id"
+                (click)="selectItem(  'floor',  floor,  [building.name, floor.name]);toggleFloor(floor.id);$event.stopPropagation()">
+                <span class="arrow">
+                  <svg class="tree-arrow" [class.expanded]="expandedFloors.includes(floor.id)"
+                    xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 21h18"></path>
+                  <path d="M5 21V7l7-4 7 4v14"></path>
+                  <path d="M9 9h.01"></path>
+                  <path d="M15 9h.01"></path>
+                  <path d="M9 13h.01"></path>
+                  <path d="M15 13h.01"></path>
+                </svg>
+                <span>{{ floor.name }}</span>
+              </div>
+              <div class="tree-children" [class.open]="expandedFloors.includes(floor.id)">
+                <div class="tree-children-content">
+                  <div class="tree-child">
+                    @for (suite of floor.suites; track suite.id) {
+                    <div class="tree-item suite"
+                      [class.active-item]="selectedType === 'suite' && selectedId === suite.id"
+                      (click)="
+                        selectItem(  'suite',  suite,  [building.name, floor.name, suite.name]);toggleSuite(suite.id);$event.stopPropagation()">
+                      <span class="arrow">
+                        <svg class="tree-arrow" [class.expanded]="expandedSuites.includes(suite.id)"
+                          xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
+                        <path d="M14 22h6"></path>
+                        <path d="M10 12h.01"></path>
+                      </svg>
+                      <span>{{ suite.name }}</span>
+                    </div>
+                    <div class="tree-children" [class.open]="expandedSuites.includes(suite.id)">
+                      <div class="tree-children-content">
+                        <div class="tree-child">
+                          @for (room of suite.rooms; track room.id) {
+                          <div class="tree-item room"
+                            [class.active-item]="selectedType === 'room' && selectedId === room.id" (click)="
+                              selectItem('room',room,[building.name, floor.name, suite.name, room.number]);
+                              $event.stopPropagation()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round">
+                              <path d="M2 4v16"></path>
+                              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                              <path d="M2 17h20"></path>
+                              <path d="M6 8v9"></path>
+                            </svg>
+                            <span>{{ room.number }}</span>
+                          </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    }
+                  </div>
+                </div>
+              </div>
+              }
+              @if (building.facilities.length) {
+              <div class="tree-item facility"
+                [class.active-item]="selectedType === 'facility' && selectedId === building.id"
+                [class.active-item]="selectedType === 'facility' && selectedId === building.id" (click)="
+                selectItem('facility',building,[building.name, 'Facilities']);$event.stopPropagation()">
+                <!-- Facilities -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M12 2v2"></path>
+                  <path d="M12 20v2"></path>
+                  <path d="m4.93 4.93 1.41 1.41"></path>
+                  <path d="m17.66 17.66 1.41 1.41"></path>
+                  <path d="M2 12h2"></path>
+                  <path d="M20 12h2"></path>
+                  <path d="m6.34 17.66-1.41 1.41"></path>
+                  <path d="m19.07 4.93-1.41 1.41"></path>
+                </svg>
+                <span>Facilities</span>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    <!-- Right Content -->
+    <div class="content-panel">
+      <div class="content-toolbar">
+        <div class="breadcrumb">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <path d="M9 22v-4h6v4"></path>
+            <path d="M8 6h.01"></path>
+            <path d="M16 6h.01"></path>
+            <path d="M8 10h.01"></path>
+            <path d="M16 10h.01"></path>
+            <path d="M8 14h.01"></path>
+            <path d="M16 14h.01"></path>
+
+          </svg>
+          @for (item of breadcrumb; track $index) {
+          <span>{{ item }}</span>
+          @if (!$last) {
+          <span class="separator">→</span>
+          }
+          }
+        </div>
+        <div class="structure-search">
+          <svg class="structure-search__icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+            viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input class="structure-search__input" type="text" placeholder="Search..." />
+        </div>
+      </div>
+      <div class="content-body">
+        @if (selectedType === 'building' && selectedItem) {
+        <div class="section-title" style="margin-top: 15px;">
+          Rooms
+        </div>
+        @if (getBuildingRooms(selectedItem).length > 0) {
+        <div class="rooms-grid">
+          @for (room of getBuildingRooms(selectedItem); track room.id) {
+          <div class="room-grid__rooms">
+            <!-- Available Room -->
+            <div class="room-card room-card--available">
+              <div class="room-card__status-dot room-card__status-dot--available"></div>
+              <p class="room-card__number">103</p>
+              <p class="room-card__building">A1</p>
+              <div class="room-card__occupancy">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                  stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 4v16" />
+                  <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+                  <path d="M2 17h20" />
+                  <path d="M6 8v9" />
+                </svg>
+                <span class="room-card__occ-text room-card__occ-text--available">0/2</span>
+              </div>
+              <div class="room-card__bar">
+                <div class="room-card__bar-fill" style="width: 0%; background: #16A34A;"></div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+
+            </svg>
+          </div>
+          <h3>No Rooms Found</h3>
+          <p>
+            This building does not contain any rooms yet.
+          </p>
+        </div>
+        }
+        }
+        @if (selectedType === 'floor' && selectedItem) {
+        <div class="section-title" style="margin-top: 15px;">
+          Rooms
+        </div>
+        @if (getFloorRooms(selectedItem).length > 0) {
+        <div class="rooms-grid">
+          @for (room of getFloorRooms(selectedItem); track room.id) {
+          <div class="room-grid__rooms">
+            <!-- Available Room -->
+            <div class="room-card room-card--available">
+              <div class="room-card__status-dot room-card__status-dot--available"></div>
+              <p class="room-card__number">{{ room.number }}</p>
+              <p class="room-card__building">{{ room.type }}</p>
+              <p class="room-card__building">{{ room.status }}</p>
+              <div class="room-card__occupancy">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                  stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 4v16" />
+                  <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+                  <path d="M2 17h20" />
+                  <path d="M6 8v9" />
+                </svg>
+                <span class="room-card__occ-text room-card__occ-text--available">0/2</span>
+              </div>
+              <div class="room-card__bar">
+                <div class="room-card__bar-fill" style="width: 0%; background: #16A34A;"></div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+            </svg>
+          </div>
+          <h3>No Rooms Found</h3>
+          <p>
+            This building does not contain any rooms yet.
+          </p>
+        </div>
+        }
+        }
+        @if (selectedType === 'suite' && selectedItem) {
+        <div class="section-title">Rooms</div>
+        @if (selectedItem.rooms?.length > 0) {
+        <div class="rooms-grid">
+          @for (room of selectedItem.rooms; track room.id) {
+          <div class="room-grid__rooms">
+            <!-- Available Room -->
+            <div class="room-card room-card--available">
+              <div class="room-card__status-dot room-card__status-dot--available"></div>
+              <p class="room-card__number">{{ room.number }}</p>
+              <p class="room-card__building">{{ room.type }}</p>
+              <p class="room-card__building">{{ room.status }}</p>
+              <div class="room-card__occupancy">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
+                  stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 4v16" />
+                  <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+                  <path d="M2 17h20" />
+                  <path d="M6 8v9" />
+                </svg>
+                <span class="room-card__occ-text room-card__occ-text--available">0/2</span>
+              </div>
+              <div class="room-card__bar">
+                <div class="room-card__bar-fill" style="width: 0%; background: #16A34A;"></div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+
+            </svg>
+          </div>
+          <h3>No Rooms Found</h3>
+          <p>
+            This building does not contain any rooms yet.
+          </p>
+        </div>
+        }
+        }
+        <!-- ROOM -->
+        @if (selectedType === 'room' && selectedItem) {
+        <div class="cards-grid">
+          <div class="info-card">
+            <h3>Room Number</h3>
+            <p>{{ selectedItem.number }}</p>
+          </div>
+          <div class="info-card">
+            <h3>Status</h3>
+            <p>{{ selectedItem.status }}</p>
+          </div>
+          <div class="info-card">
+            <h3>Type</h3>
+            <p>{{ selectedItem.type }}</p>
+          </div>
+        </div>
+        }
+
+        @if(selectedType === 'facility' && selectedItem){
+        <div class="section-title" style="margin-top: 15px;">
+          Rooms
+        </div>
+        @if(selectedItem.building.facilities.length){
+        <div>
+          Test
+        </div>
+        }@else {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+            </svg>
+          </div>
+          <h3>No Rooms Found</h3>
+          <p>
+            This building does not contain any rooms yet.
+          </p>
+        </div>
+        }
+
+        }
+
+      </div>
+    </div>
+  </div>
+</div>

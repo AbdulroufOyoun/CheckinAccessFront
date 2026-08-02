@@ -1,0 +1,281 @@
+<!-- otp-verification.component.html -->
+<!--
+  CLASS BINDINGS:
+  [class.auth-page--rtl]="isRTL"
+  [class.otp-input--filled]="digit !== ''"
+  [class.otp-input--error]="hasError"
+  [class.auth-btn--loading]="isLoading"
+  [class.auth-btn--success]="isSuccess"
+  [class.resend-btn--disabled]="resendTimer > 0"
+
+  NAVIGATION (UI only — use routerLink or (click)):
+  Back → routerLink="/login"
+  Verify → routerLink="/dashboard"  (after success state)
+-->
+
+<!-- <div class="auth-page" [class.auth-page--rtl]="isRTL"> -->
+<div class="auth-page">
+
+  <!-- ═══════════════════════════════════════════════
+       BACKGROUND LAYER (identical to login)
+  ═══════════════════════════════════════════════ -->
+  <div class="auth-bg" aria-hidden="true">
+    <div class="auth-bg__blob auth-bg__blob--tl"></div>
+    <div class="auth-bg__blob auth-bg__blob--br"></div>
+    <div class="auth-bg__blob auth-bg__blob--center"></div>
+    <div class="auth-bg__grid"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN CARD
+  ═══════════════════════════════════════════════ -->
+  <div class="auth-card-wrap">
+    <div class="auth-card">
+
+      <!-- Top gradient accent bar -->
+      <div class="auth-card__accent-bar"></div>
+
+      <div class="auth-card__body">
+
+        <!-- ── LOGO ──────────────────────────────── -->
+        <div class="auth-logo">
+          <div class="auth-logo__icon">
+            <!-- Building2 icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+              <path d="M9 22v-4h6v4" />
+              <line x1="8" y1="6" x2="8.01" y2="6" />
+              <line x1="16" y1="6" x2="16.01" y2="6" />
+              <line x1="12" y1="6" x2="12.01" y2="6" />
+              <line x1="12" y1="10" x2="12.01" y2="10" />
+              <line x1="8" y1="10" x2="8.01" y2="10" />
+              <line x1="16" y1="10" x2="16.01" y2="10" />
+              <line x1="12" y1="14" x2="12.01" y2="14" />
+              <line x1="8" y1="14" x2="8.01" y2="14" />
+              <line x1="16" y1="14" x2="16.01" y2="14" />
+            </svg>
+          </div>
+          <h1 class="auth-logo__name">ResManager Pro</h1>
+          <p class="auth-logo__subtitle">ACCOMMODATION &amp; RESERVATION MANAGEMENT</p>
+        </div>
+
+        <!-- ── STEP PROGRESS ─────────────────────── -->
+        <div class="auth-steps">
+          <!-- Step 1 — Done (green checkmark) -->
+          <div class="auth-step">
+            <div class="auth-step__dot auth-step__dot--done">
+              <!-- CheckCircle2 icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+          </div>
+          <!-- Connector — done (green) -->
+          <div class="auth-step__connector auth-step__connector--done"></div>
+          <!-- Step 2 — Active -->
+          <div class="auth-step">
+            <div class="auth-step__dot auth-step__dot--active">2</div>
+          </div>
+        </div>
+
+        <!-- ── OTP ICON + HEADING ─────────────────── -->
+        <div class="otp-heading">
+          <!-- Shield icon -->
+          <div class="otp-heading__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </div>
+          <h2 class="otp-heading__title">Verify Your Number</h2>
+          <p class="otp-heading__subtitle">
+            We sent a 6-digit code to
+            <span class="otp-heading__phone">+966 512 345 678</span>
+          </p>
+          <!-- Sent confirmation -->
+          <p class="otp-heading__sent-confirm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="#0D9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Verification code sent to your phone
+          </p>
+        </div>
+
+        <!-- ── OTP INPUTS ─────────────────────────── -->
+        <div class="otp-field">
+          <label class="otp-field__label">{{'ENTER_CODE'| translate}}</label>
+
+
+          <div class="otp-inputs" dir="ltr">
+
+            <!-- Box 1 — filled example -->
+            <input #otp0 class="otp-input" [class.otp-input--filled]="otp[0]" (input)="onInput($event, 0, otp1)"
+              (keydown)="onBackspace($event, 0, null)" maxlength="1" [(ngModel)]="otp[0]"
+              [class.otp-input--error]="hasError" />
+
+            <input #otp1 class="otp-input" [class.otp-input--filled]="otp[1]" (input)="onInput($event, 1, otp2)"
+              (keydown)="onBackspace($event, 1, otp0)" maxlength="1" [(ngModel)]="otp[1]"
+              [class.otp-input--error]="hasError" />
+
+            <input #otp2 class="otp-input" [class.otp-input--filled]="otp[2]" (input)="onInput($event, 2, otp3)"
+              (keydown)="onBackspace($event, 2, otp1)" maxlength="1" [(ngModel)]="otp[2]"
+              [class.otp-input--error]="hasError" />
+
+            <input #otp3 class="otp-input" [class.otp-input--filled]="otp[3]" (input)="onInput($event, 3, otp4)"
+              (keydown)="onBackspace($event, 3, otp2)" maxlength="1" [(ngModel)]="otp[3]"
+              [class.otp-input--error]="hasError" />
+
+            <input #otp4 class="otp-input" [class.otp-input--filled]="otp[4]" (input)="onInput($event, 4, otp5)"
+              (keydown)="onBackspace($event, 4, otp3)" maxlength="1" [(ngModel)]="otp[4]"
+              [class.otp-input--error]="hasError" />
+
+            <input #otp5 class="otp-input" [class.otp-input--filled]="otp[5]" (keydown)="onBackspace($event, 5, otp4)"
+              maxlength="1" [(ngModel)]="otp[5]" [class.otp-input--error]="hasError" />
+          </div>
+
+          <!-- Error message — *ngIf="hasError" -->
+          @if(hasError){
+          <p class="form-error otp-field__error">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {{ errorMessage }}
+          </p>
+          }
+        </div>
+
+        <!-- ── VERIFY BUTTON ─────────────────────── -->
+        <!-- <button class="auth-btn" [class.auth-btn--loading]="isLoading" [class.auth-btn--success]="isSuccess"
+          [class.auth-btn--primary]="!isLoading && !isSuccess" (click)="verifyOtp()"
+          [disabled]="isLoading || isSuccess">
+
+          @if (isSuccess) {
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+
+          Login successful!
+
+          } @else if (isLoading) {
+
+          <span class="auth-btn__spinner"></span>
+          Verifying...
+
+          } @else {
+
+          Verify & Login
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+
+          }
+
+        </button> -->
+
+        <button class="auth-btn" [class.auth-btn--loading]="isLoading" [class.auth-btn--success]="isSuccess"
+          [class.auth-btn--primary]="!isLoading && !isSuccess" (click)="verifyOtp()"
+          [disabled]="isLoading || isSuccess">
+          @if(!isLoading && !isSuccess){
+          <ng-container>
+            {{'VERIFY'| translate}}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </ng-container>
+          }@else if(isLoading) {
+          <ng-container>
+            <span class="auth-btn__spinner"></span>
+            {{'VERIFYING'|translate}}
+          </ng-container>
+          }@else if(isSuccess){
+          <ng-container>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            {{'LOGIN_DONE'|translate}}
+          </ng-container>
+          }
+        </button>
+
+
+        <!-- Loading state — *ngIf="isLoading" -->
+        <!--
+        <button class="auth-btn auth-btn--loading" disabled>
+          <span class="auth-btn__spinner"></span>
+          Verifying...
+        </button>
+        -->
+
+        <!-- Success state — *ngIf="isSuccess" -->
+        <!--
+
+        -->
+
+        <!-- ── BOTTOM LINKS ───────────────────────── -->
+        <div class="otp-links">
+
+          <!-- Back to phone -->
+          <a href="#" class="otp-links__back" routerLink="/login">
+            <!-- ChevronLeft (ChevronRight for RTL) -->
+            <svg class="otp-links__back-icon otp-links__back-icon--ltr" xmlns="http://www.w3.org/2000/svg" width="14"
+              height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            <!-- RTL ChevronRight -->
+            <svg class="otp-links__back-icon otp-links__back-icon--rtl" xmlns="http://www.w3.org/2000/svg" width="14"
+              height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            Change number
+          </a>
+
+          <!-- Resend Code -->
+          <button class="otp-links__resend">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+            Resend Code
+          </button>
+
+          <!-- Timer state — *ngIf="resendTimer > 0" -->
+          <!--
+          <button class="otp-links__resend otp-links__resend--disabled" disabled>
+            <svg ...RefreshCw...></svg>
+            Resend Code (28s)
+          </button>
+          -->
+
+        </div>
+
+      </div><!-- /auth-card__body -->
+    </div><!-- /auth-card -->
+
+    <!-- Demo hint -->
+    <p class="auth-demo-hint">
+      Demo OTP code: <strong style="color: rgba(255,255,255,0.9);">123456</strong>
+    </p>
+  </div><!-- /auth-card-wrap -->
+
+</div>

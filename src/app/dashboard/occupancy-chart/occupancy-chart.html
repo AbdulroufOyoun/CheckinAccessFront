@@ -1,0 +1,93 @@
+<!-- occupancy-chart.component.html -->
+<div class="occ-chart">
+  <!-- Header -->
+  <div class="occ-chart__header">
+    <h3 class="occ-chart__title">Occupancy Rate</h3>
+    <p class="occ-chart__subtitle">Today's Summary</p>
+  </div>
+
+  <!-- Chart -->
+  <div class="occ-chart__donut-wrapper">
+
+    <div class="occ-chart__chart-container">
+
+      <canvas baseChart [data]="doughnutChartData" [type]="'doughnut'" [options]="doughnutChartOptions">
+      </canvas>
+
+      <!-- Center Text -->
+      <div class="occ-chart__center">
+        <span class="occ-chart__donut-pct">
+          {{ occupancyPct }}%
+        </span>
+        <span class="occ-chart__donut-label">
+          Occupancy
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Legend -->
+  <div class="occ-chart__legend">
+
+    <!-- Occupied -->
+    <div class="occ-chart__legend-item">
+      <div class="occ-chart__legend-row">
+        <div class="occ-chart__legend-left">
+          <span class="occ-chart__legend-dot" style="background:#DC2626"></span>
+          <span class="occ-chart__legend-name">Occupied</span>
+        </div>
+        <div class="occ-chart__legend-right">
+          <span class="occ-chart__legend-count">29</span>
+          <span class="occ-chart__legend-pct">(60%)</span>
+        </div>
+      </div>
+      <div class="occ-chart__bar-track">
+        <div class="occ-chart__bar-fill" style="width:60%; background:#DC2626;"></div>
+      </div>
+    </div>
+
+    <!-- Partial -->
+    <div class="occ-chart__legend-item">
+      <div class="occ-chart__legend-row">
+        <div class="occ-chart__legend-left">
+          <span class="occ-chart__legend-dot" style="background:#F59E0B"></span>
+          <span class="occ-chart__legend-name">Partial</span>
+        </div>
+        <div class="occ-chart__legend-right">
+          <span class="occ-chart__legend-count">7</span>
+          <span class="occ-chart__legend-pct">(15%)</span>
+        </div>
+      </div>
+      <div class="occ-chart__bar-track">
+        <div class="occ-chart__bar-fill" style="width:15%; background:#F59E0B;"></div>
+      </div>
+    </div>
+
+    <!-- Available -->
+    <div class="occ-chart__legend-item">
+      <div class="occ-chart__legend-row">
+        <div class="occ-chart__legend-left">
+          <span class="occ-chart__legend-dot" style="background:#16A34A"></span>
+          <span class="occ-chart__legend-name">Available</span>
+        </div>
+        <div class="occ-chart__legend-right">
+          <span class="occ-chart__legend-count">12</span>
+          <span class="occ-chart__legend-pct">(25%)</span>
+        </div>
+      </div>
+      <div class="occ-chart__bar-track">
+        <div class="occ-chart__bar-fill" style="width:25%; background:#16A34A;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="occ-chart__total">
+    <span class="occ-chart__total-label">Total Rooms</span>
+    <span class="occ-chart__total-value">48</span>
+  </div>
+
+</div>

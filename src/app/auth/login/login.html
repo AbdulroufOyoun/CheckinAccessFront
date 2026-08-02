@@ -1,0 +1,166 @@
+<!-- login.component.html -->
+
+<div class="auth-page">
+  <!-- <div class="auth-page" [class.auth-page--rtl]="false"> -->
+
+  <!-- ═══════════════════════════════════════════════
+       BACKGROUND LAYER
+  ═══════════════════════════════════════════════ -->
+  <div class="auth-bg" aria-hidden="true">
+    <!-- Blob top-left -->
+    <div class="auth-bg__blob auth-bg__blob--tl"></div>
+    <!-- Blob bottom-right -->
+    <div class="auth-bg__blob auth-bg__blob--br"></div>
+    <!-- Blob center -->
+    <div class="auth-bg__blob auth-bg__blob--center"></div>
+    <!-- Grid overlay -->
+    <div class="auth-bg__grid"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN CARD
+  ═══════════════════════════════════════════════ -->
+  <div class="auth-card-wrap">
+    <div class="auth-card">
+      <!-- Top gradient accent bar -->
+      <div class="auth-card__accent-bar"></div>
+
+      <div class="auth-card__body">
+
+        <!-- ── LOGO ──────────────────────────────── -->
+        <div class="auth-logo">
+          <div class="auth-logo__icon">
+            <!-- Building2 icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+              <path d="M9 22v-4h6v4" />
+              <line x1="8" y1="6" x2="8.01" y2="6" />
+              <line x1="16" y1="6" x2="16.01" y2="6" />
+              <line x1="12" y1="6" x2="12.01" y2="6" />
+              <line x1="12" y1="10" x2="12.01" y2="10" />
+              <line x1="8" y1="10" x2="8.01" y2="10" />
+              <line x1="16" y1="10" x2="16.01" y2="10" />
+              <line x1="12" y1="14" x2="12.01" y2="14" />
+              <line x1="8" y1="14" x2="8.01" y2="14" />
+              <line x1="16" y1="14" x2="16.01" y2="14" />
+            </svg>
+          </div>
+          <h1 class="auth-logo__name">ResManager Pro</h1>
+          <p class="auth-logo__subtitle">ACCOMMODATION &amp; RESERVATION MANAGEMENT</p>
+        </div>
+
+        <!-- ── STEP PROGRESS ─────────────────────── -->
+        <div class="auth-steps">
+          <!-- Step 1 — Active -->
+          <div class="auth-step auth-step--active">
+            <div class="auth-step__dot auth-step__dot--active">1</div>
+          </div>
+          <!-- Connector Line -->
+          <div class="auth-step__connector auth-step__connector--inactive"></div>
+          <!-- Step 2 — Inactive -->
+          <div class="auth-step">
+            <div class="auth-step__dot auth-step__dot--inactive">2</div>
+          </div>
+        </div>
+
+        <!-- ── STEP HEADING ──────────────────────── -->
+        <div class="auth-heading">
+          <h2 class="auth-heading__title">Welcome Back</h2>
+          <p class="auth-heading__subtitle">Enter your phone number to continue</p>
+        </div>
+
+        <!-- ── PHONE FIELD ───────────────────────── -->
+        <!-- <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <div class="form-input-wrap">
+            <span class="form-input__icon form-input__icon--ltr">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07
+                         A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.36
+                         A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72
+                         c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91
+                         a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45
+                         c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </span>
+            <input type="tel" class="form-input form-input--with-icon" [(ngModel)]="phone"
+              (input)="phone = phone.replace(/[^0-9]/g, '')" placeholder="+966 5XX XXX XXXX" dir="ltr"
+              autocomplete="tel" />
+          </div>
+          @if(hasError){
+          <p class="form-error">Please enter a valid phone number</p>
+          }
+        </div> -->
+
+        <div class="form-group">
+          <label class="form-label">{{'EMAIL'|translate}}</label>
+          <div class="form-input-wrap">
+            <!-- Phone icon -->
+            <span class="form-input__icon form-input__icon--ltr">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07
+                         A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.36
+                         A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72
+                         c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91
+                         a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45
+                         c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </span>
+            <input type="email" class="form-input form-input--with-icon" [(ngModel)]="email"
+              placeholder="example@example.com" dir="ltr" autocomplete="email" />
+          </div>
+          @if(hasError && !email){
+          <p class="form-error"> {{ 'ENTER_EMAIL' | translate }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{'PASSWORD'|translate}}</label>
+          <div class="form-input-wrap">
+            <!-- Phone icon -->
+            <span class="form-input__icon form-input__icon--ltr">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07
+                         A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.36
+                         A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72
+                         c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91
+                         a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45
+                         c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </span>
+            <input type="password" class="form-input form-input--with-icon" [(ngModel)]="password" dir="ltr" />
+          </div>
+          @if(hasError &&!password ){
+          <p class="form-error"> {{ 'ENTER_PASSWORD' | translate }}</p>
+          }
+          @if(password.length > 0 && password.length < 4) { <p class="form-error"> {{ 'MSG_PASSWORD' | translate }}</p>
+            }
+        </div>
+        <!-- ── SUBMIT BUTTON ─────────────────────── -->
+        <!-- Default state -->
+        <button class="auth-btn" [class.auth-btn--loading]="isLoading" [class.auth-btn--primary]="!isLoading"
+          (click)="login()" [disabled]="isLoading">
+          @if (!isLoading) {
+          {{'SEND_CODE'|translate}}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+          } @else {
+          <span class="auth-btn__spinner"></span>
+          {{'SENDING'|translate}}
+          }
+        </button>
+      </div>
+    </div>
+    <!-- Demo hint -->
+    <p class="auth-demo-hint">
+      Demo: Enter any phone number to receive OTP
+    </p>
+  </div>
+</div>

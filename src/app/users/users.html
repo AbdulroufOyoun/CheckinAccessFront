@@ -1,0 +1,141 @@
+<!-- users.component.html -->
+<!--
+  BINDINGS REFERENCE:
+  [class.users-page--rtl]="isRTL"
+  *ngFor="let user of filteredUsers; let i = index"
+  [style.animation-delay]="(i * 0.04) + 's'"
+  [class.search-bar--has-value]="searchQuery !== ''"
+  (click)="openAddDialog()" / openViewDialog(user) / openEditDialog(user)
+-->
+
+<div class="users-page" [class.users-page--rtl]="isRTL">
+
+  <!-- ══════════════════════════════════════════════════
+       PAGE HEADER
+  ══════════════════════════════════════════════════ -->
+  <div class="page-header">
+    <div class="page-header__text">
+      <h1 class="page-header__title">Users</h1>
+      <p class="page-header__subtitle">12 users</p>
+    </div>
+    <button class="btn-add-user" (click)="openAddDialog()">
+      <!-- Plus icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      Add User
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SEARCH BAR
+  ══════════════════════════════════════════════════ -->
+  <div class="search-bar">
+    <!-- Search icon -->
+    <span class="search-bar__icon search-bar__icon--start">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    </span>
+    <input type="text" class="search-bar__input" placeholder="Search users..." />
+    <!-- Clear button — *ngIf="searchQuery" -->
+    <button class="search-bar__clear" aria-label="Clear search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       USERS GRID  — *ngFor="let user of filteredUsers"
+  ══════════════════════════════════════════════════ -->
+
+  <div class="users-grid">
+
+    @for (user of users; track user.email) {
+
+    <div class="user-card" [style.animation-delay]="user.delay">
+
+      <div class="user-card__top">
+
+        <div class="user-card__avatar-wrap">
+
+          <div class="user-card__avatar" [style.background]="user.color"
+            [style.box-shadow]="'0 4px 12px ' + user.shadow">
+
+            {{ user.initials }}
+
+          </div>
+
+          <div class="user-card__info">
+            <p class="user-card__name">{{ user.name }}</p>
+            <p class="user-card__nationality">{{ user.nationality }}</p>
+          </div>
+
+        </div>
+
+        @if (user.active > 0) {
+        <span class="user-card__active-badge">
+          {{ user.active }} active
+        </span>
+        }
+
+      </div>
+
+      <div class="user-card__details">
+
+        <div class="user-card__detail-row">
+          <!-- phone icon -->
+          <span>{{ user.phone }}</span>
+        </div>
+
+        <div class="user-card__detail-row">
+          <!-- email icon -->
+          <span>{{ user.email }}</span>
+        </div>
+
+      </div>
+
+      <div class="user-card__actions">
+
+        <button class="user-card__btn user-card__btn--view" (click)="openViewDialog(user)">
+
+          View
+
+        </button>
+
+        <button class="user-card__btn user-card__btn--edit" (click)="openEditDialog(user)">
+
+          Edit
+
+        </button>
+
+      </div>
+
+    </div>
+
+    }
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       EMPTY STATE — *ngIf="filteredUsers.length === 0"
+  ══════════════════════════════════════════════════ -->
+  <div class="empty-state" style="display: none;">
+    <div class="empty-state__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    </div>
+    <p class="empty-state__text">No results found</p>
+  </div>
+
+</div>
