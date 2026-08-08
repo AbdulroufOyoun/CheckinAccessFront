@@ -1,0 +1,144 @@
+<div class="as" role="dialog" aria-modal="true" [class.as--rtl]="isRTL">
+  <div class="as__hero">
+    <div class="as__hero-bg" aria-hidden="true"></div>
+    <button class="as__close" type="button" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <p class="as__eyebrow">
+      {{ (mode === 'edit' ? 'SUBJ_DIALOG_EYEBROW_EDIT' : 'SUBJ_DIALOG_EYEBROW_ADD') | translate }}
+    </p>
+    <h2 class="as__title">
+      {{ (mode === 'edit' ? 'SUBJ_DIALOG_TITLE_EDIT' : 'SUBJ_DIALOG_TITLE_ADD') | translate }}
+    </h2>
+
+    <div class="as__preview">
+      <div class="as__preview-code">{{ previewCode }}</div>
+      <div class="as__preview-body">
+        <strong>{{ previewName }}</strong>
+        @if (previewNameSecondary) {
+        <small class="as__preview-secondary">{{ previewNameSecondary }}</small>
+        }
+        <span>{{ previewMeta }}</span>
+        <em>{{ prerequisiteLabel }}</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="as__body">
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'SUBJ_SECTION_BASICS' | translate }}</h3>
+
+      <div class="as__row as__row--names">
+        <label class="as__field">
+          <span class="as__label">{{ 'SUBJ_NAME_EN' | translate }} <i>*</i></span>
+          <input class="as__input as__input--lg" type="text" name="name" [(ngModel)]="form.name"
+            [placeholder]="'SUBJ_NAME_EN_PLACEHOLDER' | translate" autocomplete="off" dir="ltr" />
+        </label>
+
+        <label class="as__field">
+          <span class="as__label">{{ 'SUBJ_NAME_AR' | translate }} <i>*</i></span>
+          <input class="as__input as__input--lg" type="text" name="name_ar" [(ngModel)]="form.name_ar"
+            [placeholder]="'SUBJ_NAME_AR_PLACEHOLDER' | translate" autocomplete="off" dir="rtl" />
+        </label>
+      </div>
+
+      <div class="as__row">
+        <label class="as__field">
+          <span class="as__label">{{ 'SUBJ_SHORT_CODE' | translate }}</span>
+          <input class="as__input" type="text" name="short_name" [(ngModel)]="form.short_name"
+            [placeholder]="'SUBJ_SHORT_PLACEHOLDER' | translate" maxlength="50" />
+        </label>
+
+        <div class="as__field">
+          <span class="as__label">{{ 'SUBJ_CREDIT_HOURS' | translate }}</span>
+          <div class="as__hours">
+            @for (h of hourPresets; track h) {
+            <button type="button" class="as__chip" [class.as__chip--on]="form.hours === h"
+              (click)="setHours(h)">{{ h }}</button>
+            }
+            <div class="as__hours-custom">
+              <button type="button" (click)="bumpHours(-1)" [disabled]="saving">−</button>
+              <input type="number" name="hours" [(ngModel)]="form.hours" min="0" max="999" />
+              <button type="button" (click)="bumpHours(1)" [disabled]="saving">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'SUBJ_SECTION_RULES' | translate }}</h3>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'SUBJ_PREREQ_LABEL' | translate }}</span>
+        <div class="as__select-wrap">
+          <select class="as__input as__select" name="required_subject_id" [(ngModel)]="form.required_subject_id">
+            <option [ngValue]="''">{{ 'SUBJ_PREREQ_NONE' | translate }}</option>
+            @for (s of prerequisiteOptions; track s.id) {
+            <option [ngValue]="s.id">
+              {{ s.short_name ? s.short_name + ' · ' : '' }}{{ subjectLabel(s) }}
+            </option>
+            }
+          </select>
+          <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="#94A3B8" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+      </label>
+
+      <div class="as__choices">
+        <button type="button" class="as__choice" [class.as__choice--on]="form.has_practical"
+          (click)="form.has_practical = !form.has_practical">
+          <span class="as__choice-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 3h6v4H9zM8 7h8l1 13H7L8 7z" />
+            </svg>
+          </span>
+          <span class="as__choice-text">
+            <strong>{{ 'SUBJ_CHOICE_PRACTICAL' | translate }}</strong>
+            <small>{{ 'SUBJ_CHOICE_PRACTICAL_HINT' | translate }}</small>
+          </span>
+          <span class="as__choice-check" aria-hidden="true"></span>
+        </button>
+
+        <button type="button" class="as__choice" [class.as__choice--on]="form.active"
+          (click)="form.active = !form.active">
+          <span class="as__choice-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </span>
+          <span class="as__choice-text">
+            <strong>{{ 'SUBJ_CHOICE_ACTIVE' | translate }}</strong>
+            <small>{{ 'SUBJ_CHOICE_ACTIVE_HINT' | translate }}</small>
+          </span>
+          <span class="as__choice-check" aria-hidden="true"></span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div class="as__footer">
+    <button class="as__btn as__btn--ghost" type="button" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
+    <button class="as__btn as__btn--primary" type="button" (click)="save()"
+      [disabled]="saving || !canSave">
+      @if (saving) {
+      <span class="as__spinner"></span> {{ 'SAVING' | translate }}
+      } @else if (mode === 'edit') {
+      {{ 'SUBJ_SAVE_CHANGES' | translate }}
+      } @else {
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      {{ 'SUBJ_CREATE' | translate }}
+      }
+    </button>
+  </div>
+</div>

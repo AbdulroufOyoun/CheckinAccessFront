@@ -1,37 +1,65 @@
-import { Component } from '@angular/core';
-import { ChartConfiguration, } from 'chart.js';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartOptions } from 'chart.js';
+import { RoomStatusSummary } from '../../services/room-status.service';
+
 @Component({
   selector: 'app-occupancy-chart',
-  imports: [BaseChartDirective],
+  imports: [CommonModule, TranslateModule, BaseChartDirective],
   templateUrl: './occupancy-chart.html',
   styleUrl: './occupancy-chart.css',
 })
-export class OccupancyChart {
+export class OccupancyChart implements OnChanges {
+  @Input() summary: RoomStatusSummary | null = null;
+
   doughnutChartData: ChartConfiguration<'doughnut'>['data'] = {
-    labels: ['Occupied', 'Partial', 'Available'],
+    labels: ['Occupied', 'On hold', 'Available'],
     datasets: [
       {
-        data: [29, 7, 12],
+        data: [0, 0, 0],
         backgroundColor: ['#DC2626', '#F59E0B', '#16A34A'],
-        // backgroundColor: ['#1e3a5f', '#3b82f6', '#f59e0b'],
-
-        borderWidth: 0
-      }
-    ]
+        borderWidth: 0,
+      },
+    ],
   };
 
   doughnutChartOptions: ChartOptions<'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
     cutout: '65%',
-    plugins: {
-      legend: { display: false }
-    }
+    plugins: { legend: { display: false } },
   };
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['summary']) this.applySummary();
+  }
+
+  private applySummary(): void {
+    const occupied = this.summary?.occupied ?? 0;
+    const onHold = this.summary?.on_hold ?? 0;
+    const available = this.summary?.available ?? 0;
+    this.doughnutChartData = {
+      ...this.doughnutChartData,
+      datasets: [
+        {
+          ...this.doughnutChartData.datasets[0],
+          data: [occupied, onHold, available],
+        },
+      ],
+    };
+  }
+
   get occupancyPct(): number {
-    const total = 29 + 7 + 12;
-    return Math.round((29 / total) * 100);
+    const total = this.summary?.total ?? 0;
+    if (!total) return 0;
+    return Math.round((((this.summary?.occupied ?? 0) + (this.summary?.on_hold ?? 0)) / total) * 100);
+  }
+
+  pct(part: number): number {
+    const total = this.summary?.total ?? 0;
+    if (!total) return 0;
+    return Math.round((part / total) * 100);
   }
 }

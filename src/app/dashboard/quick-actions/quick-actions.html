@@ -1,77 +1,50 @@
-<!-- quick-actions.component.html -->
-<div class="quick-actions">
-
-  <!-- Header -->
+<div class="quick-actions dash-card-bg">
   <div class="quick-actions__header">
-    <!-- Zap icon -->
     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
          fill="#F59E0B" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
     </svg>
-    <h3 class="quick-actions__title">Quick Actions</h3>
+    <h3 class="quick-actions__title">{{ 'DASH_QA_TITLE' | translate }}</h3>
   </div>
 
   <div class="quick-actions__list">
-
-    <!-- Action: Add Reservation -->
-    <button class="qa-btn qa-btn--blue">
+    <a class="qa-btn qa-btn--blue" routerLink="/Reservations/New">
       <div class="qa-btn__icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="16"/>
-          <line x1="8" y1="12" x2="16" y2="12"/>
-        </svg>
+             fill="none" stroke="#2563EB" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       </div>
       <div class="qa-btn__text">
-        <p class="qa-btn__label" style="color: #2563EB;">Add Reservation</p>
-        <p class="qa-btn__desc">Book a new room</p>
+        <p class="qa-btn__label" style="color: #2563EB;">{{ 'DASH_QA_BOOK' | translate }}</p>
+        <p class="qa-btn__desc">{{ 'DASH_QA_BOOK_DESC' | translate }}</p>
       </div>
-      <!-- ChevronRight -->
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-           fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </button>
+           fill="none" stroke="#2563EB" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
 
-    <!-- Action: Add User -->
-    <button class="qa-btn qa-btn--purple">
+    <a class="qa-btn qa-btn--purple" routerLink="/Users">
       <div class="qa-btn__icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+             fill="none" stroke="#7C3AED" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       </div>
       <div class="qa-btn__text">
-        <p class="qa-btn__label" style="color: #7C3AED;">Add User</p>
-        <p class="qa-btn__desc">Register a new tenant</p>
+        <p class="qa-btn__label" style="color: #7C3AED;">{{ 'DASH_QA_USERS' | translate }}</p>
+        <p class="qa-btn__desc">{{ 'DASH_QA_USERS_DESC' | translate }}</p>
       </div>
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-           fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </button>
+           fill="none" stroke="#7C3AED" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
 
-    <!-- Action: View Reports -->
-    <button class="qa-btn qa-btn--teal">
+    <a class="qa-btn qa-btn--teal" routerLink="/Reports">
       <div class="qa-btn__icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
-        </svg>
+             fill="none" stroke="#0D9488" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
       </div>
       <div class="qa-btn__text">
-        <p class="qa-btn__label" style="color: #0D9488;">View Reports</p>
-        <p class="qa-btn__desc">Browse reports & stats</p>
+        <p class="qa-btn__label" style="color: #0D9488;">{{ 'DASH_QA_REPORTS' | translate }}</p>
+        <p class="qa-btn__desc">{{ 'DASH_QA_REPORTS_DESC' | translate }}</p>
       </div>
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-           fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </button>
-
+           fill="none" stroke="#0D9488" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
   </div>
 </div>

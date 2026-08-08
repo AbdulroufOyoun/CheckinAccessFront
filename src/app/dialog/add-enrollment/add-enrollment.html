@@ -1,0 +1,101 @@
+<div class="as" role="dialog" aria-modal="true" [class.as--rtl]="isRTL">
+  <div class="as__hero">
+    <div class="as__hero-bg" aria-hidden="true"></div>
+    <button class="as__close" type="button" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <p class="as__eyebrow">{{ 'ENR_DIALOG_EYEBROW' | translate }}</p>
+    <h2 class="as__title">{{ 'ENR_DIALOG_TITLE' | translate }}</h2>
+
+    <div class="as__preview">
+      <div class="as__preview-code">ENR</div>
+      <div class="as__preview-body">
+        <strong>{{ previewTitle }}</strong>
+        <span>{{ previewMeta }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="as__body">
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'ENR_SECTION_DETAILS' | translate }}</h3>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'ENR_STUDENT' | translate }} <i>*</i></span>
+        @if (users.length) {
+        <div class="as__select-wrap">
+          <select class="as__input as__select" name="user_id" [(ngModel)]="form.user_id">
+            <option [ngValue]="''">{{ 'ENR_STUDENT_PLACEHOLDER' | translate }}</option>
+            @for (u of users; track u.id) {
+            <option [ngValue]="u.id">{{ userLabel(u) }}</option>
+            }
+          </select>
+          <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="#94A3B8" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+        } @else {
+        <input class="as__input" type="number" name="user_id" [(ngModel)]="form.user_id"
+          [placeholder]="'ENR_USER_ID_PLACEHOLDER' | translate" min="1" />
+        }
+      </label>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'ENR_SECTION' | translate }} <i>*</i></span>
+        @if (sections.length) {
+        <div class="as__select-wrap">
+          <select class="as__input as__select" name="section_id" [(ngModel)]="form.section_id">
+            <option [ngValue]="''">{{ 'ENR_SECTION_PLACEHOLDER' | translate }}</option>
+            @for (s of sections; track s.id) {
+            <option [ngValue]="s.id">{{ sectionLabel(s) }}</option>
+            }
+          </select>
+          <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="#94A3B8" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+        } @else {
+        <input class="as__input" type="number" name="section_id" [(ngModel)]="form.section_id"
+          [placeholder]="'ENR_SECTION_ID_PLACEHOLDER' | translate" min="1" />
+        }
+      </label>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'ENR_STATUS' | translate }}</span>
+        <div class="as__select-wrap">
+          <select class="as__input as__select" name="status" [(ngModel)]="form.status">
+            @for (st of statuses; track st) {
+            <option [ngValue]="st">{{ ('ENR_STATUS_' + st.toUpperCase()) | translate }}</option>
+            }
+          </select>
+          <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="#94A3B8" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+      </label>
+    </section>
+  </div>
+
+  <div class="as__footer">
+    <button class="as__btn as__btn--ghost" type="button" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
+    <button class="as__btn as__btn--primary" type="button" (click)="save()"
+      [disabled]="saving || !canSave">
+      @if (saving) {
+      <span class="as__spinner"></span> {{ 'SAVING' | translate }}
+      } @else {
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      {{ 'ENR_CREATE' | translate }}
+      }
+    </button>
+  </div>
+</div>

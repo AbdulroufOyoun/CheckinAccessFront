@@ -155,6 +155,25 @@ body {
   animation: dialogPop 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.subject-dialog .mdc-dialog__surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  max-height: 90vh !important;
+}
+
+.subject-dialog .mat-mdc-dialog-surface {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  max-height: 90vh !important;
+  overflow: hidden !important;
+}
+
+.subject-dialog .mat-mdc-dialog-container {
+  max-height: 90vh !important;
+}
+
 @keyframes dialogPop {
   from {
     opacity: 0;
@@ -295,6 +314,88 @@ body {
   }
 }
 
+/* Dashboard card ambient motion */
+@keyframes dashCardBlobDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translate(-10px, 8px) scale(1.08);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: translate(8px, -6px) scale(0.94);
+    opacity: 0.4;
+  }
+}
+
+@keyframes dashCardShimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes dashHeroBgShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.dash-card-bg {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.dash-card-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(37, 99, 235, 0.045) 38%,
+    rgba(124, 58, 237, 0.05) 62%,
+    transparent 100%
+  );
+  background-size: 220% 220%;
+  animation: dashCardShimmer 14s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dash-card-bg::after {
+  content: '';
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--dash-glow, rgba(37, 99, 235, 0.11)) 0%, transparent 68%);
+  top: -65px;
+  inset-inline-end: -55px;
+  animation: dashCardBlobDrift 10s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dash-card-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
 
 .snackbar-success .mdc-snackbar__surface,
 .snackbar-error .mdc-snackbar__surface {
@@ -354,5 +455,155 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Content reveal after page skeleton — soft, polished entrance */
+@keyframes contentReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985);
+    filter: blur(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes contentRevealSoft {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes contentRevealRow {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.reveal {
+  animation: contentRevealSoft 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.reveal-item {
+  animation: contentReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--reveal-i, 0) * 55ms + 80ms);
+  will-change: opacity, transform, filter;
+}
+
+/* Tables: lighter motion (no blur) for smoother 60fps feel */
+.edu-ui__table-wrap.reveal,
+.subj-table-wrap.reveal,
+.table-container.reveal {
+  animation: contentRevealSoft 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
+}
+
+.edu-ui__table tbody tr.reveal-item,
+.subj-table tbody tr.reveal-item,
+.table-container tbody tr.reveal-item,
+.sched__table tbody tr.reveal-item {
+  animation-name: contentRevealRow;
+  animation-duration: 0.58s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+  animation-delay: calc(var(--reveal-i, 0) * 48ms + 100ms);
+  will-change: opacity, transform;
+  /* filter/transform on <tr> breaks border-collapse vertical lines */
+  filter: none !important;
+}
+
+.edu-ui__panel.reveal {
+  animation: contentReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Roles rail cards + permission groups */
+.rbac__role-card.reveal-item,
+.rbac__group.reveal-item {
+  animation-duration: 0.7s;
+  animation-delay: calc(var(--reveal-i, 0) * 60ms + 90ms);
+}
+
+.rbac__panel-body.reveal {
+  animation: contentReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.rbac__layout.reveal {
+  animation: contentRevealSoft 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-item,
+  .edu-ui__table tbody tr.reveal-item,
+  .subj-table tbody tr.reveal-item,
+  .table-container tbody tr.reveal-item,
+  .sched__table tbody tr.reveal-item,
+  .rbac__role-card.reveal-item,
+  .rbac__group.reveal-item,
+  .rbac__panel-body.reveal,
+  .rbac__layout.reveal,
+  .edu-ui__table-wrap.reveal,
+  .subj-table-wrap.reveal,
+  .table-container.reveal,
+  .edu-ui__panel.reveal {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .dash-card-bg::before,
+  .dash-card-bg::after,
+  .module-card::before,
+  .kpi-card::before,
+  .kpi-card::after,
+  .kpi-card__decor-circle,
+  .dash-hero,
+  .room-card:hover::before {
+    animation: none !important;
+  }
+}
+
+@media print {
+  .sidebar,
+  .navbar,
+  .shell__overlay {
+    display: none !important;
+  }
+
+  .shell,
+  .main-area,
+  .page-content {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.print-schedule {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

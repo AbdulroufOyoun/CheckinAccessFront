@@ -1,0 +1,123 @@
+<div class="as st-dlg" role="dialog" aria-modal="true" [class.as--rtl]="isRTL">
+  <div class="as__hero">
+    <div class="as__hero-bg" aria-hidden="true"></div>
+    <button class="as__close" type="button" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <p class="as__eyebrow">{{ 'SEC_TIMES_EYEBROW' | translate }}</p>
+    <h2 class="as__title">{{ 'SEC_TIMES_TITLE' | translate }}</h2>
+
+    <div class="as__preview">
+      <div class="as__preview-code">{{ section.number }}</div>
+      <div class="as__preview-body">
+        <strong>{{ subjectName }}</strong>
+        <span>{{ previewMeta }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="as__body">
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'SEC_TIME_ADD_SECTION' | translate }}</h3>
+
+      <div class="st-dlg__days" role="listbox" [attr.aria-label]="'SEC_DAY' | translate">
+        @for (d of days; track d.id) {
+        <button
+          type="button"
+          class="st-dlg__day"
+          role="option"
+          [class.st-dlg__day--on]="timeForm.day_id === d.id"
+          [attr.aria-selected]="timeForm.day_id === d.id"
+          (click)="selectDay(d.id)"
+        >
+          <span class="st-dlg__day-short">{{ dayShort(d) }}</span>
+          <span class="st-dlg__day-full">{{ dayLabel(d) }}</span>
+        </button>
+        }
+      </div>
+
+      <div class="st-dlg__clock-row">
+        <label class="as__field st-dlg__clock">
+          <span class="as__label">{{ 'SEC_START' | translate }}</span>
+          <input class="as__input as__input--lg" type="time" name="start" [(ngModel)]="timeForm.start" />
+        </label>
+        <div class="st-dlg__clock-arrow" aria-hidden="true">→</div>
+        <label class="as__field st-dlg__clock">
+          <span class="as__label">{{ 'SEC_END' | translate }}</span>
+          <input class="as__input as__input--lg" type="time" name="end" [(ngModel)]="timeForm.end" />
+        </label>
+      </div>
+
+      @if (durationLabel) {
+      <p class="st-dlg__duration" [class.st-dlg__duration--bad]="!canAdd && !!timeForm.day_id">
+        {{ durationLabel }}
+      </p>
+      }
+
+      <div class="st-dlg__presets">
+        <button type="button" class="as__chip" (click)="setPreset('08:00', '10:00')">08:00–10:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('09:00', '11:00')">09:00–11:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('10:00', '12:00')">10:00–12:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('13:00', '15:00')">13:00–15:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('16:00', '18:00')">16:00–18:00</button>
+      </div>
+
+      <button type="button" class="as__btn as__btn--primary st-dlg__add" (click)="addTime()"
+        [disabled]="!canAdd">
+        @if (saving) {
+        {{ 'LOADING' | translate }}
+        } @else {
+        {{ 'SEC_ADD_TIME' | translate }}
+        }
+      </button>
+    </section>
+
+    <section class="as__section">
+      <div class="st-dlg__list-head">
+        <h3 class="as__section-title">{{ 'SEC_TIMES_LIST' | translate }}</h3>
+        <span class="st-dlg__count">{{ times.length }}</span>
+      </div>
+
+      @if (loading) {
+      <div class="st-dlg__skel" aria-hidden="true">
+        <div></div><div></div><div></div>
+      </div>
+      } @else if (!times.length) {
+      <div class="st-dlg__empty">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </svg>
+        <p>{{ 'SEC_TIMES_EMPTY' | translate }}</p>
+      </div>
+      } @else {
+      <ul class="st-dlg__list">
+        @for (t of sortedTimes; track t.id) {
+        <li class="st-dlg__item">
+          <div class="st-dlg__item-day">{{ dayShort(t.day) || '#' }}</div>
+          <div class="st-dlg__item-body">
+            <strong>{{ dayLabel(t.day) || ('#' + t.day_id) }}</strong>
+            <span dir="ltr">{{ formatClock(t.start) }} → {{ formatClock(t.end) }}</span>
+          </div>
+          <button type="button" class="st-dlg__remove" (click)="removeTime(t.id)"
+            [disabled]="saving" [attr.aria-label]="'DELETE' | translate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+            </svg>
+          </button>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+  </div>
+
+  <div class="as__footer">
+    <button type="button" class="as__btn as__btn--ghost" (click)="close()">
+      {{ 'CLOSE' | translate }}
+    </button>
+  </div>
+</div>

@@ -1,0 +1,227 @@
+<div class="sec-page" [class.rtl]="isRTL">
+  @if (showSkeleton) {
+    <app-page-skeleton variant="table" [rows]="6" [cols]="4" />
+  } @else {
+    <header class="sec-hero">
+      <div>
+        <p class="sec-kicker">{{ 'SEC_KICKER' | translate }}</p>
+        <h1>{{ 'SEC_TITLE' | translate }}</h1>
+        <p class="sec-lead">{{ 'SEC_LEAD' | translate }}</p>
+      </div>
+      <div class="sec-hero-actions">
+        <button type="button" class="sec-btn sec-btn--primary" (click)="openCreate()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+          </svg>
+          {{ 'SEC_ADD' | translate }}
+        </button>
+      </div>
+    </header>
+
+    <div class="sec-stats" aria-live="polite">
+      <div class="sec-stat">
+        <span class="sec-stat-value">{{ groups.length }}</span>
+        <span class="sec-stat-label">{{ 'SEC_STAT_SUBJECTS' | translate }}</span>
+      </div>
+      <div class="sec-stat">
+        <span class="sec-stat-value">{{ filtered.length }}</span>
+        <span class="sec-stat-label">{{ 'SEC_STAT_SECTIONS' | translate }}</span>
+      </div>
+      <div class="sec-stat">
+        <span class="sec-stat-value">{{ totalSlots }}</span>
+        <span class="sec-stat-label">{{ 'SEC_STAT_SLOTS' | translate }}</span>
+      </div>
+    </div>
+
+    <div class="sec-toolbar">
+      <div class="sec-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" stroke-linecap="round" />
+        </svg>
+        <input
+          type="search"
+          [(ngModel)]="search"
+          (ngModelChange)="applyFilter()"
+          [placeholder]="'SEC_SEARCH' | translate"
+          autocomplete="off"
+        />
+      </div>
+      <select
+        class="sec-select"
+        [ngModel]="filterSubjectId ?? ''"
+        (ngModelChange)="onFilterChange($event)"
+      >
+        <option value="">{{ 'SEC_ALL_SUBJECTS' | translate }}</option>
+        @for (s of subjects; track s.id) {
+          <option [value]="s.id">{{ subjectLabel(s) }}</option>
+        }
+      </select>
+      @if (filterSubjectId) {
+        <button type="button" class="sec-btn sec-btn--ghost sec-btn--sm" (click)="clearFilter()">
+          {{ 'SEC_CLEAR_FILTER' | translate }}
+        </button>
+      }
+    </div>
+
+    @if (filterSubjectId && filteredSubject) {
+      <div class="sec-filter-banner">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M3 5h18l-7 8v5l-4 2v-7L3 5z" />
+        </svg>
+        <span>{{ 'SEC_FILTERED_BY' | translate }}: <strong>{{ subjectLabel(filteredSubject) }}</strong></span>
+      </div>
+    }
+
+    @if (loading && !sections.length) {
+      <div class="sec-empty">
+        <div class="sec-spinner" role="status" aria-label="Loading"></div>
+      </div>
+    } @else if (!groups.length) {
+      <div class="sec-empty">
+        <div class="sec-empty__icon" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5">
+            <path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round" />
+          </svg>
+        </div>
+        <h2>{{ 'SEC_EMPTY_TITLE' | translate }}</h2>
+        <p>{{ 'SEC_EMPTY_HINT' | translate }}</p>
+        <button type="button" class="sec-btn sec-btn--primary" (click)="openCreate()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+          </svg>
+          {{ 'SEC_ADD' | translate }}
+        </button>
+      </div>
+    } @else {
+      <div class="sec-groups">
+        @for (group of groups; track group.subjectId) {
+          <section class="sec-group">
+            <header class="sec-group-head">
+              <div class="sec-group-title">
+                <span class="sec-group-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </span>
+                <div>
+                  <h2>{{ subjectLabel(group.subject) }}</h2>
+                  <p>{{ 'SEC_GROUP_COUNT' | translate: { count: group.sections.length } }}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="sec-btn sec-btn--soft sec-btn--sm"
+                (click)="openCreate(group.subjectId)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+                </svg>
+                {{ 'SEC_ADD_FOR_SUBJECT' | translate }}
+              </button>
+            </header>
+
+            @if (!group.sections.length) {
+              <div class="sec-group-empty">
+                <p>{{ 'SEC_GROUP_EMPTY' | translate }}</p>
+                <button type="button" class="sec-btn sec-btn--primary sec-btn--sm" (click)="openCreate(group.subjectId)">
+                  {{ 'SEC_ADD' | translate }}
+                </button>
+              </div>
+            } @else {
+              <div class="sec-cards">
+                @for (sec of group.sections; track sec.id) {
+                  <article class="sec-card">
+                    <div class="sec-card-top">
+                      <div class="sec-card-id">
+                        <span class="sec-badge">{{ sec.number }}</span>
+                        <div class="sec-card-meta">
+                          <div class="sec-meta-row">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" aria-hidden="true">
+                              <path d="M3 21V8l9-5 9 5v13" />
+                              <path d="M9 21V12h6v9" />
+                            </svg>
+                            <span>{{ 'SEC_COL_ROOM' | translate }}:</span>
+                            <strong>{{ roomLabel(sec) }}</strong>
+                          </div>
+                          @if (sec.doctor?.name) {
+                            <div class="sec-meta-row">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4" />
+                                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                              </svg>
+                              <span>{{ 'SEC_COL_DOCTOR' | translate }}:</span>
+                              <strong>{{ sec.doctor?.name }}</strong>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                      <div class="sec-card-actions">
+                        <button
+                          type="button"
+                          class="sec-btn sec-btn--soft sec-btn--sm"
+                          (click)="openTimes(sec, $event)"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <path d="M16 2v4M8 2v4M3 10h18" />
+                          </svg>
+                          {{ 'SEC_MANAGE_TIMES' | translate }}
+                        </button>
+                        <button
+                          type="button"
+                          class="sec-btn sec-btn--danger-icon"
+                          (click)="remove(sec, $event)"
+                          [attr.aria-label]="'DELETE' | translate"
+                          [attr.title]="'DELETE' | translate"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="sec-schedule">
+                      <div class="sec-schedule-label">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M12 7v5l3 2" stroke-linecap="round" />
+                        </svg>
+                        {{ 'SEC_WEEKLY_SCHEDULE' | translate }}
+                      </div>
+                      @if (sortedTimes(sec).length) {
+                        <ul class="sec-slots">
+                          @for (t of sortedTimes(sec); track t.id) {
+                            <li class="sec-slot">
+                              <span class="sec-slot-day">{{ dayShort(t.day) }}</span>
+                              <span class="sec-slot-day-full">{{ dayLabel(t.day) }}</span>
+                              <span class="sec-slot-time">
+                                {{ formatClock(t.start) }}
+                                <span class="sec-slot-arrow" aria-hidden="true">→</span>
+                                {{ formatClock(t.end) }}
+                              </span>
+                            </li>
+                          }
+                        </ul>
+                      } @else {
+                        <button type="button" class="sec-no-times" (click)="openTimes(sec, $event)">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 8v4M12 16h.01" stroke-linecap="round" />
+                          </svg>
+                          {{ 'SEC_NO_TIMES_CTA' | translate }}
+                        </button>
+                      }
+                    </div>
+                  </article>
+                }
+              </div>
+            }
+          </section>
+        }
+      </div>
+    }
+  }
+</div>

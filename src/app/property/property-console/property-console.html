@@ -1,0 +1,386 @@
+<div class="prop" [class.prop--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="prop__hero">
+    <div class="prop__hero-text">
+      <p class="prop__eyebrow">{{ 'PROP_MODULE' | translate }}</p>
+      <h1>{{ 'PROP_PAGE_TITLE' | translate }}</h1>
+      <p class="prop__subtitle">
+        @if (showSkeleton) {
+          <span class="prop-skel-line" aria-hidden="true"></span>
+        } @else {
+          {{ 'PROP_PAGE_SUBTITLE' | translate }}
+        }
+      </p>
+    </div>
+
+    <div class="prop__hero-side">
+      <div class="prop-seg" role="tablist">
+        <button type="button" role="tab" [class.is-active]="view === 'tree'" (click)="showTree()">
+          {{ 'PROP_HIERARCHY' | translate }}
+        </button>
+        <button type="button" role="tab" [class.is-active]="view === 'catalogs'" (click)="showCatalogs()">
+          {{ 'PROP_CATALOGS' | translate }}
+        </button>
+      </div>
+      <button type="button" class="prop-btn prop-btn--primary" (click)="openAdd('compound')">
+        <span aria-hidden="true">+</span>
+        {{ 'PROP_ADD_COMPOUND' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (snapshot) {
+    <section class="prop__stats" aria-label="summary">
+      <div class="prop-stat">
+        <span>{{ 'PROP_COMPOUND' | translate }}</span>
+        <strong>{{ stats.compounds }}</strong>
+      </div>
+      <div class="prop-stat">
+        <span>{{ 'PROP_BUILDING' | translate }}</span>
+        <strong>{{ stats.buildings }}</strong>
+      </div>
+      <div class="prop-stat">
+        <span>{{ 'PROP_FLOOR' | translate }}</span>
+        <strong>{{ stats.floors }}</strong>
+      </div>
+      <div class="prop-stat">
+        <span>{{ 'PROP_ROOM' | translate }}</span>
+        <strong>{{ stats.rooms }}</strong>
+      </div>
+    </section>
+  }
+
+  <div class="prop__toolbar">
+    <label class="prop-search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input type="text" [(ngModel)]="search" (ngModelChange)="applyFilter()"
+        [placeholder]="'PROP_SEARCH_PLACEHOLDER' | translate" />
+    </label>
+
+    @if (view === 'tree') {
+      <div class="prop-toolbar__tools">
+        <button type="button" class="prop-btn prop-btn--ghost prop-btn--sm" (click)="expandAll()">
+          {{ 'PROP_EXPAND_ALL' | translate }}
+        </button>
+        <button type="button" class="prop-btn prop-btn--ghost prop-btn--sm" (click)="collapseAll()">
+          {{ 'PROP_COLLAPSE_ALL' | translate }}
+        </button>
+      </div>
+    }
+
+    @if (view === 'tree' && addActions.length) {
+      <div class="prop-add-row">
+        <span class="prop-add-label">{{ 'PROP_QUICK_ADD' | translate }}</span>
+        @for (a of addActions; track a.entity) {
+          <button type="button" class="prop-btn prop-btn--soft" (click)="openAdd(a.entity)">
+            + {{ a.labelKey | translate }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  @if (showSkeleton) {
+    <app-page-skeleton variant="table" [rows]="8" [cols]="4" />
+  } @else {
+    <div class="prop__layout reveal">
+      @if (view === 'tree') {
+        <aside class="prop-tree">
+          <div class="prop-panel__head">
+            <div>
+              <h2>{{ 'PROP_TREE_TITLE' | translate }}</h2>
+              <p>{{ 'PROP_TREE_HINT' | translate }}</p>
+            </div>
+          </div>
+
+          @if (!filteredTree.length) {
+            <div class="prop-empty prop-empty--sm">
+              <div class="prop-empty__icon" aria-hidden="true">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 21h18" />
+                  <path d="M5 21V7l7-4 7 4v14" />
+                  <path d="M9 21v-6h6v6" />
+                </svg>
+              </div>
+              <p>{{ 'PROP_TREE_EMPTY' | translate }}</p>
+              <button type="button" class="prop-btn prop-btn--primary" (click)="openAdd('compound')">
+                {{ 'PROP_ADD_COMPOUND' | translate }}
+              </button>
+            </div>
+          } @else {
+            <ul class="prop-tree__list">
+              <ng-container *ngTemplateOutlet="treeTpl; context: { $implicit: filteredTree, depth: 0 }" />
+            </ul>
+          }
+        </aside>
+      }
+
+      <section class="prop-detail" [class.prop-detail--wide]="view === 'catalogs'">
+        @if (view === 'catalogs') {
+          <div class="prop-detail__head">
+            <div>
+              <p class="prop-eyebrow">{{ 'PROP_MODULE' | translate }}</p>
+              <h2>{{ 'PROP_CATALOGS' | translate }}</h2>
+              <p class="prop-meta">{{ 'PROP_CATALOGS_HINT' | translate }}</p>
+            </div>
+          </div>
+
+          <div class="prop-catalogs">
+            <div class="prop-catalog">
+              <div class="prop-catalog__head">
+                <div>
+                  <h3>{{ 'PROP_ROOM_TYPES' | translate }}</h3>
+                  <small>{{ roomTypes.length }}</small>
+                </div>
+                <button type="button" class="prop-btn prop-btn--soft" (click)="openAddType('room_type')">
+                  + {{ 'PROP_NEW_TYPE' | translate }}
+                </button>
+              </div>
+              <ul>
+                @for (t of roomTypes; track t.id) {
+                  <li>
+                    <span class="prop-catalog__name">{{ t.name }}</span>
+                    <span class="prop-row-actions">
+                      <button type="button" (click)="openEditType('room_type', t)">{{ 'EDIT' | translate }}</button>
+                      <button type="button" class="danger" (click)="deleteType('room_type', t)">{{ 'DELETE' | translate }}</button>
+                    </span>
+                  </li>
+                } @empty {
+                  <li class="prop-catalog__empty">{{ 'PROP_CATALOG_EMPTY' | translate }}</li>
+                }
+              </ul>
+            </div>
+
+            <div class="prop-catalog">
+              <div class="prop-catalog__head">
+                <div>
+                  <h3>{{ 'PROP_FACILITY_TYPES' | translate }}</h3>
+                  <small>{{ facilityTypes.length }}</small>
+                </div>
+                <button type="button" class="prop-btn prop-btn--soft" (click)="openAddType('facility_type')">
+                  + {{ 'PROP_NEW_TYPE' | translate }}
+                </button>
+              </div>
+              <ul>
+                @for (t of facilityTypes; track t.id) {
+                  <li>
+                    <span class="prop-catalog__name">{{ t.name }}</span>
+                    <span class="prop-row-actions">
+                      <button type="button" (click)="openEditType('facility_type', t)">{{ 'EDIT' | translate }}</button>
+                      <button type="button" class="danger" (click)="deleteType('facility_type', t)">{{ 'DELETE' | translate }}</button>
+                    </span>
+                  </li>
+                } @empty {
+                  <li class="prop-catalog__empty">{{ 'PROP_CATALOG_EMPTY' | translate }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+        } @else if (!selected) {
+          <div class="prop-empty">
+            <div class="prop-empty__icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 21h18" />
+                <path d="M5 21V7l7-4 7 4v14" />
+                <path d="M9 21v-6h6v6" />
+              </svg>
+            </div>
+            <h3>{{ 'PROP_SELECT_NODE_TITLE' | translate }}</h3>
+            <p>{{ 'PROP_SELECT_NODE' | translate }}</p>
+          </div>
+        } @else {
+          <div class="prop-detail__head">
+            <div class="prop-detail__identity">
+              <span class="prop-type-pill prop-type-pill--{{ typeTone(selected.type) }}">
+                {{ typeLabel(selected.type) }}
+              </span>
+              <h2>{{ selected.label }}</h2>
+              @if (selected.meta) {
+                <p class="prop-meta">{{ selected.meta }}</p>
+              }
+              @if (selected.active !== undefined) {
+                <span class="prop-badge" [class.is-off]="selected.active === false">
+                  {{ (selected.active === false ? 'INACTIVE' : 'ACTIVE') | translate }}
+                </span>
+              }
+            </div>
+            <div class="prop-detail__actions">
+              <button type="button" class="prop-btn prop-btn--ghost" (click)="openEdit()">{{ 'EDIT' | translate }}</button>
+              @if (canActivate) {
+                <button type="button" class="prop-btn prop-btn--ghost" (click)="toggleActive()">
+                  {{ (selected.active === false ? 'PROP_ACTIVATE' : 'PROP_DEACTIVATE') | translate }}
+                </button>
+              }
+              <button type="button" class="prop-btn prop-btn--danger" (click)="removeSelected()">{{ 'DELETE' | translate }}</button>
+            </div>
+          </div>
+
+          <nav class="prop-tabs">
+            <button type="button" [class.is-active]="detailTab === 'overview'" (click)="setDetailTab('overview')">
+              {{ 'PROP_TAB_OVERVIEW' | translate }}
+            </button>
+            @if (canLinkLocks) {
+              <button type="button" [class.is-active]="detailTab === 'locks'" (click)="setDetailTab('locks')">
+                {{ 'PROP_TAB_LOCKS' | translate }}
+              </button>
+            }
+          </nav>
+
+          @if (detailTab === 'overview') {
+            <div class="prop-overview">
+              <dl class="prop-fields">
+                @if (field('number') != null) {
+                  <div class="prop-field-card">
+                    <dt>{{ 'PROP_NUMBER' | translate }}</dt>
+                    <dd>{{ field('number') }}</dd>
+                  </div>
+                }
+                @if (field('name') != null) {
+                  <div class="prop-field-card">
+                    <dt>{{ 'PROP_NAME' | translate }}</dt>
+                    <dd>{{ field('name') }}</dd>
+                  </div>
+                }
+                @if (field('capacity') != null) {
+                  <div class="prop-field-card">
+                    <dt>{{ 'PROP_CAPACITY' | translate }}</dt>
+                    <dd>{{ field('capacity') }}</dd>
+                  </div>
+                }
+                @if (field('direction') != null) {
+                  <div class="prop-field-card">
+                    <dt>{{ 'PROP_DIRECTION' | translate }}</dt>
+                    <dd>{{ field('direction') }}</dd>
+                  </div>
+                }
+                @if (field('location') != null) {
+                  <div class="prop-field-card">
+                    <dt>{{ 'PROP_LOCATION' | translate }}</dt>
+                    <dd>{{ field('location') }}</dd>
+                  </div>
+                }
+              </dl>
+
+              @if (childSummary().length) {
+                <div class="prop-children">
+                  <div class="prop-section-head">
+                    <h3>{{ 'PROP_CHILDREN' | translate }}</h3>
+                    <div class="prop-chips">
+                      @for (c of childSummary(); track c.label) {
+                        <span class="prop-chip">{{ c.label }} · {{ c.count }}</span>
+                      }
+                    </div>
+                  </div>
+                  <ul class="prop-child-list">
+                    @for (c of selected.children; track c.key) {
+                      <li>
+                        <button type="button" (click)="select(c); expandAncestors(c.key)">
+                          <span class="prop-type-pill prop-type-pill--{{ typeTone(c.type) }} prop-type-pill--sm">
+                            {{ typeLabel(c.type) }}
+                          </span>
+                          <strong>{{ c.label }}</strong>
+                          @if (c.meta) {
+                            <em>{{ c.meta }}</em>
+                          }
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              } @else {
+                <div class="prop-empty prop-empty--inline">
+                  <p>{{ 'PROP_NO_CHILDREN' | translate }}</p>
+                  @if (addActions.length) {
+                    <div class="prop-add-row">
+                      @for (a of addActions; track a.entity) {
+                        <button type="button" class="prop-btn prop-btn--soft" (click)="openAdd(a.entity)">
+                          + {{ a.labelKey | translate }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          @if (detailTab === 'locks') {
+            <div class="prop-locks">
+              <div class="prop-locks__head">
+                <div>
+                  <h3>{{ 'PROP_LINKED_LOCKS' | translate }}</h3>
+                  <p class="prop-meta">{{ linkedLocks.length }} {{ 'PROP_LOCKS_COUNT' | translate }}</p>
+                </div>
+                <button type="button" class="prop-btn prop-btn--primary" (click)="openLinkLocks()">
+                  {{ 'PROP_LINK_LOCKS' | translate }}
+                </button>
+              </div>
+              @if (locksLoading) {
+                <p class="muted">{{ 'LOADING' | translate }}</p>
+              } @else if (!linkedLocks.length) {
+                <div class="prop-empty prop-empty--sm">
+                  <p>{{ 'PROP_NO_LINKED_LOCKS' | translate }}</p>
+                  <button type="button" class="prop-btn prop-btn--soft" (click)="openLinkLocks()">
+                    {{ 'PROP_LINK_LOCKS' | translate }}
+                  </button>
+                </div>
+              } @else {
+                <ul class="prop-lock-list">
+                  @for (lock of linkedLocks; track lock.id) {
+                    <li [class.is-highlight]="highlightLockId === lock.id">
+                      <div>
+                        <strong>{{ lock.lockName || lock.lockAlias || ('#' + lock.id) }}</strong>
+                        <small>{{ lock.lockId || lock.lockMac || '' }}</small>
+                      </div>
+                      <button type="button" class="prop-btn prop-btn--danger prop-btn--sm" (click)="unlinkOne(lock)">
+                        {{ 'PROP_UNLINK' | translate }}
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        }
+      </section>
+    </div>
+  }
+</div>
+
+<ng-template #treeTpl let-nodes let-depth="depth">
+  @for (node of nodes; track trackNode($index, node)) {
+    <li class="prop-tree__item" [style.--d]="depth">
+      <div class="prop-tree__row"
+        [class.is-selected]="selected?.key === node.key"
+        [class.is-virtual]="node.raw['virtual']"
+        [class.is-inactive]="node.active === false"
+        (click)="select(node)">
+        @if (node.children?.length) {
+          <button type="button" class="prop-tree__toggle" (click)="toggle(node, $event)"
+            [attr.aria-expanded]="isExpanded(node)">
+            <span [class.rot]="isExpanded(node)">›</span>
+          </button>
+        } @else {
+          <span class="prop-tree__spacer"></span>
+        }
+        <span class="prop-type-pill prop-type-pill--{{ typeTone(node.type) }} prop-type-pill--sm">
+          {{ typeLabel(node.type) }}
+        </span>
+        <span class="prop-tree__label">{{ node.label }}</span>
+        @if (node.children?.length) {
+          <span class="prop-tree__count">{{ node.children.length }}</span>
+        }
+        @if (node.active === false) {
+          <span class="prop-dot" [attr.title]="'INACTIVE' | translate"></span>
+        }
+      </div>
+      @if (node.children?.length && isExpanded(node)) {
+        <ul class="prop-tree__list">
+          <ng-container *ngTemplateOutlet="treeTpl; context: { $implicit: node.children, depth: depth + 1 }" />
+        </ul>
+      }
+    </li>
+  }
+</ng-template>

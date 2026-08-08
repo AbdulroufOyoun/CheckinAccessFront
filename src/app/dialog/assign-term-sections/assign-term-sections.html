@@ -1,0 +1,27 @@
+<div class="ats-dialog" role="dialog" aria-modal="true" [class.ats-dialog--rtl]="isRTL">
+  <h2>{{ 'TERM_ASSIGN_TITLE' | translate }}</h2>
+  <p class="ats-sub">{{ termLabel }}</p>
+  <p class="ats-hint">{{ 'TERM_ASSIGN_HINT' | translate }}</p>
+
+  @if (!sections.length) {
+  <p class="ats-empty">{{ 'SEC_EMPTY' | translate }}</p>
+  } @else {
+  <div class="ats-list">
+    @for (s of sections; track s.id) {
+    <label class="ats-item">
+      <input type="checkbox" [checked]="isChecked(s.id)" (change)="toggleSection(s.id)" />
+      <span>{{ sectionOptionLabel(s) }}</span>
+    </label>
+    }
+  </div>
+  }
+
+  <div class="ats-actions">
+    <button type="button" class="ats-btn ats-btn--ghost" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
+    <button type="button" class="ats-btn" (click)="save()" [disabled]="saving || !sections.length">
+      {{ saving ? ('LOADING' | translate) : ('SAVE' | translate) }}
+    </button>
+  </div>
+</div>

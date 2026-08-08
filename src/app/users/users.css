@@ -48,6 +48,31 @@
   font-size: 13px;
   color: #6B7280;
   margin: 2px 0 0;
+  min-height: 1.1em;
+}
+
+.users-skel-line {
+  display: inline-block;
+  width: 120px;
+  height: 12px;
+  border-radius: 8px;
+  background: #E5E7EB;
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.users-skel-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: usersSkel 1.35s ease-in-out infinite;
+}
+
+@keyframes usersSkel {
+  100% { transform: translateX(100%); }
 }
 
 /* Add User button */
@@ -255,7 +280,7 @@
   margin: 2px 0 0;
 }
 
-/* Active reservations badge */
+/* Active / inactive badge */
 .user-card__active-badge {
   display: inline-flex;
   align-items: center;
@@ -267,6 +292,11 @@
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.user-card__active-badge--off {
+  background: #F3F4F6;
+  color: #6B7280;
 }
 
 /* Contact details */

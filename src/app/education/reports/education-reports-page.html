@@ -1,0 +1,75 @@
+<div class="edu-page" [class.edu-page--rtl]="isRTL">
+  <div class="edu-page__header">
+    <div>
+      <h1>{{ 'EDU_REP_TITLE' | translate }}</h1>
+      <p>
+        @if (loading) {
+        <span class="edu-skel-line" aria-hidden="true"></span>
+        } @else {
+        {{ 'EDU_REP_SUBTITLE' | translate }}
+        }
+      </p>
+    </div>
+    <button class="edu-btn edu-btn--ghost" type="button" (click)="load()" [disabled]="loading">
+      {{ 'EDU_REP_REFRESH' | translate }}
+    </button>
+  </div>
+
+  @if (loading) {
+  <app-page-skeleton variant="kpi" />
+  <div style="margin-top:16px">
+    <app-page-skeleton variant="table" [rows]="4" [cols]="2" />
+  </div>
+  } @else if (!reports) {
+  <p class="edu-muted">{{ 'EDU_REP_EMPTY' | translate }}</p>
+  } @else {
+  <div class="edu-kpi">
+    <div class="edu-kpi__card">
+      <span>{{ 'EDU_REP_SUBJECTS' | translate }}</span>
+      <strong>{{ reports.subjects_count }}</strong>
+    </div>
+    <div class="edu-kpi__card">
+      <span>{{ 'EDU_REP_SECTIONS' | translate }}</span>
+      <strong>{{ reports.sections_count }}</strong>
+    </div>
+    <div class="edu-kpi__card">
+      <span>{{ 'EDU_REP_ENROLLMENTS' | translate }}</span>
+      <strong>{{ reports.enrollments_total }}</strong>
+    </div>
+    <div class="edu-kpi__card">
+      <span>{{ 'EDU_REP_STUDENTS' | translate }}</span>
+      <strong>{{ reports.students_enrolled }}</strong>
+    </div>
+    @if (reports.archives_total != null) {
+    <div class="edu-kpi__card">
+      <span>{{ 'EDU_REP_ARCHIVES' | translate }}</span>
+      <strong>{{ reports.archives_total }}</strong>
+    </div>
+    }
+  </div>
+
+  <div class="edu-card" style="margin-top:16px">
+    <h3 style="margin:0 0 12px;font-size:1rem">{{ 'EDU_REP_BY_STATUS' | translate }}</h3>
+    @if (!statusEntries().length) {
+    <p class="edu-muted">{{ 'EDU_REP_NO_STATUS' | translate }}</p>
+    } @else {
+    <table class="edu-table">
+      <thead>
+        <tr>
+          <th>{{ 'EDU_REP_STATUS' | translate }}</th>
+          <th>{{ 'EDU_REP_TOTAL' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of statusEntries(); track row.key) {
+        <tr>
+          <td>{{ statusLabel(row.key) }}</td>
+          <td>{{ row.value }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+  </div>
+  }
+</div>

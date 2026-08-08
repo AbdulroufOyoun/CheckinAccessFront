@@ -98,13 +98,39 @@
 /* Navigation */
 .sidebar__nav {
   flex: 1;
-  padding: 16px 0;
+  padding: 12px 0 16px;
   overflow-y: auto;
   scrollbar-width: none;
 }
 
 .sidebar__nav::-webkit-scrollbar {
   display: none;
+}
+
+.sidebar__section {
+  margin-bottom: 10px;
+}
+
+.sidebar__section-label {
+  margin: 0 16px 6px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(147, 197, 253, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar__section-label--hidden,
+.sidebar--collapsed .sidebar__section-label {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
 }
 
 .sidebar__nav-group {

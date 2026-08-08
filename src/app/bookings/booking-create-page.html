@@ -1,0 +1,457 @@
+<div class="bc" [class.bc--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="bc__hero">
+    <div class="bc__hero-text">
+      <button type="button" class="bc-back" (click)="cancel()" [disabled]="saving">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5" />
+          <path d="M12 19l-7-7 7-7" />
+        </svg>
+        {{ 'BOOK_BACK_TO_LIST' | translate }}
+      </button>
+      <p class="bc__eyebrow">{{ 'BOOK_PAGE_EYEBROW' | translate }}</p>
+      <h1>{{ 'BOOK_DIALOG_TITLE' | translate }}</h1>
+      <p class="bc__subtitle">{{ 'BOOK_DIALOG_HINT' | translate }}</p>
+    </div>
+
+    <nav class="bc-steps" aria-label="steps">
+      <span class="bc-steps__item" [class.is-on]="step === 1" [class.is-done]="step > 1">
+        <i>1</i>{{ 'BOOK_STEP_PERIOD' | translate }}
+      </span>
+      <span class="bc-steps__item" [class.is-on]="step === 2" [class.is-done]="step > 2">
+        <i>2</i>{{ 'BOOK_STEP_ROOM' | translate }}
+      </span>
+      <span class="bc-steps__item" [class.is-on]="step === 3">
+        <i>3</i>{{ 'BOOK_STEP_CONFIRM' | translate }}
+      </span>
+    </nav>
+  </header>
+
+  @if (loadingLists) {
+  <section class="bc-panel bc-skel" aria-hidden="true" aria-busy="true">
+    <div class="bc-skel__modes">
+      <div class="bc-skel__mode">
+        <div class="bc-skel__bone bc-skel__bone--title"></div>
+        <div class="bc-skel__bone bc-skel__bone--line"></div>
+        <div class="bc-skel__bone bc-skel__bone--line bc-skel__bone--short"></div>
+      </div>
+      <div class="bc-skel__mode">
+        <div class="bc-skel__bone bc-skel__bone--title"></div>
+        <div class="bc-skel__bone bc-skel__bone--line"></div>
+        <div class="bc-skel__bone bc-skel__bone--line bc-skel__bone--short"></div>
+      </div>
+    </div>
+
+    <div class="bc-skel__field">
+      <div class="bc-skel__bone bc-skel__bone--label"></div>
+      <div class="bc-skel__bone bc-skel__bone--input"></div>
+    </div>
+
+    <div class="bc-skel__grid">
+      <div class="bc-skel__field">
+        <div class="bc-skel__bone bc-skel__bone--label"></div>
+        <div class="bc-skel__bone bc-skel__bone--input"></div>
+      </div>
+      <div class="bc-skel__field">
+        <div class="bc-skel__bone bc-skel__bone--label"></div>
+        <div class="bc-skel__bone bc-skel__bone--input"></div>
+      </div>
+    </div>
+
+    <div class="bc-skel__excl">
+      <div class="bc-skel__bone bc-skel__bone--heading"></div>
+      <div class="bc-skel__bone bc-skel__bone--line bc-skel__bone--wide"></div>
+      <div class="bc-skel__checks">
+        <div class="bc-skel__check"><span class="bc-skel__bone bc-skel__bone--box"></span><span class="bc-skel__bone bc-skel__bone--check-label"></span></div>
+        <div class="bc-skel__check"><span class="bc-skel__bone bc-skel__bone--box"></span><span class="bc-skel__bone bc-skel__bone--check-label"></span></div>
+        <div class="bc-skel__check"><span class="bc-skel__bone bc-skel__bone--box"></span><span class="bc-skel__bone bc-skel__bone--check-label"></span></div>
+      </div>
+      <div class="bc-skel__chips">
+        @for (i of [1,2,3,4,5,6,7]; track i) {
+        <span class="bc-skel__bone bc-skel__bone--chip"></span>
+        }
+      </div>
+    </div>
+  </section>
+
+  <footer class="bc-actions bc-skel__actions" aria-hidden="true">
+    <div class="bc-skel__bone bc-skel__bone--btn"></div>
+    <div class="bc-skel__bone bc-skel__bone--btn bc-skel__bone--btn-primary"></div>
+  </footer>
+  } @else {
+  <section class="bc-panel">
+    @if (step === 1) {
+    <div class="bc-modes" role="group" [attr.aria-label]="'BOOK_MODE' | translate">
+      <button type="button" class="bc-mode" [class.is-on]="mode === 'full_day'" (click)="setMode('full_day')">
+        <strong>{{ 'BOOK_MODE_FULL' | translate }}</strong>
+        <small>{{ 'BOOK_MODE_FULL_HINT' | translate }}</small>
+      </button>
+      <button type="button" class="bc-mode" [class.is-on]="mode === 'hourly'" (click)="setMode('hourly')">
+        <strong>{{ 'BOOK_MODE_HOURLY' | translate }}</strong>
+        <small>{{ 'BOOK_MODE_HOURLY_HINT' | translate }}</small>
+      </button>
+    </div>
+
+    <div class="bc-field">
+      <label>{{ 'BOOK_GUEST' | translate }} <span>*</span></label>
+      <select [(ngModel)]="form.user_id" (ngModelChange)="onGuestChange()">
+        <option [ngValue]="''">{{ 'BOOK_GUEST_PLACEHOLDER' | translate }}</option>
+        @for (u of users; track u.id) {
+        <option [ngValue]="u.id">{{ u.name }} — {{ u.email || u.mobile }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="bc-grid">
+      <div class="bc-field">
+        <label>{{ 'BOOK_CHECK_IN' | translate }} <span>*</span></label>
+        <input type="date" [(ngModel)]="form.check_in_date" [min]="today" [max]="maxCheckIn || null"
+          (change)="onCheckInChange()" (blur)="onCheckInChange()" />
+      </div>
+      <div class="bc-field">
+        <label>{{ 'BOOK_CHECK_OUT' | translate }} <span>*</span></label>
+        <input type="date" [(ngModel)]="form.check_out_date" [min]="minCheckOut"
+          (change)="onCheckOutChange()" (blur)="onCheckOutChange()" />
+      </div>
+    </div>
+
+    @if (mode === 'hourly') {
+    <section class="bc-time" [attr.aria-label]="'BOOK_COL_SCHEDULE' | translate">
+      <div class="bc-time__head">
+        <div class="bc-time__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <div>
+          <h2>{{ 'BOOK_TIME_WINDOW' | translate }}</h2>
+          <p>{{ 'BOOK_HOURLY_HELP' | translate }}</p>
+        </div>
+        @if (timeDurationLabel) {
+        <span class="bc-time__duration">{{ timeDurationLabel }}</span>
+        }
+      </div>
+
+      <div class="bc-time__row" [class.is-invalid]="timeInvalid">
+        <div class="bc-time__slot">
+          <span class="bc-time__slot-label">{{ 'BOOK_START_TIME' | translate }}</span>
+          <app-time-picker name="startTime" [(ngModel)]="form.start_time" [invalid]="timeInvalid"
+            (ngModelChange)="onTimeChange()" />
+        </div>
+
+        <div class="bc-time__connector" aria-hidden="true">
+          <span class="bc-time__dot"></span>
+          <span class="bc-time__line"></span>
+          <span class="bc-time__arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" />
+              <path d="M13 6l6 6-6 6" />
+            </svg>
+          </span>
+          <span class="bc-time__line"></span>
+          <span class="bc-time__dot"></span>
+        </div>
+
+        <div class="bc-time__slot">
+          <span class="bc-time__slot-label">{{ 'BOOK_END_TIME' | translate }}</span>
+          <app-time-picker name="endTime" [(ngModel)]="form.end_time" [invalid]="timeInvalid"
+            (ngModelChange)="onTimeChange()" />
+        </div>
+      </div>
+
+      @if (timeInvalid) {
+      <p class="bc-time__error">{{ 'BOOK_TIME_INVALID' | translate }}</p>
+      }
+    </section>
+    }
+
+    <section class="bc-excl">
+      <h2>{{ 'BOOK_ACCESS_DAYS' | translate }}</h2>
+      <p class="bc-help">{{ 'BOOK_ACCESS_DAYS_HINT' | translate }}</p>
+
+      <label class="bc-check">
+        <input type="checkbox" [(ngModel)]="form.weekends_included" (ngModelChange)="onAccessRulesChange()" />
+        <span>{{ 'BOOK_WEEKENDS' | translate }}</span>
+      </label>
+      <label class="bc-check">
+        <input type="checkbox" [(ngModel)]="form.gregorian_holidays_included" (ngModelChange)="onAccessRulesChange()" />
+        <span>{{ 'BOOK_GREGORIAN' | translate }}</span>
+      </label>
+      <label class="bc-check">
+        <input type="checkbox" [(ngModel)]="form.islamic_holidays_included" (ngModelChange)="onAccessRulesChange()" />
+        <span>{{ 'BOOK_ISLAMIC' | translate }}</span>
+      </label>
+
+      <div class="bc-excl__weekdays">
+        <span class="bc-excl__label">{{ 'BOOK_EXCLUDE_WEEKDAYS' | translate }}</span>
+        <div class="bc-day-chips">
+          @for (d of weekdays; track d.code) {
+          <button type="button" class="bc-day-chip" [class.is-on]="isExcludedDay(d.code)"
+            (click)="toggleExcludedDay(d.code)">
+            {{ d.labelKey | translate }}
+          </button>
+          }
+        </div>
+      </div>
+    </section>
+    } @else if (step === 2) {
+    @if (loadingRooms) {
+    <div class="bc-skel-rooms" aria-hidden="true" aria-busy="true">
+      <div class="bc-skel-rooms__filters">
+        <div class="bc-skel__field">
+          <div class="bc-skel__bone bc-skel__bone--label"></div>
+          <div class="bc-skel__bone bc-skel__bone--input"></div>
+        </div>
+        <div class="bc-skel__field">
+          <div class="bc-skel__bone bc-skel__bone--label"></div>
+          <div class="bc-skel__bone bc-skel__bone--input"></div>
+        </div>
+        <div class="bc-skel__check bc-skel__check--end">
+          <span class="bc-skel__bone bc-skel__bone--box"></span>
+          <span class="bc-skel__bone bc-skel__bone--check-label"></span>
+        </div>
+      </div>
+
+      <div class="bc-skel-rooms__kpis">
+        @for (k of [1,2,3,4]; track k) {
+        <div class="bc-skel-rooms__kpi">
+          <div class="bc-skel__bone bc-skel__bone--label"></div>
+          <div class="bc-skel__bone bc-skel__bone--kpi-num"></div>
+        </div>
+        }
+      </div>
+
+      <div class="bc-skel-rooms__grid">
+        @for (r of [1,2,3,4,5,6,7,8]; track r) {
+        <div class="bc-skel-rooms__card">
+          <div class="bc-skel__bone bc-skel__bone--chip bc-skel__bone--chip-sm"></div>
+          <div class="bc-skel__bone bc-skel__bone--room-num"></div>
+          <div class="bc-skel__bone bc-skel__bone--line"></div>
+          <div class="bc-skel__bone bc-skel__bone--line bc-skel__bone--short"></div>
+        </div>
+        }
+      </div>
+    </div>
+    } @else {
+    <div class="bc-room-filters">
+      <div class="bc-field">
+        <label>{{ 'ROOM_STATUS_BUILDING' | translate }}</label>
+        <select [(ngModel)]="buildingFilter" (ngModelChange)="reloadRooms()">
+          <option [ngValue]="null">{{ 'ROOM_STATUS_ALL_BUILDINGS' | translate }}</option>
+          @for (b of buildings; track b.id) {
+          <option [ngValue]="b.id">{{ b.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="bc-field">
+        <label>{{ 'ROOM_STATUS_SEARCH' | translate }}</label>
+        <input type="search" [(ngModel)]="roomSearch" [placeholder]="'ROOM_STATUS_SEARCH_PH' | translate" />
+      </div>
+      <label class="bc-check bc-check--inline">
+        <input type="checkbox" [ngModel]="statusFilter === 'available'"
+          (ngModelChange)="statusFilter = $event ? 'available' : 'all'" />
+        <span>{{ 'BOOK_AVAILABLE_ONLY' | translate }}</span>
+      </label>
+    </div>
+
+    <div class="bc-kpis">
+      <div class="bc-kpi"><span>{{ 'ROOM_STATUS_TOTAL' | translate }}</span><strong>{{ summary.total }}</strong></div>
+      <div class="bc-kpi bc-kpi--ok"><span>{{ 'ROOM_STATUS_AVAILABLE' | translate }}</span><strong>{{ summary.available }}</strong></div>
+      <div class="bc-kpi bc-kpi--bad"><span>{{ 'ROOM_STATUS_OCCUPIED' | translate }}</span><strong>{{ summary.occupied }}</strong></div>
+      <div class="bc-kpi"><span>{{ 'BOOK_BLOCKED_COUNT' | translate }}</span><strong>{{ blockedCount }}</strong></div>
+    </div>
+
+    @if (!filteredRooms.length) {
+    <p class="bc-muted">{{ 'BOOK_NO_ROOMS' | translate }}</p>
+    } @else {
+    <div class="bc-room-grid">
+      @for (room of filteredRooms; track room.id) {
+      <button type="button" class="bc-room-card bc-room-card--{{ room.status }}"
+        [class.is-selected]="selectedRoom?.id === room.id"
+        [disabled]="room.status !== 'available'"
+        (click)="selectRoom(room)">
+        <span class="bc-room-card__status">{{ statusLabel(room.status) }}</span>
+        <strong>{{ room.number }}</strong>
+        <small>{{ room.room_type?.name || room.name || '—' }}</small>
+        <small>{{ room.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}</small>
+      </button>
+      }
+    </div>
+    }
+    }
+    } @else {
+    <div class="bc-confirm">
+      <div class="bc-confirm__intro">
+        <div>
+          <p class="bc-confirm__eyebrow">{{ 'BOOK_STEP_CONFIRM' | translate }}</p>
+          <h2>{{ 'BOOK_CONFIRM_TITLE' | translate }}</h2>
+          <p>{{ 'BOOK_CONFIRM_HINT' | translate }}</p>
+        </div>
+        <span class="bc-confirm__mode" [class.bc-confirm__mode--hourly]="mode === 'hourly'">
+          {{ modeLabelKey | translate }}
+        </span>
+      </div>
+
+      <div class="bc-confirm__hero">
+        <div class="bc-confirm__room">
+          <span class="bc-confirm__room-label">{{ 'BOOK_ROOM' | translate }}</span>
+          <strong>{{ selectedRoom?.number || '—' }}</strong>
+          <small>
+            {{ selectedRoom?.room_type?.name || selectedRoom?.name || '—' }}
+            ·
+            {{ selectedRoom?.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}
+          </small>
+        </div>
+        <div class="bc-confirm__stats">
+          <div class="bc-confirm__stat">
+            <span>{{ 'BOOK_ACCESSIBLE_DAYS' | translate }}</span>
+            <strong>{{ accessibleDays }}</strong>
+          </div>
+          <div class="bc-confirm__stat" [class.is-warn]="blockedCount > 0">
+            <span>{{ 'BOOK_BLOCKED_COUNT' | translate }}</span>
+            <strong>{{ blockedCount }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="bc-confirm__grid">
+        <article class="bc-confirm__card">
+          <div class="bc-confirm__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <div class="bc-confirm__card-body">
+            <span>{{ 'BOOK_GUEST' | translate }}</span>
+            <div class="bc-confirm__guest">
+              <span class="bc-confirm__avatar">{{ guestInitials }}</span>
+              <div>
+                <strong>{{ guestName }}</strong>
+                @if (guestContact) {
+                <small>{{ guestContact }}</small>
+                }
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="bc-confirm__card">
+          <div class="bc-confirm__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4" />
+              <path d="M8 2v4" />
+              <path d="M3 10h18" />
+            </svg>
+          </div>
+          <div class="bc-confirm__card-body">
+            <span>{{ 'BOOK_COL_DATES' | translate }}</span>
+            <strong class="bc-confirm__dates">
+              {{ formatDate(form.check_in_date) }}
+              <em aria-hidden="true">→</em>
+              {{ formatDate(form.check_out_date) }}
+            </strong>
+          </div>
+        </article>
+
+        @if (mode === 'hourly') {
+        <article class="bc-confirm__card">
+          <div class="bc-confirm__icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <div class="bc-confirm__card-body">
+            <span>{{ 'BOOK_COL_SCHEDULE' | translate }}</span>
+            <strong>{{ form.start_time }} – {{ form.end_time }}</strong>
+            @if (timeDurationLabel) {
+            <small class="bc-confirm__duration">{{ timeDurationLabel }}</small>
+            }
+          </div>
+        </article>
+        }
+      </div>
+
+      <section class="bc-confirm__rules">
+        <h3>{{ 'BOOK_CONFIRM_RULES' | translate }}</h3>
+        <div class="bc-confirm__chips">
+          <span class="bc-confirm__chip" [class.is-on]="form.weekends_included" [class.is-off]="!form.weekends_included">
+            {{ 'BOOK_WEEKENDS' | translate }}
+          </span>
+          <span class="bc-confirm__chip" [class.is-on]="form.gregorian_holidays_included" [class.is-off]="!form.gregorian_holidays_included">
+            {{ 'BOOK_GREGORIAN' | translate }}
+          </span>
+          <span class="bc-confirm__chip" [class.is-on]="form.islamic_holidays_included" [class.is-off]="!form.islamic_holidays_included">
+            {{ 'BOOK_ISLAMIC' | translate }}
+          </span>
+          @for (dayKey of excludedDayLabels; track dayKey) {
+          <span class="bc-confirm__chip is-excluded">{{ dayKey | translate }}</span>
+          }
+        </div>
+        @if (!excludedDayLabels.length && form.weekends_included && form.gregorian_holidays_included && form.islamic_holidays_included) {
+        <p class="bc-confirm__rules-note">{{ 'BOOK_CONFIRM_RULES_ALL' | translate }}</p>
+        }
+      </section>
+
+      @if (blockedCount > 0) {
+      <div class="bc-confirm__alert" role="status">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <p>{{ 'BOOK_BLOCKED_NOTE' | translate: { n: blockedCount } }}</p>
+      </div>
+      } @else {
+      <div class="bc-confirm__ready" role="status">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+        <p>{{ 'BOOK_CONFIRM_READY' | translate }}</p>
+      </div>
+      }
+    </div>
+    }
+  </section>
+
+  <footer class="bc-actions">
+    @if (step === 1) {
+    <button type="button" class="bc-btn bc-btn--ghost" (click)="cancel()" [disabled]="saving">{{ 'CANCEL' | translate }}</button>
+    <button type="button" class="bc-btn bc-btn--primary" (click)="goToRooms()"
+      [disabled]="loadingRooms || !canGoStep2"
+      [class.bc-btn--ready]="roomsReady && !loadingRooms && !roomsPrefetching">
+      @if (loadingRooms) {
+      {{ 'LOADING' | translate }}
+      } @else if (roomsPrefetching) {
+      {{ 'BOOK_PREPARING_ROOMS' | translate }}
+      } @else if (roomsReady) {
+      {{ 'BOOK_SHOW_ROOMS_READY' | translate }}
+      } @else {
+      {{ 'BOOK_SHOW_ROOMS' | translate }}
+      }
+    </button>
+    } @else if (step === 2) {
+    <button type="button" class="bc-btn bc-btn--ghost" (click)="back()" [disabled]="saving">{{ 'BOOK_BACK' | translate }}</button>
+    <button type="button" class="bc-btn bc-btn--primary" (click)="goConfirm()" [disabled]="!canGoStep3">
+      {{ 'BOOK_CONTINUE' | translate }}
+    </button>
+    } @else {
+    <button type="button" class="bc-btn bc-btn--ghost" (click)="back()" [disabled]="saving">{{ 'BOOK_BACK' | translate }}</button>
+    <button type="button" class="bc-btn bc-btn--primary" (click)="save()" [disabled]="saving || !canSave">
+      @if (saving) { {{ 'SAVING' | translate }} } @else { {{ 'BOOK_CREATE' | translate }} }
+    </button>
+    }
+  </footer>
+  }
+</div>

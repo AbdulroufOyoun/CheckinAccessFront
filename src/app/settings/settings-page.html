@@ -1,0 +1,22 @@
+<div class="settings-page">
+  <div class="settings-header">
+    <h1>{{ 'SET_TITLE' | translate }}</h1>
+    <p>{{ 'SET_SUBTITLE' | translate }}</p>
+  </div>
+
+  <div class="settings-card">
+    <h2>{{ 'SET_ACCOUNT' | translate }}</h2>
+    <p class="settings-meta">{{ adminName }} · {{ adminEmail }}</p>
+    <button type="button" class="settings-btn" (click)="openChangePassword()">
+      {{ 'SET_CHANGE_PASSWORD' | translate }}
+    </button>
+  </div>
+
+  <div class="settings-card">
+    <h2>{{ 'SET_LANGUAGE' | translate }}</h2>
+    <p class="settings-meta">{{ 'SET_LANGUAGE_HINT' | translate }}</p>
+    <button type="button" class="settings-btn settings-btn--secondary" (click)="toggleLang()">
+      {{ currentLang === 'ar' ? 'English' : 'العربية' }}
+    </button>
+  </div>
+</div>

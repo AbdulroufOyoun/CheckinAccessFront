@@ -1,10 +1,12 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from "@angular/forms";
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ApiResponse, LoginResponse } from '../../interfaces/api-response';
 import { Apiendpointd } from '../../apiEndpoints';
 import { SnackbarService } from '../../services/snackbar.service';
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../model/User';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -13,100 +15,117 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-
 export class Login {
-  isLoading: boolean = false;
-  hasError: boolean = false
-  phone: string = ''
-  email: string = ''
-  password: string = ''
+  isLoading = false;
+  hasError = false;
+  phone = '';
+  email = '';
+  password = '';
 
-  constructor(private router: Router, private api: ApiService, private snackbar: SnackbarService, private cdr: ChangeDetectorRef, private translate: TranslateService) { }
+  constructor(
+    private router: Router,
+    private api: ApiService,
+    private snackbar: SnackbarService,
+    private cdr: ChangeDetectorRef,
+    private translate: TranslateService,
+    private authService: AuthService,
+  ) {}
 
-  async login1() {
-    if (this.email === '' || this.password === '') {
-      this.hasError = true
-      return;
-      // return this.snackbar.show("ادخل جميع الحقول ", 'error')
-    }
-    this.isLoading = true;
-    try {
-      const params = new FormData();
-      params.append('email', this.email);
-      params.append('password', this.password);
-      const result = await this.api.post<ApiResponse<LoginResponse>>(
-        Apiendpointd.login,
-        params
-      );
-      if (result.success) {
-        console.log('Done');
-        this.snackbar.show('Login successful', 'success');
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        this.router.navigate(['/OtpVerification']);
-      } else {
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        console.log(result.message);
-      }
-    } catch (error: any) {
-      this.isLoading = false;
-      this.cdr.detectChanges();
-      this.snackbar.show(error.error.message, 'error');
-      console.log(error);
-    }
+  private stopLoading(): void {
+    this.isLoading = false;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
-  async login() {
+  private errorText(error: unknown): string {
+    const body = (error as { error?: { message?: unknown } })?.error;
+    const message = body?.message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+    if (message && typeof message === 'object') {
+      const parts = Object.values(message as Record<string, unknown>)
+        .flatMap((value) => (Array.isArray(value) ? value : [value]))
+        .map((value) => String(value ?? '').trim())
+        .filter(Boolean);
+      if (parts.length) {
+        return parts.join(' ');
+      }
+    }
+    return this.translate.instant('LOGIN_FAILED') || 'Login failed';
+  }
+
+  async login(): Promise<void> {
     this.hasError = false;
     if (!this.email || !this.password) {
       this.hasError = true;
+      this.stopLoading();
       return;
     }
     if (this.password.length < 4) {
+      this.stopLoading();
       return;
     }
+
     this.isLoading = true;
+    this.cdr.detectChanges();
+
     try {
-      const params = new FormData();
-      params.append('email', this.email);
-      params.append('password', this.password);
-      const result = await this.api.post<ApiResponse<LoginResponse>>(
+      const loginParams = new FormData();
+      loginParams.append('email', this.email);
+      loginParams.append('password', this.password);
+      const loginResult = await this.api.post<ApiResponse<LoginResponse>>(
         Apiendpointd.login,
-        params
+        loginParams,
       );
 
-      if (result.success) {
-        console.log(result)
-        this.snackbar.show('Login successful', 'success');
-        this.router.navigate(
-          ['/OtpVerification'],
-          {
-            state: {
-              email: this.email,
-              password: this.password
-            }
-          }
+      const otp = loginResult?.data?.sms;
+      if (!loginResult?.success || !otp) {
+        this.stopLoading();
+        this.snackbar.show(
+          typeof loginResult?.message === 'string' ? loginResult.message : 'Login failed',
+          'error',
         );
+        return;
       }
-    } catch (error: any) {
-      this.snackbar.show(error.error.message, 'error');
-    } finally {
-      this.isLoading = false;
-      this.cdr.detectChanges()
-    }
-  }
-  // admin@example.com   password1231
 
-  goToOtp() {
-    if (this.phone == '') {
-      this.hasError = true
-      return
+      const verifyParams = new FormData();
+      verifyParams.append('email', this.email);
+      verifyParams.append('password', this.password);
+      verifyParams.append('verification_code', String(otp));
+      const verifyResult = await this.api.post<any>(Apiendpointd.verify, verifyParams);
+
+      if (verifyResult?.success && verifyResult?.data?.token) {
+        const user = new User(verifyResult.data.user);
+        this.authService.saveUser(verifyResult.data.token, user);
+        try {
+          await this.authService.refreshMe(true);
+        } catch {
+          // Session still usable; modules refresh can retry later from the shell.
+        }
+        this.stopLoading();
+        this.snackbar.show(verifyResult.message || 'Login successful', 'success');
+        await this.router.navigate([this.authService.homeRoute()]);
+        return;
+      }
+
+      this.stopLoading();
+      this.snackbar.show(
+        typeof verifyResult?.message === 'string' ? verifyResult.message : 'Login failed',
+        'error',
+      );
+    } catch (error: unknown) {
+      this.stopLoading();
+      try {
+        this.snackbar.show(this.errorText(error), 'error');
+      } catch {
+        // Never leave the button stuck if toast fails.
+      }
+    } finally {
+      // Guarantee the spinner stops even if a path above returned early incorrectly.
+      if (this.isLoading) {
+        this.stopLoading();
+      }
     }
-    this.isLoading = true;
-    setTimeout(() => {
-      this.router.navigate(['/OtpVerification']);
-    }, 800);
-    console.log(this.isLoading)
   }
 }

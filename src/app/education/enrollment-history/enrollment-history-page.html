@@ -1,0 +1,73 @@
+<div class="edu-ui" [class.edu-ui--rtl]="isRTL">
+  <div class="edu-ui__header">
+    <div>
+      <h1 class="edu-ui__title">{{ 'ENR_HIST_TITLE' | translate }}</h1>
+      <p class="edu-ui__subtitle">
+        {{ 'ENR_HIST_COUNT' | translate: { filtered: filtered.length, total: rows.length } }}
+      </p>
+    </div>
+    <div class="hist-actions">
+      <a class="edu-ui__add edu-ui__add--ghost" routerLink="/Education/Terms">{{ 'TERM_PAGE_TITLE' | translate }}</a>
+      <button class="edu-ui__add" type="button" (click)="archiveAll()">{{ 'ENR_HIST_ARCHIVE_ALL' | translate }}</button>
+    </div>
+  </div>
+
+  <div class="edu-ui__toolbar hist-toolbar">
+    <div class="edu-ui__search">
+      <input type="text" [placeholder]="'ENR_HIST_SEARCH' | translate" [(ngModel)]="search"
+        (ngModelChange)="applyFilter()" />
+    </div>
+    <select [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
+      @for (st of statuses; track st) {
+      <option [ngValue]="st">{{ (st ? statusKey(st) : 'ENR_FILTER_ALL') | translate }}</option>
+      }
+    </select>
+    <select [(ngModel)]="termFilter" (ngModelChange)="applyFilter()">
+      <option [ngValue]="null">{{ 'ENR_HIST_ALL_TERMS' | translate }}</option>
+      @for (t of terms; track t.id) {
+      <option [ngValue]="t.id">{{ isRTL ? (t.name_ar || t.name) : t.name }}</option>
+      }
+    </select>
+    <select [(ngModel)]="userFilter" (ngModelChange)="applyFilter()">
+      <option [ngValue]="null">{{ 'ENR_HIST_ALL_STUDENTS' | translate }}</option>
+      @for (u of users; track u.id) {
+      <option [ngValue]="u.id">{{ u.name || u.email || ('#' + u.id) }}</option>
+      }
+    </select>
+  </div>
+
+  @if (showSkeleton) {
+  <app-page-skeleton variant="table" [rows]="7" [cols]="6" />
+  } @else if (!filtered.length) {
+  <div class="edu-ui__empty">
+    <p>{{ (rows.length ? 'ENR_HIST_EMPTY_SEARCH' : 'ENR_HIST_EMPTY') | translate }}</p>
+  </div>
+  } @else {
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ 'ENR_COL_STUDENT' | translate }}</th>
+          <th>{{ 'ENR_COL_SUBJECT' | translate }}</th>
+          <th>{{ 'ENR_COL_SECTION' | translate }}</th>
+          <th>{{ 'TERM_NAME' | translate }}</th>
+          <th>{{ 'ENR_COL_STATUS' | translate }}</th>
+          <th>{{ 'ENR_HIST_ARCHIVED_AT' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of filtered; track row.archive.id) {
+        <tr>
+          <td>{{ row.user?.name || row.user?.email || ('#' + row.archive.user_id) }}</td>
+          <td>{{ subjectLabel(row) || '—' }}</td>
+          <td>{{ row.archive.section_number || '—' }}</td>
+          <td>{{ row.archive.term_name || row.archive.academic_term?.name || '—' }}</td>
+          <td>{{ statusKey(row.archive.status) | translate }}</td>
+          <td>{{ row.archive.archived_at || '—' }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>

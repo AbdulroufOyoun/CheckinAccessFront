@@ -1,0 +1,141 @@
+:host {
+  display: block;
+}
+
+.psk-bone {
+  position: relative;
+  overflow: hidden;
+  height: 12px;
+  border-radius: 8px;
+  background: var(--gray-200, #E5E7EB);
+  flex-shrink: 0;
+}
+
+.psk-bone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+  animation: pskShimmer 1.35s ease-in-out infinite;
+}
+
+.psk-bone--lg {
+  height: 14px;
+}
+
+.psk-bone--xl {
+  height: 28px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.psk-bone--chip {
+  height: 26px;
+  border-radius: 999px;
+}
+
+.psk-bone--btn {
+  height: 32px;
+  width: 72px;
+  border-radius: 8px;
+}
+
+.psk-bone--avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+@keyframes pskShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Table */
+.psk-table {
+  background: #fff;
+  border: 1px solid var(--surface-border, #E8EDF5);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.psk-table__head,
+.psk-table__row {
+  display: grid;
+  gap: 16px;
+  align-items: center;
+  padding: 0 16px;
+  min-height: 56px;
+  border-bottom: 1px solid var(--gray-100, #F3F4F6);
+}
+
+.psk-table__head {
+  min-height: 48px;
+  background: var(--gray-50, #F9FAFB);
+}
+
+.psk-table__row:last-child {
+  border-bottom: none;
+}
+
+.psk-table__head .psk-bone {
+  height: 10px;
+}
+
+/* Cards */
+.psk-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.psk-card {
+  background: #fff;
+  border: 1px solid var(--surface-border, #E8EDF5);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.psk-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.psk-card__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.psk-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* KPI */
+.psk-kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.psk-kpi__card {
+  background: #fff;
+  border: 1px solid var(--surface-border, #E8EDF5);
+  border-radius: 14px;
+  padding: 16px;
+}

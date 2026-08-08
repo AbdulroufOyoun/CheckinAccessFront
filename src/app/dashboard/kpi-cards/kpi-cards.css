@@ -17,9 +17,42 @@
   box-shadow: 0 2px 12px rgba(0,0,0,0.07);
   position: relative;
   overflow: hidden;
+  isolation: isolate;
   cursor: default;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   animation: fadeInUp 0.4s ease-out both;
+  animation-delay: var(--delay, 0s);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    125deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent, #2563eb) 6%, transparent) 45%,
+    transparent 100%
+  );
+  background-size: 220% 220%;
+  animation: dashCardShimmer 13s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent, #2563eb) 18%, transparent) 0%, transparent 70%);
+  bottom: -18px;
+  inset-inline-start: -12px;
+  pointer-events: none;
+  z-index: 0;
+  animation: dashCardBlobDrift 11s ease-in-out infinite alternate-reverse;
   animation-delay: var(--delay, 0s);
 }
 .kpi-card:hover {
@@ -35,13 +68,15 @@
   border-radius: 50%;
   background: var(--light-bg, #DBEAFE);
   top: -30px;
-  right: -30px;
+  inset-inline-end: -30px;
   opacity: 0.4;
   pointer-events: none;
+  z-index: 0;
+  animation: dashCardBlobDrift 8s ease-in-out infinite alternate;
+  animation-delay: var(--delay, 0s);
 }
 [dir="rtl"] .kpi-card__decor-circle {
-  right: auto;
-  left: -30px;
+  inset-inline-end: -30px;
 }
 
 .kpi-card__content { position: relative; z-index: 1; }
@@ -101,6 +136,21 @@
   color: #6B7280;
 }
 
+.kpi-card__skel {
+  display: block;
+  width: 56px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: kpiSkel 1.2s ease-in-out infinite;
+}
+
+@keyframes kpiSkel {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
 /* Bottom accent line */
 .kpi-card__accent-bar {
   position: absolute;
@@ -108,4 +158,5 @@
   left: 0;
   right: 0;
   height: 2px;
+  z-index: 1;
 }

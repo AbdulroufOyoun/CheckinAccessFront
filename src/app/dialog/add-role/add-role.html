@@ -1,0 +1,72 @@
+<div class="as role-dlg" role="dialog" aria-modal="true" [class.as--rtl]="isRTL">
+  <div class="as__hero">
+    <div class="as__hero-bg" aria-hidden="true"></div>
+    <button
+      class="as__close"
+      type="button"
+      (click)="close()"
+      [disabled]="saving"
+      [attr.aria-label]="'CLOSE' | translate"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <p class="as__eyebrow">{{ 'ROLE_EYEBROW' | translate }}</p>
+    <h2 class="as__title" id="role-create-title">{{ 'ROLE_CREATE_TITLE' | translate }}</h2>
+
+    <div class="as__preview">
+      <div class="as__preview-code">{{ previewMark }}</div>
+      <div class="as__preview-body">
+        <strong>{{ previewName }}</strong>
+        <span>{{ 'ROLE_CREATE_PREVIEW_HINT' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="as__body">
+    <section class="as__section">
+      <label class="as__field">
+        <span class="as__label">{{ 'ROLE_NAME' | translate }} <i>*</i></span>
+        <input
+          #roleNameInput
+          class="as__input as__input--lg"
+          type="text"
+          [(ngModel)]="name"
+          [placeholder]="'ROLE_NAME_PLACEHOLDER' | translate"
+          maxlength="60"
+          autocomplete="off"
+          [disabled]="saving"
+          (keyup.enter)="save()"
+        />
+        <span class="role-dlg__help">{{ 'ROLE_CREATE_HINT' | translate }}</span>
+      </label>
+
+      <div class="role-dlg__steps" aria-hidden="true">
+        <div class="role-dlg__step is-on">
+          <span>1</span>
+          <small>{{ 'ROLE_STEP_NAME' | translate }}</small>
+        </div>
+        <div class="role-dlg__step-line"></div>
+        <div class="role-dlg__step">
+          <span>2</span>
+          <small>{{ 'ROLE_STEP_PERMS' | translate }}</small>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="as__footer">
+    <button class="as__btn as__btn--ghost" type="button" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
+    <button class="as__btn as__btn--primary" type="button" (click)="save()" [disabled]="saving || !canSave">
+      @if (saving) {
+      <span class="as__spinner"></span> {{ 'SAVING' | translate }}
+      } @else {
+      {{ 'ROLE_CREATE' | translate }}
+      }
+    </button>
+  </div>
+</div>

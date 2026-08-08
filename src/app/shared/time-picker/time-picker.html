@@ -1,0 +1,60 @@
+<div class="tp" [class.is-open]="open" [class.is-disabled]="disabled" [class.is-invalid]="invalid">
+  <button type="button" class="tp-trigger" (click)="toggle($event)" [disabled]="disabled"
+    [attr.aria-expanded]="open" aria-haspopup="dialog">
+    <span class="tp-trigger__value" [class.is-empty]="!value">{{ display }}</span>
+    <span class="tp-trigger__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    </span>
+  </button>
+
+  @if (open) {
+  <div class="tp-backdrop" (click)="close(true, $event)"></div>
+  <div class="tp-pop" role="dialog" (click)="$event.stopPropagation()"
+    [attr.aria-label]="'BOOK_TIME_WINDOW' | translate">
+    <div class="tp-pop__preview">
+      <span>{{ formatPreview }}</span>
+    </div>
+
+    <div class="tp-pop__wheels">
+      <div class="tp-col tp-col--hour">
+        <span class="tp-col__label">{{ 'BOOK_TIME_HOUR' | translate }}</span>
+        <div class="tp-col__list" tabindex="0">
+          @for (h of hours; track h) {
+          <button type="button" class="tp-opt" [attr.data-v]="h" [class.is-on]="draftHour === h"
+            (click)="selectHour(h, $event)">
+            {{ pad(h) }}
+          </button>
+          }
+        </div>
+      </div>
+
+      <div class="tp-sep" aria-hidden="true">:</div>
+
+      <div class="tp-col tp-col--min">
+        <span class="tp-col__label">{{ 'BOOK_TIME_MINUTE' | translate }}</span>
+        <div class="tp-col__list" tabindex="0">
+          @for (m of minutes; track m) {
+          <button type="button" class="tp-opt" [attr.data-v]="m" [class.is-on]="draftMinute === m"
+            (click)="selectMinute(m, $event)">
+            {{ pad(m) }}
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="tp-pop__actions">
+      <button type="button" class="tp-btn tp-btn--ghost" (click)="close(true, $event)">
+        {{ 'CANCEL' | translate }}
+      </button>
+      <button type="button" class="tp-btn tp-btn--primary" (click)="confirm($event)">
+        {{ 'BOOK_TIME_APPLY' | translate }}
+      </button>
+    </div>
+  </div>
+  }
+</div>

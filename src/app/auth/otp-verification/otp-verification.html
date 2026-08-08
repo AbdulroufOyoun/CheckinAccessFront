@@ -114,28 +114,29 @@
           <div class="otp-inputs" dir="ltr">
 
             <!-- Box 1 — filled example -->
-            <input #otp0 class="otp-input" [class.otp-input--filled]="otp[0]" (input)="onInput($event, 0, otp1)"
+            <input #otp0 class="otp-input" name="otp0" [class.otp-input--filled]="otp[0]" (input)="onInput($event, 0, otp1)"
               (keydown)="onBackspace($event, 0, null)" maxlength="1" [(ngModel)]="otp[0]"
-              [class.otp-input--error]="hasError" />
+              [ngModelOptions]="{standalone: true}" [class.otp-input--error]="hasError" />
 
-            <input #otp1 class="otp-input" [class.otp-input--filled]="otp[1]" (input)="onInput($event, 1, otp2)"
+            <input #otp1 class="otp-input" name="otp1" [class.otp-input--filled]="otp[1]" (input)="onInput($event, 1, otp2)"
               (keydown)="onBackspace($event, 1, otp0)" maxlength="1" [(ngModel)]="otp[1]"
-              [class.otp-input--error]="hasError" />
+              [ngModelOptions]="{standalone: true}" [class.otp-input--error]="hasError" />
 
-            <input #otp2 class="otp-input" [class.otp-input--filled]="otp[2]" (input)="onInput($event, 2, otp3)"
+            <input #otp2 class="otp-input" name="otp2" [class.otp-input--filled]="otp[2]" (input)="onInput($event, 2, otp3)"
               (keydown)="onBackspace($event, 2, otp1)" maxlength="1" [(ngModel)]="otp[2]"
-              [class.otp-input--error]="hasError" />
+              [ngModelOptions]="{standalone: true}" [class.otp-input--error]="hasError" />
 
-            <input #otp3 class="otp-input" [class.otp-input--filled]="otp[3]" (input)="onInput($event, 3, otp4)"
+            <input #otp3 class="otp-input" name="otp3" [class.otp-input--filled]="otp[3]" (input)="onInput($event, 3, otp4)"
               (keydown)="onBackspace($event, 3, otp2)" maxlength="1" [(ngModel)]="otp[3]"
-              [class.otp-input--error]="hasError" />
+              [ngModelOptions]="{standalone: true}" [class.otp-input--error]="hasError" />
 
-            <input #otp4 class="otp-input" [class.otp-input--filled]="otp[4]" (input)="onInput($event, 4, otp5)"
+            <input #otp4 class="otp-input" name="otp4" [class.otp-input--filled]="otp[4]" (input)="onInput($event, 4, otp5)"
               (keydown)="onBackspace($event, 4, otp3)" maxlength="1" [(ngModel)]="otp[4]"
-              [class.otp-input--error]="hasError" />
+              [ngModelOptions]="{standalone: true}" [class.otp-input--error]="hasError" />
 
-            <input #otp5 class="otp-input" [class.otp-input--filled]="otp[5]" (keydown)="onBackspace($event, 5, otp4)"
-              maxlength="1" [(ngModel)]="otp[5]" [class.otp-input--error]="hasError" />
+            <input #otp5 class="otp-input" name="otp5" [class.otp-input--filled]="otp[5]" (keydown)="onBackspace($event, 5, otp4)"
+              maxlength="1" [(ngModel)]="otp[5]" [ngModelOptions]="{standalone: true}"
+              [class.otp-input--error]="hasError" />
           </div>
 
           <!-- Error message — *ngIf="hasError" -->

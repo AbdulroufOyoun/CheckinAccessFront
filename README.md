@@ -1,59 +1,99 @@
-# AccommodationDashboard
+# CheckinAccess Front
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+Angular tenant-admin SPA for **CheckinAccess**.
 
-## Development server
+Use this app against a **tenant domain** API (example: `http://ratco.localhost:8000/api/admins/...`).  
+Platform owners should use **CheckinAccessPlatform** against the central API instead.
 
-To start a local development server, run:
+## Stack
 
-```bash
-ng serve
-```
+- Angular 21 (standalone)
+- Bootstrap 5 + ng-bootstrap (primary UI)
+- ngx-translate (AR / EN + RTL)
+- Auth: login → OTP → Passport Bearer (`admin-api`)
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Prerequisites
 
-## Code scaffolding
+| Tool | Notes |
+|------|--------|
+| Node.js | 20+ recommended |
+| npm | Comes with Node |
+| Backend | [CheckinAccess](https://github.com/AbdulroufOyoun/CheckinAccess) running on port **8000** |
+| Hosts | `127.0.0.1 ratco.localhost` (or your tenant domain) |
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## First-time install
 
 ```bash
-ng build
+git clone https://github.com/AbdulroufOyoun/CheckinAccessFront.git
+cd CheckinAccessFront
+npm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+API base URL is derived from the browser hostname in `src/app/apiEndpoints.ts`:
 
-## Running unit tests
+- Opening `http://localhost:4200` → API host `http://ratco.localhost:8000`
+- Opening `http://ratco.localhost:4200` → API host `http://ratco.localhost:8000`
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Make sure the Laravel backend accepts that host:
 
 ```bash
-ng test
+cd ../CheckinAccess
+php artisan serve --host=0.0.0.0 --port=8000
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+## How to run
 
 ```bash
-ng e2e
+npm start
+# equivalent:
+# npx ng serve --host=0.0.0.0 --port=4200
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Open:
 
-## Additional Resources
+- http://localhost:4200/  
+  or  
+- http://ratco.localhost:4200/ (preferred for multi-tenant hostname testing)
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Login with a **tenant admin** created from the platform / backend seed flow. In local/dev, OTP is returned as `data.sms` from the login API.
+
+### Windows PowerShell note
+
+If `ng` fails with an execution-policy error, use:
+
+```powershell
+npm.cmd start
+```
+
+## Build for production
+
+```bash
+npm run build
+```
+
+Output is under `dist/`.
+
+## Tests
+
+```bash
+npm test
+```
+
+## Related projects
+
+| Project | Purpose |
+|---------|---------|
+| CheckinAccess | Laravel multi-tenant API |
+| CheckinAccessPlatform | Central platform console (`/api/users`, `/api/tenants`) |
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| CORS / network failed | Backend must listen on `0.0.0.0:8000` and tenant host must resolve |
+| Login 403 / wrong tenant | Use matching tenant domain; do not hit central host for admin APIs |
+| Empty menus | Admin permissions / tenant modules (`property`, `education`) |
+
+## License
+
+MIT

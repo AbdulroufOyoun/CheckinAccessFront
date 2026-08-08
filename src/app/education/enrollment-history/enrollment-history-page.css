@@ -1,0 +1,48 @@
+.hist-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edu-ui__add--ghost {
+  background: #0f172a;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hist-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.hist-toolbar select,
+.hist-toolbar input {
+  height: 36px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+}
+
+.table-container {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: auto;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container th,
+.table-container td {
+  padding: 12px 14px;
+  text-align: start;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+}

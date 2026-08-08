@@ -50,24 +50,10 @@
           <p class="auth-logo__subtitle">ACCOMMODATION &amp; RESERVATION MANAGEMENT</p>
         </div>
 
-        <!-- ── STEP PROGRESS ─────────────────────── -->
-        <div class="auth-steps">
-          <!-- Step 1 — Active -->
-          <div class="auth-step auth-step--active">
-            <div class="auth-step__dot auth-step__dot--active">1</div>
-          </div>
-          <!-- Connector Line -->
-          <div class="auth-step__connector auth-step__connector--inactive"></div>
-          <!-- Step 2 — Inactive -->
-          <div class="auth-step">
-            <div class="auth-step__dot auth-step__dot--inactive">2</div>
-          </div>
-        </div>
-
         <!-- ── STEP HEADING ──────────────────────── -->
         <div class="auth-heading">
           <h2 class="auth-heading__title">Welcome Back</h2>
-          <p class="auth-heading__subtitle">Enter your phone number to continue</p>
+          <p class="auth-heading__subtitle">{{ 'EMAIL' | translate }} &amp; {{ 'PASSWORD' | translate }}</p>
         </div>
 
         <!-- ── PHONE FIELD ───────────────────────── -->
@@ -94,6 +80,7 @@
           }
         </div> -->
 
+        <form (ngSubmit)="login()">
         <div class="form-group">
           <label class="form-label">{{'EMAIL'|translate}}</label>
           <div class="form-input-wrap">
@@ -109,7 +96,7 @@
                          c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
             </span>
-            <input type="email" class="form-input form-input--with-icon" [(ngModel)]="email"
+            <input type="email" name="email" class="form-input form-input--with-icon" [(ngModel)]="email"
               placeholder="example@example.com" dir="ltr" autocomplete="email" />
           </div>
           @if(hasError && !email){
@@ -132,7 +119,7 @@
                          c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
             </span>
-            <input type="password" class="form-input form-input--with-icon" [(ngModel)]="password" dir="ltr" />
+            <input type="password" name="password" class="form-input form-input--with-icon" [(ngModel)]="password" dir="ltr" />
           </div>
           @if(hasError &&!password ){
           <p class="form-error"> {{ 'ENTER_PASSWORD' | translate }}</p>
@@ -143,9 +130,9 @@
         <!-- ── SUBMIT BUTTON ─────────────────────── -->
         <!-- Default state -->
         <button class="auth-btn" [class.auth-btn--loading]="isLoading" [class.auth-btn--primary]="!isLoading"
-          (click)="login()" [disabled]="isLoading">
+          type="submit" [disabled]="isLoading">
           @if (!isLoading) {
-          {{'SEND_CODE'|translate}}
+          {{ 'LOGIN' | translate }}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12" />
@@ -156,11 +143,8 @@
           {{'SENDING'|translate}}
           }
         </button>
+        </form>
       </div>
     </div>
-    <!-- Demo hint -->
-    <p class="auth-demo-hint">
-      Demo: Enter any phone number to receive OTP
-    </p>
   </div>
 </div>

@@ -1,0 +1,51 @@
+@if (variant === 'table') {
+<div class="psk-table" aria-hidden="true">
+  <div class="psk-table__head" [style.grid-template-columns]="'repeat(' + cols + ', 1fr)'">
+    @for (c of colItems; track c) {
+    <div class="psk-bone" [style.width.%]="c === 0 ? 55 : 40"></div>
+    }
+  </div>
+  @for (r of rowItems; track r) {
+  <div class="psk-table__row" [style.grid-template-columns]="'repeat(' + cols + ', 1fr)'">
+    @for (c of colItems; track c) {
+    <div class="psk-bone"
+      [class.psk-bone--lg]="c === 0"
+      [class.psk-bone--chip]="c > 0 && c < colItems.length - 1"
+      [class.psk-bone--btn]="c === colItems.length - 1"
+      [style.width.%]="c === 0 ? 70 : c === colItems.length - 1 ? 55 : 45"></div>
+    }
+  </div>
+  }
+</div>
+} @else if (variant === 'cards') {
+<div class="psk-cards" aria-hidden="true">
+  @for (c of cardItems; track c) {
+  <div class="psk-card">
+    <div class="psk-card__top">
+      <div class="psk-bone psk-bone--avatar"></div>
+      <div class="psk-card__meta">
+        <div class="psk-bone psk-bone--lg" style="width: 55%"></div>
+        <div class="psk-bone" style="width: 40%"></div>
+      </div>
+      <div class="psk-bone psk-bone--chip" style="width: 64px"></div>
+    </div>
+    <div class="psk-bone" style="width: 75%"></div>
+    <div class="psk-bone" style="width: 60%"></div>
+    <div class="psk-card__actions">
+      <div class="psk-bone psk-bone--btn"></div>
+      <div class="psk-bone psk-bone--btn"></div>
+      <div class="psk-bone psk-bone--btn"></div>
+    </div>
+  </div>
+  }
+</div>
+} @else {
+<div class="psk-kpi" aria-hidden="true">
+  @for (k of kpiItems; track k) {
+  <div class="psk-kpi__card">
+    <div class="psk-bone" style="width: 45%"></div>
+    <div class="psk-bone psk-bone--xl" style="width: 35%"></div>
+  </div>
+  }
+</div>
+}

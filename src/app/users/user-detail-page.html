@@ -1,0 +1,170 @@
+<div class="ud" [class.ud--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="ud__top">
+    <button type="button" class="ud__back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5" />
+        <polyline points="12 19 5 12 12 5" />
+      </svg>
+      {{ 'USR_DETAIL_BACK' | translate }}
+    </button>
+    <a class="ud__link" routerLink="/Users">{{ 'USR_PAGE_TITLE' | translate }}</a>
+  </header>
+
+  @if (loading) {
+  <app-page-skeleton variant="cards" [cards]="4" />
+  } @else if (notFound || !user) {
+  <div class="ud-empty">
+    <div class="ud-empty__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    </div>
+    <p>{{ 'USR_DETAIL_NOT_FOUND' | translate }}</p>
+    <a routerLink="/Users" class="ud__cta">{{ 'USR_DETAIL_BACK' | translate }}</a>
+  </div>
+  } @else {
+
+  <section class="ud-hero" [class.ud-hero--inactive]="!isActive">
+    <div class="ud-hero__main">
+      <div class="ud-hero__avatar" [style.background]="avatarStyle.background"
+        [style.box-shadow]="avatarStyle.boxShadow">
+        {{ initials }}
+      </div>
+      <div class="ud-hero__text">
+        <p class="ud-hero__eyebrow">{{ 'USR_DETAIL_EYEBROW' | translate }}</p>
+        <h1 class="ud-hero__title">
+          @if (user.title) {
+          <span class="ud-hero__title-prefix">{{ user.title }}</span>
+          }
+          {{ user.name }}
+        </h1>
+        <p class="ud-hero__sub">
+          {{ user.nationality || ('USR_DETAIL_NO_NATIONALITY' | translate) }}
+          · {{ 'USR_DETAIL_JOINED' | translate: { date: createdLabel } }}
+        </p>
+        <span class="ud-hero__badge" [class.ud-hero__badge--off]="!isActive">
+          <span class="ud-hero__badge-dot" aria-hidden="true"></span>
+          {{ (isActive ? 'USR_ACTIVE' : 'USR_INACTIVE') | translate }}
+        </span>
+      </div>
+    </div>
+
+    <div class="ud-hero__actions">
+      <button type="button" class="ud__cta" (click)="openEdit()">
+        {{ 'USR_EDIT' | translate }}
+      </button>
+      <button type="button" class="ud__btn-danger" (click)="removeUser()">
+        {{ 'USR_REMOVE' | translate }}
+      </button>
+    </div>
+  </section>
+
+  <section class="ud-stats">
+    <div class="ud-stat">
+      <span>{{ 'USR_DETAIL_PHONE' | translate }}</span>
+      <strong dir="ltr">{{ user.mobile || '—' }}</strong>
+    </div>
+    <div class="ud-stat">
+      <span>{{ 'USR_DETAIL_EMAIL' | translate }}</span>
+      <strong class="ud-stat__email" dir="ltr">{{ user.email || '—' }}</strong>
+    </div>
+    <div class="ud-stat">
+      <span>{{ 'USR_DETAIL_TITLE' | translate }}</span>
+      <strong>{{ user.title || '—' }}</strong>
+    </div>
+    <div class="ud-stat">
+      <span>{{ 'USR_DETAIL_NATIONALITY' | translate }}</span>
+      <strong>{{ user.nationality || '—' }}</strong>
+    </div>
+  </section>
+
+  <div class="ud-grid">
+    <section class="ud-card">
+      <h2>{{ 'USR_DETAIL_INFO' | translate }}</h2>
+      <dl class="ud-dl">
+        <div>
+          <dt>{{ 'USR_DETAIL_FULL_NAME' | translate }}</dt>
+          <dd>{{ user.name }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'USR_DETAIL_PHONE' | translate }}</dt>
+          <dd dir="ltr">{{ user.mobile || '—' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'USR_DETAIL_EMAIL' | translate }}</dt>
+          <dd dir="ltr">{{ user.email || '—' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'USR_DETAIL_TITLE' | translate }}</dt>
+          <dd>{{ user.title || '—' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'USR_DETAIL_NATIONALITY' | translate }}</dt>
+          <dd>{{ user.nationality || '—' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'USR_DETAIL_STATUS' | translate }}</dt>
+          <dd>{{ (isActive ? 'USR_ACTIVE' : 'USR_INACTIVE') | translate }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'USR_DETAIL_CREATED' | translate }}</dt>
+          <dd>{{ createdLabel }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'USR_DETAIL_ID' | translate }}</dt>
+          <dd>#{{ user.id }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    @if (canSeeBookings) {
+    <section class="ud-card ud-card--bookings">
+      <div class="ud-card__head">
+        <h2>{{ 'USR_DETAIL_BOOKINGS' | translate }}
+          @if (!bookingsLoading) {
+          <span class="ud-card__count">({{ bookings.length }})</span>
+          }
+        </h2>
+      </div>
+
+      @if (bookingsLoading) {
+      <div class="ud-bookings-skel" aria-hidden="true">
+        <div class="ud-bookings-skel__row"></div>
+        <div class="ud-bookings-skel__row"></div>
+        <div class="ud-bookings-skel__row"></div>
+      </div>
+      } @else if (!bookings.length) {
+      <div class="ud-muted-box">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <p>{{ 'USR_DETAIL_NO_BOOKINGS' | translate }}</p>
+      </div>
+      } @else {
+      <ul class="ud-booking-list">
+        @for (b of bookings; track b.id) {
+        <li class="ud-booking" [class.ud-booking--cancelled]="b.status === 'cancelled'"
+          [class.ud-booking--hold]="b.status === 'on_hold'">
+          <div class="ud-booking__room">{{ b.room }}</div>
+          <div class="ud-booking__body">
+            <strong>{{ 'USR_DETAIL_BOOKING_ID' | translate: { id: b.id } }}</strong>
+            <span class="ud-booking__dates" dir="ltr">{{ b.checkIn }} → {{ b.checkOut }}</span>
+          </div>
+          <span class="ud-booking__status">{{ b.statusKey | translate }}</span>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+    }
+  </div>
+
+  }
+</div>

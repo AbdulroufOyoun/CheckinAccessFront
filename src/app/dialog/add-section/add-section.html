@@ -1,0 +1,308 @@
+<div class="as sec-dlg" role="dialog" aria-modal="true" [class.as--rtl]="isRTL">
+  <div class="as__hero">
+    <div class="as__hero-bg" aria-hidden="true"></div>
+    <button class="as__close" type="button" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="sec-dlg__hero-top">
+      <p class="as__eyebrow">{{ 'SEC_DIALOG_EYEBROW' | translate }}</p>
+      <h2 class="as__title">{{ 'SEC_DIALOG_TITLE' | translate }}</h2>
+    </div>
+
+    <div class="as__preview">
+      <div class="as__preview-code">{{ previewCode }}</div>
+      <div class="as__preview-body">
+        <strong>{{ previewTitle }}</strong>
+        <span>{{ previewMeta }}</span>
+        <em class="as__preview-secondary">{{ previewSchedule }} · {{ previewRoom }}</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="as__body">
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'SEC_SECTION_BASICS' | translate }}</h3>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'SEC_SUBJECT' | translate }} <i>*</i></span>
+        <div class="as__select-wrap">
+          <select class="as__input as__select as__input--lg" name="subject_id"
+            [(ngModel)]="form.subject_id" (ngModelChange)="onSubjectChange($event)">
+            <option [ngValue]="''">{{ 'SEC_SUBJECT_PLACEHOLDER' | translate }}</option>
+            @for (s of subjects; track s.id) {
+            <option [ngValue]="s.id">
+              {{ s.short_name ? s.short_name + ' · ' : '' }}{{ subjectLabel(s) }}
+            </option>
+            }
+          </select>
+          <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="#94A3B8" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+        @if (selectedSubject; as subj) {
+        <div class="sec-dlg__subject-hint">
+          <span class="sec-dlg__subject-hint-main">{{ subjectLabel(subj) }}</span>
+          @if (subjectSecondary(subj)) {
+          <span class="sec-dlg__subject-hint-sub">{{ subjectSecondary(subj) }}</span>
+          }
+          @if (subj.has_practical) {
+          <span class="sec-dlg__pill">{{ 'SUBJ_PRACTICAL' | translate }}</span>
+          }
+        </div>
+        }
+      </label>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'SEC_TERM' | translate }}</span>
+        <div class="as__select-wrap">
+          <select class="as__input as__select" name="academic_term_id" [(ngModel)]="form.academic_term_id">
+            <option [ngValue]="''">{{ 'SEC_TERM_NONE' | translate }}</option>
+            @for (t of terms; track t.id) {
+            <option [ngValue]="t.id">{{ isRTL ? (t.name_ar || t.name) : t.name }}</option>
+            }
+          </select>
+          <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="#94A3B8" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+      </label>
+
+      <div class="as__field">
+        <span class="as__label">{{ 'SEC_NUMBER' | translate }} <i>*</i></span>
+        <input class="as__input as__input--lg" type="text" name="number" [(ngModel)]="form.number"
+          [placeholder]="'SEC_NUMBER_PLACEHOLDER' | translate" autocomplete="off" />
+        <div class="as__hours sec-dlg__presets">
+          @for (n of numberPresets; track n) {
+          <button type="button" class="as__chip" [class.as__chip--on]="form.number === n"
+            (click)="setNumber(n)">{{ n }}</button>
+          }
+        </div>
+      </div>
+
+      <div class="as__field">
+        <span class="as__label">{{ 'SEC_CAPACITY' | translate }}</span>
+        <div class="as__hours">
+          @for (c of capacityPresets; track c) {
+          <button type="button" class="as__chip" [class.as__chip--on]="form.capacity === c"
+            (click)="setCapacity(c)">{{ c }}</button>
+          }
+          <div class="as__hours-custom">
+            <button type="button" (click)="bumpCapacity(-1)" [disabled]="saving">−</button>
+            <input type="number" name="capacity" [(ngModel)]="form.capacity" min="1" max="9999" />
+            <button type="button" (click)="bumpCapacity(1)" [disabled]="saving">+</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'SEC_SECTION_STAFF' | translate }}</h3>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'SEC_DOCTOR' | translate }} <i>*</i></span>
+        <div class="as__select-wrap">
+          <select class="as__input as__select" name="doctor_id" [(ngModel)]="form.doctor_id">
+            <option [ngValue]="''">{{ 'SEC_DOCTOR_PLACEHOLDER' | translate }}</option>
+            @for (d of doctors; track d.id) {
+            <option [ngValue]="d.id">{{ doctorLabel(d) }}</option>
+            }
+          </select>
+          <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="#94A3B8" stroke-width="2">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+      </label>
+
+      @if (selectedDoctor; as doc) {
+      <div class="sec-dlg__doctor-card">
+        <div class="sec-dlg__avatar" aria-hidden="true">{{ doctorInitials(doc) }}</div>
+        <div class="sec-dlg__doctor-meta">
+          <strong>{{ doctorLabel(doc) }}</strong>
+          <small>{{ doc.email || ('SEC_DOCTOR_ID_HINT' | translate: { id: doc.id }) }}</small>
+        </div>
+      </div>
+      }
+    </section>
+
+    <section class="as__section sec-dlg__schedule">
+      <h3 class="as__section-title">{{ 'SEC_SECTION_SCHEDULE' | translate }}</h3>
+      <p class="sec-dlg__schedule-hint">{{ 'SEC_SECTION_SCHEDULE_HINT' | translate }}</p>
+
+      <div class="sec-dlg__days" role="listbox" [attr.aria-label]="'SEC_DAY' | translate">
+        @for (d of days; track d.id) {
+        <button
+          type="button"
+          class="sec-dlg__day"
+          role="option"
+          [class.sec-dlg__day--on]="form.day_id === d.id"
+          [attr.aria-selected]="form.day_id === d.id"
+          (click)="selectDay(d.id)"
+        >
+          <span class="sec-dlg__day-short">{{ dayShort(d) }}</span>
+          <span class="sec-dlg__day-full">{{ dayLabel(d) }}</span>
+        </button>
+        }
+      </div>
+
+      <div class="sec-dlg__clock-row">
+        <label class="as__field sec-dlg__clock">
+          <span class="as__label">{{ 'SEC_START' | translate }} <i>*</i></span>
+          <input class="as__input as__input--lg" type="time" name="start"
+            [(ngModel)]="form.start" (ngModelChange)="onTimeChange()" />
+        </label>
+        <div class="sec-dlg__clock-arrow" aria-hidden="true">→</div>
+        <label class="as__field sec-dlg__clock">
+          <span class="as__label">{{ 'SEC_END' | translate }} <i>*</i></span>
+          <input class="as__input as__input--lg" type="time" name="end"
+            [(ngModel)]="form.end" (ngModelChange)="onTimeChange()" />
+        </label>
+      </div>
+
+      @if (form.day_id && !timeRangeValid) {
+      <p class="sec-dlg__time-error">{{ 'SEC_TIME_INVALID_RANGE' | translate }}</p>
+      }
+
+      <div class="as__hours sec-dlg__presets">
+        <button type="button" class="as__chip" (click)="setPreset('08:00', '10:00')">08:00–10:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('09:00', '11:00')">09:00–11:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('10:00', '12:00')">10:00–12:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('13:00', '15:00')">13:00–15:00</button>
+        <button type="button" class="as__chip" (click)="setPreset('16:00', '18:00')">16:00–18:00</button>
+      </div>
+    </section>
+
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'SEC_ROOM' | translate }}</h3>
+      <p class="sec-dlg__schedule-hint">{{ 'SEC_ROOM_HINT' | translate }}</p>
+
+      @if (!scheduleReady) {
+      <div class="sec-dlg__room-empty sec-dlg__room-empty--wait">
+        {{ 'SEC_ROOM_NEED_SCHEDULE' | translate }}
+      </div>
+      } @else {
+      <div class="sec-dlg__room-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" stroke-linecap="round" />
+        </svg>
+        <input
+          type="search"
+          class="as__input"
+          name="room_search"
+          [(ngModel)]="roomSearch"
+          [placeholder]="'SEC_ROOM_SEARCH' | translate"
+          autocomplete="off"
+        />
+      </div>
+
+      @if (busyRoomCount > 0) {
+      <p class="sec-dlg__room-legend">
+        <span class="sec-dlg__room-legend-busy"></span>
+        {{ 'SEC_ROOM_BUSY_LEGEND' | translate: { count: busyRoomCount } }}
+      </p>
+      }
+
+      @if (loadingRooms) {
+      <div class="sec-dlg__room-empty">{{ 'LOADING' | translate }}</div>
+      } @else if (!rooms.length) {
+      <div class="sec-dlg__room-empty">{{ 'SEC_ROOMS_EMPTY' | translate }}</div>
+      } @else if (!filteredRooms.length) {
+      <div class="sec-dlg__room-empty">{{ 'SEC_ROOMS_NO_MATCH' | translate }}</div>
+      } @else {
+      <div class="sec-dlg__room-list" role="listbox" [attr.aria-label]="'SEC_ROOM' | translate">
+        @for (r of filteredRooms; track r.id) {
+        <button
+          type="button"
+          class="sec-dlg__room-option"
+          role="option"
+          [class.sec-dlg__room-option--on]="form.room_id === r.id"
+          [class.sec-dlg__room-option--busy]="isRoomBusy(r)"
+          [attr.aria-selected]="form.room_id === r.id"
+          [attr.aria-disabled]="isRoomBusy(r)"
+          [disabled]="isRoomBusy(r)"
+          (click)="selectRoom(r.id)"
+        >
+          <span class="sec-dlg__room-code">{{ r.number || r.name || ('#' + r.id) }}</span>
+          <span class="sec-dlg__room-meta">
+            <span class="sec-dlg__room-meta-main">{{ roomLabel(r) }}</span>
+            @if (isRoomBusy(r)) {
+            <span class="sec-dlg__room-meta-busy">{{ roomConflictLabel(r) }}</span>
+            }
+          </span>
+          @if (!isRoomBusy(r)) {
+          <span class="sec-dlg__room-check" aria-hidden="true"></span>
+          } @else {
+          <span class="sec-dlg__room-busy-badge" aria-hidden="true">✕</span>
+          }
+        </button>
+        }
+      </div>
+      }
+
+      @if (selectedRoom; as room) {
+      <div class="sec-dlg__room-selected">
+        <strong>{{ 'SEC_ROOM_SELECTED' | translate }}</strong>
+        <span>{{ roomLabel(room) }}</span>
+      </div>
+      }
+      }
+    </section>
+
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'SEC_SECTION_OPTIONS' | translate }}</h3>
+      <div class="as__choices">
+        <button type="button" class="as__choice" [class.as__choice--on]="form.is_practical"
+          (click)="form.is_practical = !form.is_practical">
+          <span class="as__choice-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 3h6v4H9zM8 7h8l1 13H7L8 7z" />
+            </svg>
+          </span>
+          <span class="as__choice-text">
+            <strong>{{ 'SUBJ_CHOICE_PRACTICAL' | translate }}</strong>
+            <small>{{ 'SEC_CHOICE_PRACTICAL_HINT' | translate }}</small>
+          </span>
+          <span class="as__choice-check" aria-hidden="true"></span>
+        </button>
+
+        <button type="button" class="as__choice" [class.as__choice--on]="form.active"
+          (click)="form.active = !form.active">
+          <span class="as__choice-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </span>
+          <span class="as__choice-text">
+            <strong>{{ 'SUBJ_CHOICE_ACTIVE' | translate }}</strong>
+            <small>{{ 'SEC_CHOICE_ACTIVE_HINT' | translate }}</small>
+          </span>
+          <span class="as__choice-check" aria-hidden="true"></span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div class="as__footer">
+    <button class="as__btn as__btn--ghost" type="button" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
+    <button class="as__btn as__btn--primary" type="button" (click)="save()"
+      [disabled]="saving || !canSave">
+      @if (saving) {
+      <span class="as__spinner"></span> {{ 'SAVING' | translate }}
+      } @else {
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      {{ 'SEC_CREATE' | translate }}
+      }
+    </button>
+  </div>
+</div>

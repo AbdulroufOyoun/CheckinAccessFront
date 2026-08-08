@@ -1,0 +1,168 @@
+<div class="rs" [class.rs--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="rs__hero">
+    <div class="rs__hero-text">
+      <p class="rs__eyebrow">{{ 'ROOM_STATUS_EYEBROW' | translate }}</p>
+      <h1>{{ 'ROOM_STATUS_TITLE' | translate }}</h1>
+      <p class="rs__subtitle">{{ 'ROOM_STATUS_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="rs__legend">
+      <span class="rs-legend rs-legend--available"><i></i>{{ 'ROOM_STATUS_AVAILABLE' | translate }}</span>
+      <span class="rs-legend rs-legend--occupied"><i></i>{{ 'ROOM_STATUS_OCCUPIED' | translate }}</span>
+      <span class="rs-legend rs-legend--hold"><i></i>{{ 'ROOM_STATUS_ON_HOLD' | translate }}</span>
+      <span class="rs-legend rs-legend--inactive"><i></i>{{ 'ROOM_STATUS_INACTIVE' | translate }}</span>
+    </div>
+  </header>
+
+  <section class="rs__controls">
+    <label class="rs-field">
+      <span>{{ 'ROOM_STATUS_DATE' | translate }}</span>
+      <input type="date" [(ngModel)]="date" name="date" (change)="load()" />
+    </label>
+    <label class="rs-field">
+      <span>{{ 'ROOM_STATUS_TIME' | translate }}</span>
+      <input type="time" [(ngModel)]="time" name="time" (change)="load()" />
+    </label>
+    <label class="rs-field">
+      <span>{{ 'ROOM_STATUS_BUILDING' | translate }}</span>
+      <select [(ngModel)]="buildingId" name="buildingId" (ngModelChange)="onBuildingChange()">
+        <option [ngValue]="null">{{ 'ROOM_STATUS_ALL_BUILDINGS' | translate }}</option>
+        @for (b of buildings; track b.id) {
+          <option [ngValue]="b.id">{{ b.name }}</option>
+        }
+      </select>
+    </label>
+    <label class="rs-field">
+      <span>{{ 'ROOM_STATUS_FLOOR' | translate }}</span>
+      <select [(ngModel)]="floorId" name="floorId" (ngModelChange)="onFloorChange()" [disabled]="!buildingId">
+        <option [ngValue]="null">{{ 'ROOM_STATUS_ALL_FLOORS' | translate }}</option>
+        @for (f of floorsForBuilding; track f.id) {
+          <option [ngValue]="f.id">{{ 'ROOM_STATUS_FLOOR' | translate }} {{ f.number }}</option>
+        }
+      </select>
+    </label>
+    <label class="rs-field">
+      <span>{{ 'ROOM_STATUS_SUITE' | translate }}</span>
+      <select [(ngModel)]="suiteId" name="suiteId" (ngModelChange)="load()" [disabled]="!floorId">
+        <option [ngValue]="null">{{ 'ROOM_STATUS_ALL_SUITES' | translate }}</option>
+        @for (s of suitesForFloor; track s.id) {
+          <option [ngValue]="s.id">{{ s.name || s.number || ('#' + s.id) }}</option>
+        }
+      </select>
+    </label>
+    <label class="rs-field rs-field--search">
+      <span>{{ 'ROOM_STATUS_SEARCH' | translate }}</span>
+      <input type="search" [(ngModel)]="search" name="search"
+        [placeholder]="'ROOM_STATUS_SEARCH_PH' | translate" />
+    </label>
+    <button type="button" class="rs-refresh" (click)="load()" [disabled]="loading">
+      {{ loading ? ('LOADING' | translate) : ('ROOM_STATUS_REFRESH' | translate) }}
+    </button>
+  </section>
+
+  <section class="rs__kpis" aria-label="summary">
+    <button type="button" class="rs-kpi" [class.is-active]="statusFilter === 'all'" (click)="setStatusFilter('all')">
+      <span class="rs-kpi__label">{{ 'ROOM_STATUS_TOTAL' | translate }}</span>
+      <strong>{{ summary.total }}</strong>
+    </button>
+    <button type="button" class="rs-kpi rs-kpi--available" [class.is-active]="statusFilter === 'available'"
+      (click)="setStatusFilter('available')">
+      <span class="rs-kpi__label">{{ 'ROOM_STATUS_AVAILABLE' | translate }}</span>
+      <strong>{{ summary.available }}</strong>
+    </button>
+    <button type="button" class="rs-kpi rs-kpi--occupied" [class.is-active]="statusFilter === 'occupied'"
+      (click)="setStatusFilter('occupied')">
+      <span class="rs-kpi__label">{{ 'ROOM_STATUS_OCCUPIED' | translate }}</span>
+      <strong>{{ summary.occupied }}</strong>
+    </button>
+    <button type="button" class="rs-kpi rs-kpi--hold" [class.is-active]="statusFilter === 'on_hold'"
+      (click)="setStatusFilter('on_hold')">
+      <span class="rs-kpi__label">{{ 'ROOM_STATUS_ON_HOLD' | translate }}</span>
+      <strong>{{ summary.on_hold }}</strong>
+    </button>
+    <button type="button" class="rs-kpi rs-kpi--inactive" [class.is-active]="statusFilter === 'inactive'"
+      (click)="setStatusFilter('inactive')">
+      <span class="rs-kpi__label">{{ 'ROOM_STATUS_INACTIVE' | translate }}</span>
+      <strong>{{ summary.inactive }}</strong>
+    </button>
+  </section>
+
+  @if (loading && !loaded) {
+    <app-page-skeleton variant="cards" [cards]="8" />
+  } @else if (!filteredCount) {
+    <div class="rs-empty reveal">
+      <p>{{ (payload?.rooms?.length ? 'ROOM_STATUS_EMPTY_FILTER' : 'ROOM_STATUS_EMPTY') | translate }}</p>
+    </div>
+  } @else {
+    <div class="rs__board reveal">
+      <p class="rs__meta">
+        {{ 'ROOM_STATUS_SHOWING' | translate: { filtered: filteredCount, total: summary.total, date: date, time: time } }}
+      </p>
+
+      @for (building of groups; track trackBuilding($index, building)) {
+        <section class="rs-building">
+          <header class="rs-building__head">
+            <h2>{{ building.buildingName }}</h2>
+            <span>{{ building.floors.length }} · {{ 'ROOM_STATUS_FLOORS' | translate }}</span>
+          </header>
+
+          @for (floor of building.floors; track trackFloor($index, floor)) {
+            <div class="rs-floor">
+              <div class="rs-floor__head">
+                <span class="rs-floor__badge">{{ floor.floorLabel }}</span>
+                <span class="rs-floor__line"></span>
+                <span class="rs-floor__count">{{ floor.rooms.length }}</span>
+              </div>
+              <div class="rs-grid">
+                @for (room of floor.rooms; track trackRoom($index, room); let i = $index) {
+                  <article class="rs-card rs-card--{{ room.status }} reveal-item"
+                    [style.--reveal-i]="i < 16 ? i : 16"
+                    role="button"
+                    tabindex="0"
+                    (click)="openRoom(room)"
+                    (keydown.enter)="openRoom(room)"
+                    (keydown.space)="$event.preventDefault(); openRoom(room)">
+                    <div class="rs-card__top">
+                      <span class="rs-card__status">{{ statusLabel(room.status) }}</span>
+                      <span class="rs-card__dot" aria-hidden="true"></span>
+                    </div>
+                    <h3 class="rs-card__number">{{ room.number }}</h3>
+                    <p class="rs-card__type">
+                      {{ room.room_type?.name || room.name || '—' }}
+                      @if (room.suite) {
+                        · {{ room.suite.name || room.suite.number }}
+                      }
+                    </p>
+                    @if (room.booking; as booking) {
+                      <div class="rs-card__booking">
+                        <strong>{{ booking.guest || ('ROOM_STATUS_GUEST_UNKNOWN' | translate) }}</strong>
+                        <small>
+                          {{ booking.check_in_date }} → {{ booking.check_out_date }}
+                          @if (booking.time_scheduled) {
+                            · {{ 'ROOM_STATUS_HOURLY' | translate }}
+                          }
+                        </small>
+                      </div>
+                    }
+                    @if (room.schedule; as schedule) {
+                      <div class="rs-card__booking rs-card__booking--class">
+                        <strong>{{ scheduleLabel(schedule) }}</strong>
+                        <small>
+                          {{ schedule.start }} → {{ schedule.end }}
+                          · {{ 'ROOM_STATUS_CLASS' | translate }}
+                        </small>
+                      </div>
+                    }
+                    @if (!room.booking && !room.schedule && room.capacity) {
+                      <p class="rs-card__cap">{{ 'ROOM_STATUS_CAPACITY' | translate: { n: room.capacity } }}</p>
+                    }
+                    <span class="rs-card__hint">{{ 'ROOM_STATUS_OPEN_DETAIL' | translate }}</span>
+                  </article>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      }
+    </div>
+  }
+</div>

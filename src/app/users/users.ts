@@ -1,116 +1,169 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddUser } from '../dialog/add-user/add-user';
+import { TenantUser, UsersService } from '../services/users.service';
+import { SnackbarService } from '../services/snackbar.service';
+import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
+
+interface UserCard extends TenantUser {
+  initials: string;
+  color: string;
+  shadow: string;
+  delay: string;
+  phone: string;
+  isActive: boolean;
+}
+
+const AVATAR_PALETTE = [
+  { color: '#2563EB', shadow: 'rgba(37,99,235,0.25)' },
+  { color: '#0D9488', shadow: 'rgba(13,148,136,0.25)' },
+  { color: '#7C3AED', shadow: 'rgba(124,58,237,0.25)' },
+  { color: '#DB2777', shadow: 'rgba(219,39,119,0.25)' },
+  { color: '#D97706', shadow: 'rgba(217,119,6,0.25)' },
+  { color: '#DC2626', shadow: 'rgba(220,38,38,0.25)' },
+];
 
 @Component({
   selector: 'app-users',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, FormsModule, TranslateModule, PageSkeleton],
   templateUrl: './users.html',
   styleUrl: './users.css',
 })
-export class Users {
-  isRTL: boolean = false
-  dialog = inject(MatDialog);
-  users = [
-    {
-      initials: 'AH',
-      name: 'Ahmed Al-Rashidi',
-      nationality: 'Saudi',
-      phone: '+966501234567',
-      email: 'ahmed@email.com',
-      active: 2,
-      color: '#2563EB',
-      shadow: 'rgba(37,99,235,0.25)',
-      delay: '0s'
-    },
-    {
-      initials: 'MO',
-      name: 'Mohammed Al-Otaibi',
-      nationality: 'Saudi',
-      phone: '+966502345678',
-      email: 'moh@email.com',
-      active: 1,
-      color: '#0D9488',
-      shadow: 'rgba(13,148,136,0.25)',
-      delay: '0.04s'
-    },
-    {
-      initials: 'KD',
-      name: 'Khalid Al-Dosari',
-      nationality: 'Saudi',
-      phone: '+966503456789',
-      email: 'khalid@email.com',
-      active: 0,
-      color: '#7C3AED',
-      shadow: 'rgba(124,58,237,0.25)',
-      delay: '0.08s'
-    },
-    {
-      initials: 'OG',
-      name: 'Omar Al-Ghamdi',
-      nationality: 'Saudi',
-      phone: '+966504567890',
-      email: 'omar@email.com',
-      active: 1,
-      color: '#DB2777',
-      shadow: 'rgba(219,39,119,0.25)',
-      delay: '0.12s'
-    },
-    {
-      initials: 'AY',
-      name: 'Ali Hassan Al-Yami',
-      nationality: 'Yemeni',
-      phone: '+966505678901',
-      email: 'ali@email.com',
-      active: 1,
-      color: '#D97706',
-      shadow: 'rgba(217,119,6,0.25)',
-      delay: '0.16s'
-    },
-    {
-      initials: 'HS',
-      name: 'Hassan Al-Zubaydi',
-      nationality: 'Yemeni',
-      phone: '+966506789012',
-      email: 'hassan@email.com',
-      active: 0,
-      color: '#DC2626',
-      shadow: 'rgba(220,38,38,0.25)',
-      delay: '0.20s'
+export class Users implements OnInit {
+  private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
+  private readonly usersApi = inject(UsersService);
+  private readonly snackbar = inject(SnackbarService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly translate = inject(TranslateService);
+  private readonly document = inject(DOCUMENT);
+
+  isRTL = false;
+  loading = false;
+  searchQuery = '';
+  total = 0;
+  users: UserCard[] = [];
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  ngOnInit(): void {
+    this.isRTL =
+      this.document.documentElement.getAttribute('dir') === 'rtl' ||
+      this.translate.getCurrentLang() === 'ar';
+    this.translate.onLangChange.subscribe((e) => {
+      this.isRTL = e.lang === 'ar';
+      this.cdr.detectChanges();
+    });
+    void this.loadUsers();
+  }
+
+  async loadUsers(): Promise<void> {
+    this.loading = true;
+    try {
+      const q = this.searchQuery.trim();
+      const page = q
+        ? await this.usersApi.searchByName(q, 100)
+        : await this.usersApi.list(100);
+      const rows = Array.isArray(page.data) ? page.data : [];
+      this.total = page.total ?? rows.length;
+      this.users = rows.map((u, i) => this.toCard(u, i));
+    } catch (error: unknown) {
+      this.users = [];
+      this.total = 0;
+      this.snackbar.show(this.errorText(error), 'error');
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
     }
-  ];
-
-  constructor() {
   }
 
+  onSearchChange(): void {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => void this.loadUsers(), 300);
+  }
 
-  openAddDialog() {
-    this.dialog.open(AddUser, {
-      panelClass: 'custom-dialog',
+  clearSearch(): void {
+    this.searchQuery = '';
+    void this.loadUsers();
+  }
+
+  openAddDialog(): void {
+    const ref = this.dialog.open(AddUser, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
       backdropClass: 'custom-backdrop',
-      data: { mode: 'add' }
+      width: '560px',
+      maxWidth: '94vw',
+      data: { mode: 'add' },
+    });
+    ref.afterClosed().subscribe((changed) => {
+      if (changed) void this.loadUsers();
     });
   }
 
-  openEditDialog(user: any) {
-    this.dialog.open(AddUser, {
-      panelClass: 'custom-dialog',
+  openEditDialog(user: UserCard): void {
+    const ref = this.dialog.open(AddUser, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
       backdropClass: 'custom-backdrop',
-      data: {
-        mode: 'edit',
-        user: user
-      }
+      width: '560px',
+      maxWidth: '94vw',
+      data: { mode: 'edit', user },
+    });
+    ref.afterClosed().subscribe((changed) => {
+      if (changed) void this.loadUsers();
     });
   }
 
-  openViewDialog(user: any) {
-    this.dialog.open(AddUser, {
-      panelClass: 'custom-dialog',
-      backdropClass: 'custom-backdrop',
-      data: {
-        mode: 'view',
-        user: user
-      }
-    });
+  openView(user: UserCard): void {
+    void this.router.navigate(['/Users', user.id]);
+  }
+
+  async removeUser(user: UserCard): Promise<void> {
+    const ok = confirm(this.translate.instant('USR_REMOVE_CONFIRM', { name: user.name }));
+    if (!ok) return;
+    try {
+      await this.usersApi.remove(user.id);
+      this.snackbar.show(this.translate.instant('USR_REMOVED'), 'success');
+      await this.loadUsers();
+    } catch (error: unknown) {
+      this.snackbar.show(this.errorText(error), 'error');
+    }
+  }
+
+  private toCard(u: TenantUser, index: number): UserCard {
+    const palette = AVATAR_PALETTE[(u.id || index) % AVATAR_PALETTE.length];
+    return {
+      ...u,
+      initials: this.initials(u.name),
+      phone: u.mobile,
+      isActive: u.active === true || u.active === 1,
+      color: palette.color,
+      shadow: palette.shadow,
+      delay: `${index * 0.04}s`,
+    };
+  }
+
+  private initials(name: string): string {
+    const parts = (name || '?').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  private errorText(error: unknown): string {
+    const body = (error as { error?: { message?: unknown } })?.error;
+    const message = body?.message;
+    if (typeof message === 'string' && message.trim()) return message;
+    if (message && typeof message === 'object') {
+      const parts = Object.values(message as Record<string, unknown>)
+        .flatMap((v) => (Array.isArray(v) ? v : [v]))
+        .map((v) => String(v ?? '').trim())
+        .filter(Boolean);
+      if (parts.length) return parts.join(' ');
+    }
+    return this.translate.instant('REQUEST_FAILED');
   }
 }

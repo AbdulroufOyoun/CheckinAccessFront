@@ -1,147 +1,208 @@
-<!-- dashboard.component.html -->
 <div class="dashboard">
 
-  <!-- ── PAGE HEADER ─────────────────────────────────── -->
-  <div class="dashboard__header">
-    <div>
-      <h1 class="dashboard__title">Dashboard</h1>
-      <p class="dashboard__subtitle">Welcome back to your management dashboard</p>
+  <header class="dash-hero">
+    <div class="dash-hero__main">
+      <p class="dash-hero__eyebrow">{{ greetingKey | translate }}</p>
+      <h1 class="dash-hero__title">
+        @if (firstName) {
+          {{ firstName }},
+        }
+        {{ 'DASHBOARD' | translate }}
+      </h1>
+      <p class="dash-hero__subtitle">
+        @if (hasProperty && hasEducation) {
+          {{ 'DASH_SUB_BOTH' | translate }}
+        } @else if (hasEducation) {
+          {{ 'DASH_SUB_EDU' | translate }}
+        } @else if (hasProperty) {
+          {{ 'DASH_SUB_PROP' | translate }}
+        } @else {
+          {{ 'DASH_SUB_NONE' | translate }}
+        }
+      </p>
+      @if (hasProperty && asOfLabel) {
+      <span class="dash-hero__live">
+        <span class="dash-hero__live-dot" aria-hidden="true"></span>
+        {{ 'DASH_AS_OF' | translate: { time: asOfLabel } }}
+      </span>
+      }
     </div>
-    <!-- Filter Toggle Button -->
-    <button class="dashboard__filter-btn" [class.dashboard__filter-btn--active]="hasFilters" (click)="toggleFilters()">
-      <!-- Filter Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </svg>
-      Building
-      <!-- Badge — *ngIf="hasFilters" -->
-      <span class="dashboard__filter-badge">2</span>
-    </button>
-  </div>
 
-  <!-- ── FILTERS BAR — *ngIf="filtersOpen" ──────────── -->
+    <div class="dash-hero__actions">
+      @if (hasProperty) {
+      <button
+        type="button"
+        class="dash-btn dash-btn--ghost"
+        [class.dash-btn--active]="filtersOpen || hasActiveFilter"
+        (click)="toggleFilters()"
+        [attr.aria-expanded]="filtersOpen"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
+        {{ 'DASH_FILTER_BUILDING' | translate }}
+        @if (hasActiveFilter) {
+        <span class="dash-btn__badge">1</span>
+        }
+      </button>
+      }
+
+      @if (hasProperty || hasEducation) {
+      <button
+        type="button"
+        class="dash-btn dash-btn--primary"
+        (click)="refresh()"
+        [disabled]="refreshing || loadingProperty || loadingEdu"
+      >
+        <svg class="dash-btn__spin" [class.dash-btn__spin--on]="refreshing" xmlns="http://www.w3.org/2000/svg"
+          width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10" />
+          <polyline points="1 20 1 14 7 14" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
+        {{ refreshing ? ('LOADING' | translate) : ('DASH_REFRESH' | translate) }}
+      </button>
+      }
+    </div>
+  </header>
+
+  @if (hasActiveFilter && selectedBuildingName) {
+  <div class="dash-chips">
+    <span class="dash-chip">
+      {{ 'DASH_FILTER_BUILDING' | translate }}: {{ selectedBuildingName }}
+      <button type="button" class="dash-chip__remove" (click)="resetFilters()" [attr.aria-label]="'DASH_FILTER_RESET' | translate">×</button>
+    </span>
+  </div>
+  }
+
+  @if (hasProperty) {
   <div class="filters-bar" [class.filters-bar--open]="filtersOpen">
     <div class="filters-bar__inner">
       <div class="filters-bar__label">
-        <!-- Filter icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-        </svg>
-        <span>Building:</span>
+        <span>{{ 'DASH_FILTER_BUILDING' | translate }}:</span>
       </div>
-
-      <!-- Select: Building -->
       <div class="filter-select">
-        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
-          <option value="">All Buildings</option>
-          <option value="A">Building A</option>
-          <option value="B">Building B</option>
+        <select class="filter-select__control" [(ngModel)]="selectedBuildingId" (ngModelChange)="applyBuildingFilter()">
+          <option [ngValue]="null">{{ 'DASH_FILTER_ALL' | translate }}</option>
+          @for (b of buildings; track b.id) {
+          <option [ngValue]="b.id">{{ b.name }}</option>
+          }
         </select>
-        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
       </div>
-
-      <!-- Select: Floor -->
-      <div class="filter-select">
-        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
-          <option value="">All Floors</option>
-          <option value="1">Floor 1</option>
-          <option value="2">Floor 2</option>
-          <option value="3">Floor 3</option>
-          <option value="4">Floor 4</option>
-        </select>
-        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </div>
-
-      <!-- Select: Suite -->
-      <div class="filter-select">
-        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
-          <option value="">All Suites</option>
-          <option value="Suite 1">Suite 1</option>
-          <option value="Suite 2">Suite 2</option>
-          <option value="Suite 3">Suite 3</option>
-        </select>
-        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </div>
-
-      <!-- Select: Status -->
-      <div class="filter-select">
-        <select class="filter-select__control" [(ngModel)]="selectedFilters.building">
-          <option value="">All Statuses</option>
-          <option value="available">Available</option>
-          <option value="occupied">Occupied</option>
-          <option value="partial">Partial</option>
-        </select>
-        <svg class="filter-select__chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-          viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </div>
-
-      <!-- Reset Button — *ngIf="hasFilters" -->
-      <button class="filters-bar__reset-btn" (click)="resetFilters()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-        Reset
-      </button>
-    </div>
-
-    <!-- Active Filter Chips — *ngIf="hasFilters" -->
-    <div class="filters-bar__chips">
-      <span class="filter-chip">
-        Building A
-        <button class="filter-chip__remove">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </span>
-      <span class="filter-chip">
-        Floor 2
-        <button class="filter-chip__remove">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </span>
+      <button class="filters-bar__reset-btn" type="button" (click)="resetFilters()">{{ 'DASH_FILTER_RESET' | translate }}</button>
     </div>
   </div>
+  }
 
-  <!-- ── KPI CARDS ───────────────────────────────────── -->
-  <app-kpi-cards></app-kpi-cards>
+  @if (hasProperty && hasEducation) {
+  <div class="module-cards">
+    <a class="module-card module-card--property" routerLink="/Reservations">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'NAV_SECTION_PROPERTY' | translate }}</span>
+      <strong class="module-card__value">{{ summary?.total ?? '—' }}</strong>
+      <span class="module-card__hint">{{ 'RESERVATIONS' | translate }}</span>
+    </a>
+    <a class="module-card module-card--edu" routerLink="/Education/Subjects">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'EDU_SUBJECTS' | translate }}</span>
+      <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.subjects_count ?? '—') }}</strong>
+      <span class="module-card__hint">{{ 'EDU_SUBJECTS' | translate }}</span>
+    </a>
+    <a class="module-card module-card--edu" routerLink="/Education/Enrollments">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'EDU_ENROLLMENTS' | translate }}</span>
+      <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.enrollments_total ?? '—') }}</strong>
+      <span class="module-card__hint">{{ 'EDU_ENROLLMENTS' | translate }}</span>
+    </a>
+    <a class="module-card module-card--edu" routerLink="/Education/Sections">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'EDU_SECTIONS' | translate }}</span>
+      <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.sections_count ?? '—') }}</strong>
+      <span class="module-card__hint">{{ 'EDU_SECTIONS' | translate }}</span>
+    </a>
+  </div>
+  }
 
-  <!-- ── ROOM GRID + CHART ───────────────────────────── -->
+  @if (hasEducation && !hasProperty) {
+  <div class="module-cards">
+    <a class="module-card module-card--edu" routerLink="/Education/Subjects">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'EDU_SUBJECTS' | translate }}</span>
+      <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.subjects_count ?? '—') }}</strong>
+      <span class="module-card__hint">{{ 'EDU_SUBJECTS' | translate }}</span>
+    </a>
+    <a class="module-card module-card--edu" routerLink="/Education/Schedule">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'EDU_SCHEDULE' | translate }}</span>
+      <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.sections_count ?? '—') }}</strong>
+      <span class="module-card__hint">{{ 'EDU_SCHEDULE' | translate }}</span>
+    </a>
+    <a class="module-card module-card--edu" routerLink="/Education/Enrollments">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'EDU_ENROLLMENTS' | translate }}</span>
+      <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.students_enrolled ?? '—') }}</strong>
+      <span class="module-card__hint">{{ 'EDU_ENROLLMENTS' | translate }}</span>
+    </a>
+    <a class="module-card module-card--edu" routerLink="/Education/Reports">
+      <div class="module-card__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
+        </svg>
+      </div>
+      <span class="module-card__label">{{ 'EDU_REPORTS' | translate }}</span>
+      <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.enrollments_total ?? '—') }}</strong>
+      <span class="module-card__hint">{{ 'EDU_REPORTS' | translate }}</span>
+    </a>
+  </div>
+  }
+
+  @if (hasProperty) {
+  <app-kpi-cards [summary]="summary" [loading]="loadingProperty"></app-kpi-cards>
+
   <div class="dashboard__grid-2col">
     <div class="dashboard__col-wide">
-      <app-room-grid></app-room-grid>
+      <app-room-grid [rooms]="rooms" [summary]="summary" [loading]="loadingProperty"></app-room-grid>
     </div>
     <div class="dashboard__col-narrow">
-      <app-occupancy-chart></app-occupancy-chart>
+      <app-occupancy-chart [summary]="summary"></app-occupancy-chart>
     </div>
   </div>
 
-  <!-- ── BOTTOM ROW ──────────────────────────────────── -->
   <div class="dashboard__grid-3col">
     <app-quick-actions></app-quick-actions>
-    <app-activity-panel></app-activity-panel>
-    <app-smart-alerts></app-smart-alerts>
+    <app-activity-panel [items]="activity" [loading]="loadingProperty"></app-activity-panel>
+    <app-smart-alerts [alerts]="alerts" [loading]="loadingProperty"></app-smart-alerts>
   </div>
+  }
 
 </div>

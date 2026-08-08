@@ -1,0 +1,228 @@
+<div class="hol" [class.hol--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="hol__header">
+    <div>
+      <p class="hol__eyebrow">{{ 'HOL_EYEBROW' | translate }}</p>
+      <h1 class="hol__title">{{ 'HOL_TITLE' | translate }}</h1>
+      <p class="hol__subtitle">{{ 'HOL_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="hol__actions">
+      <button type="button" class="hol-btn hol-btn--ghost" (click)="reload()" [disabled]="loading">
+        {{ loading ? ('LOADING' | translate) : ('HOL_REFRESH' | translate) }}
+      </button>
+    </div>
+  </header>
+
+  <div class="hol__tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="hol-tab"
+      [class.is-on]="tab === 'weekends'"
+      [attr.aria-selected]="tab === 'weekends'"
+      (click)="setTab('weekends')"
+    >
+      <span>{{ 'HOL_TAB_WEEKENDS' | translate }}</span>
+      <em>{{ weekends.length }}</em>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="hol-tab"
+      [class.is-on]="tab === 'gregorian'"
+      [attr.aria-selected]="tab === 'gregorian'"
+      (click)="setTab('gregorian')"
+    >
+      <span>{{ 'HOL_TAB_GREGORIAN' | translate }}</span>
+      <em>{{ gregorian.length }}</em>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="hol-tab"
+      [class.is-on]="tab === 'islamic'"
+      [attr.aria-selected]="tab === 'islamic'"
+      (click)="setTab('islamic')"
+    >
+      <span>{{ 'HOL_TAB_ISLAMIC' | translate }}</span>
+      <em>{{ islamic.length }}</em>
+    </button>
+  </div>
+
+  @if (showSkeleton) {
+  <app-page-skeleton variant="table" [rows]="6" [cols]="4" />
+  } @else if (tab === 'weekends') {
+  <section class="hol-panel reveal">
+    <div class="hol-panel__head">
+      <div>
+        <h2>{{ 'HOL_TAB_WEEKENDS' | translate }}</h2>
+        <p>{{ 'HOL_WEEKENDS_HINT' | translate }}</p>
+      </div>
+    </div>
+
+    <form class="hol-form" (ngSubmit)="addWeekend()">
+      <label>
+        <span>{{ 'HOL_WEEKDAY' | translate }}</span>
+        <select
+          [(ngModel)]="weekendDraft.code"
+          name="weekendCode"
+          (ngModelChange)="onWeekendCodeChange($event)"
+        >
+          @for (c of weekdayCodes; track c) {
+          <option [ngValue]="c">{{ dayName(c) }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>{{ 'HOL_NAME' | translate }}</span>
+        <input type="text" [(ngModel)]="weekendDraft.day_name" name="weekendName" />
+      </label>
+      <button type="submit" class="hol-btn hol-btn--primary" [disabled]="saving">
+        {{ 'HOL_ADD' | translate }}
+      </button>
+    </form>
+
+    @if (!weekends.length) {
+    <div class="hol-empty">
+      <strong>{{ 'HOL_EMPTY_WEEKENDS' | translate }}</strong>
+      <p>{{ 'HOL_EMPTY_WEEKENDS_HINT' | translate }}</p>
+    </div>
+    } @else {
+    <ul class="hol-list">
+      @for (row of weekends; track row.id) {
+      <li class="hol-row">
+        <div class="hol-row__main">
+          <span class="hol-chip hol-chip--day">{{ dayName(row.code) }}</span>
+          <div>
+            <strong>{{ row.day_name }}</strong>
+            <small>{{ 'HOL_WEEKEND_DAY' | translate }}</small>
+          </div>
+        </div>
+        <button type="button" class="hol-btn hol-btn--danger" (click)="removeWeekend(row)">
+          {{ 'DELETE' | translate }}
+        </button>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+  } @else if (tab === 'gregorian') {
+  <section class="hol-panel reveal">
+    <div class="hol-panel__head">
+      <div>
+        <h2>{{ 'HOL_TAB_GREGORIAN' | translate }}</h2>
+        <p>{{ 'HOL_GREGORIAN_HINT' | translate }}</p>
+      </div>
+    </div>
+
+    <form class="hol-form hol-form--greg" (ngSubmit)="addGregorian()">
+      <label>
+        <span>{{ 'HOL_NAME' | translate }}</span>
+        <input type="text" [(ngModel)]="gregorianDraft.name" name="gName" />
+      </label>
+      <label>
+        <span>{{ 'HOL_DATE' | translate }}</span>
+        <input type="date" [(ngModel)]="gregorianDraft.date" name="gDate" />
+      </label>
+      <label class="hol-check">
+        <input type="checkbox" [(ngModel)]="gregorianDraft.is_recurring" name="gRecurring" />
+        <span>{{ 'HOL_RECURRING' | translate }}</span>
+      </label>
+      <button type="submit" class="hol-btn hol-btn--primary" [disabled]="saving">
+        {{ 'HOL_ADD' | translate }}
+      </button>
+    </form>
+
+    @if (!gregorian.length) {
+    <div class="hol-empty">
+      <strong>{{ 'HOL_EMPTY_GREGORIAN' | translate }}</strong>
+      <p>{{ 'HOL_EMPTY_GREGORIAN_HINT' | translate }}</p>
+    </div>
+    } @else {
+    <ul class="hol-list">
+      @for (row of gregorian; track row.id) {
+      <li class="hol-row">
+        <div class="hol-row__main">
+          <span class="hol-chip hol-chip--date">{{ formatDate(row.date) }}</span>
+          <div>
+            <strong>{{ row.name }}</strong>
+            <small>
+              @if (row.is_recurring) {
+              <span class="hol-badge">{{ 'HOL_RECURRING_BADGE' | translate }}</span>
+              } @else {
+              {{ 'HOL_ONE_TIME' | translate }}
+              }
+            </small>
+          </div>
+        </div>
+        <button type="button" class="hol-btn hol-btn--danger" (click)="removeGregorian(row)">
+          {{ 'DELETE' | translate }}
+        </button>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+  } @else {
+  <section class="hol-panel reveal">
+    <div class="hol-panel__head">
+      <div>
+        <h2>{{ 'HOL_TAB_ISLAMIC' | translate }}</h2>
+        <p>{{ 'HOL_ISLAMIC_HINT' | translate }}</p>
+      </div>
+    </div>
+
+    <form class="hol-form hol-form--isl" (ngSubmit)="addIslamic()">
+      <label>
+        <span>{{ 'HOL_NAME' | translate }}</span>
+        <input type="text" [(ngModel)]="islamicDraft.name" name="iName" />
+      </label>
+      <label>
+        <span>{{ 'HOL_HIJRI_MONTH' | translate }}</span>
+        <select [(ngModel)]="islamicDraft.hijri_month" name="iMonth">
+          @for (m of hijriMonths; track m) {
+          <option [ngValue]="m">{{ hijriMonthName(m) }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>{{ 'HOL_HIJRI_DAY' | translate }}</span>
+        <input type="number" min="1" max="30" [(ngModel)]="islamicDraft.hijri_day" name="iDay" />
+      </label>
+      <label>
+        <span>{{ 'HOL_OBSERVED' | translate }}</span>
+        <input type="date" [(ngModel)]="islamicDraft.observed_date" name="iObserved" />
+      </label>
+      <button type="submit" class="hol-btn hol-btn--primary" [disabled]="saving">
+        {{ 'HOL_ADD' | translate }}
+      </button>
+    </form>
+
+    @if (!islamic.length) {
+    <div class="hol-empty">
+      <strong>{{ 'HOL_EMPTY_ISLAMIC' | translate }}</strong>
+      <p>{{ 'HOL_EMPTY_ISLAMIC_HINT' | translate }}</p>
+    </div>
+    } @else {
+    <ul class="hol-list">
+      @for (row of islamic; track row.id) {
+      <li class="hol-row">
+        <div class="hol-row__main">
+          <span class="hol-chip hol-chip--hijri">{{ hijriLabel(row.hijri_day, row.hijri_month) }}</span>
+          <div>
+            <strong>{{ row.name }}</strong>
+            <small>
+              {{ 'HOL_OBSERVED' | translate }}:
+              <time [attr.datetime]="row.observed_date || null">{{ formatDate(row.observed_date) }}</time>
+            </small>
+          </div>
+        </div>
+        <button type="button" class="hol-btn hol-btn--danger" (click)="removeIslamic(row)">
+          {{ 'DELETE' | translate }}
+        </button>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+  }
+</div>

@@ -1,0 +1,89 @@
+<div class="edu-ui" [class.edu-ui--rtl]="isRTL">
+  <div class="edu-ui__header">
+    <div>
+      <h1 class="edu-ui__title">{{ 'TERM_PAGE_TITLE' | translate }}</h1>
+      <p class="edu-ui__subtitle">{{ 'TERM_PAGE_SUB' | translate }}</p>
+    </div>
+    <a class="edu-ui__add edu-ui__add--ghost" routerLink="/Education/EnrollmentHistory">
+      {{ 'ENR_HIST_NAV' | translate }}
+    </a>
+  </div>
+
+  <div class="term-create edu-card reveal">
+    <h2>{{ 'TERM_NEW' | translate }}</h2>
+    <div class="term-create__grid">
+      <label>
+        <span>{{ 'TERM_NAME' | translate }}</span>
+        <input type="text" [(ngModel)]="form.name" />
+      </label>
+      <label>
+        <span>{{ 'TERM_NAME_AR' | translate }}</span>
+        <input type="text" [(ngModel)]="form.name_ar" />
+      </label>
+      <label>
+        <span>{{ 'TERM_STARTS' | translate }}</span>
+        <input type="date" [(ngModel)]="form.starts_on" />
+      </label>
+      <label>
+        <span>{{ 'TERM_ENDS' | translate }}</span>
+        <input type="date" [(ngModel)]="form.ends_on" />
+      </label>
+    </div>
+    <button class="edu-ui__add" type="button" [disabled]="saving" (click)="createTerm()">
+      {{ 'TERM_CREATE' | translate }}
+    </button>
+  </div>
+
+  @if (showSkeleton) {
+  <app-page-skeleton variant="table" [rows]="4" [cols]="5" />
+  } @else if (!terms.length) {
+  <div class="edu-ui__empty reveal">
+    <p>{{ 'TERM_EMPTY' | translate }}</p>
+  </div>
+  } @else {
+  <div class="table-container reveal">
+    <table>
+      <thead>
+        <tr>
+          <th>{{ 'TERM_NAME' | translate }}</th>
+          <th>{{ 'TERM_DATES' | translate }}</th>
+          <th>{{ 'TERM_STATUS' | translate }}</th>
+          <th>{{ 'TERM_SECTIONS' | translate }}</th>
+          <th>{{ 'TERM_LIVE_ENR' | translate }}</th>
+          <th>{{ 'TERM_ACTIONS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (term of terms; track term.id; let i = $index) {
+        <tr class="reveal-item" [style.--reveal-i]="i < 12 ? i : 12">
+          <td class="term-cell term-cell--name">
+            <strong class="term-name">{{ termLabel(term) }}</strong>
+          </td>
+          <td class="term-cell term-cell--dates">
+            <div class="term-dates">
+              <span class="term-dates__start">{{ formatDate(term.starts_on) }}</span>
+              <span class="term-dates__sep" aria-hidden="true">{{ isRTL ? '←' : '→' }}</span>
+              <span class="term-dates__end">{{ formatDate(term.ends_on) }}</span>
+            </div>
+          </td>
+          <td class="term-cell">
+            <span class="term-status" [class.term-status--closed]="term.status === 'closed'">
+              {{ (term.status === 'closed' ? 'TERM_STATUS_CLOSED' : 'TERM_STATUS_OPEN') | translate }}
+            </span>
+          </td>
+          <td class="term-cell term-cell--num">{{ term.sections_count ?? 0 }}</td>
+          <td class="term-cell term-cell--num">{{ term.live_enrollments_count ?? 0 }}</td>
+          <td class="term-cell term-actions">
+            @if (term.status === 'open') {
+            <button type="button" class="action-btn" (click)="startAssign(term)">{{ 'TERM_ASSIGN' | translate }}</button>
+            <button type="button" class="action-btn delete-btn" (click)="closeTerm(term)">{{ 'TERM_CLOSE' | translate }}</button>
+            }
+            <button type="button" class="action-btn delete-btn" (click)="deleteTerm(term)">{{ 'DELETE' | translate }}</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>

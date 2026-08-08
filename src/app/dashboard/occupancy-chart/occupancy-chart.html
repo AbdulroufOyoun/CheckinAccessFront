@@ -1,93 +1,71 @@
-<!-- occupancy-chart.component.html -->
-<div class="occ-chart">
-  <!-- Header -->
+<div class="occ-chart dash-card-bg" style="--dash-glow: rgba(124, 58, 237, 0.12);">
   <div class="occ-chart__header">
-    <h3 class="occ-chart__title">Occupancy Rate</h3>
-    <p class="occ-chart__subtitle">Today's Summary</p>
+    <h3 class="occ-chart__title">{{ 'DASH_OCC_TITLE' | translate }}</h3>
+    <p class="occ-chart__subtitle">{{ 'DASH_OCC_SUB' | translate }}</p>
   </div>
 
-  <!-- Chart -->
   <div class="occ-chart__donut-wrapper">
-
     <div class="occ-chart__chart-container">
-
-      <canvas baseChart [data]="doughnutChartData" [type]="'doughnut'" [options]="doughnutChartOptions">
-      </canvas>
-
-      <!-- Center Text -->
+      <canvas baseChart [data]="doughnutChartData" [type]="'doughnut'" [options]="doughnutChartOptions"></canvas>
       <div class="occ-chart__center">
-        <span class="occ-chart__donut-pct">
-          {{ occupancyPct }}%
-        </span>
-        <span class="occ-chart__donut-label">
-          Occupancy
-        </span>
+        <span class="occ-chart__donut-pct">{{ occupancyPct }}%</span>
+        <span class="occ-chart__donut-label">{{ 'DASH_KPI_RATE' | translate }}</span>
       </div>
-
     </div>
-
   </div>
 
-  <!-- Legend -->
   <div class="occ-chart__legend">
-
-    <!-- Occupied -->
     <div class="occ-chart__legend-item">
       <div class="occ-chart__legend-row">
         <div class="occ-chart__legend-left">
           <span class="occ-chart__legend-dot" style="background:#DC2626"></span>
-          <span class="occ-chart__legend-name">Occupied</span>
+          <span class="occ-chart__legend-name">{{ 'DASH_KPI_OCCUPIED' | translate }}</span>
         </div>
         <div class="occ-chart__legend-right">
-          <span class="occ-chart__legend-count">29</span>
-          <span class="occ-chart__legend-pct">(60%)</span>
+          <span class="occ-chart__legend-count">{{ summary?.occupied ?? 0 }}</span>
+          <span class="occ-chart__legend-pct">({{ pct(summary?.occupied ?? 0) }}%)</span>
         </div>
       </div>
       <div class="occ-chart__bar-track">
-        <div class="occ-chart__bar-fill" style="width:60%; background:#DC2626;"></div>
+        <div class="occ-chart__bar-fill" [style.width.%]="pct(summary?.occupied ?? 0)" style="background:#DC2626;"></div>
       </div>
     </div>
 
-    <!-- Partial -->
     <div class="occ-chart__legend-item">
       <div class="occ-chart__legend-row">
         <div class="occ-chart__legend-left">
           <span class="occ-chart__legend-dot" style="background:#F59E0B"></span>
-          <span class="occ-chart__legend-name">Partial</span>
+          <span class="occ-chart__legend-name">{{ 'DASH_KPI_ON_HOLD' | translate }}</span>
         </div>
         <div class="occ-chart__legend-right">
-          <span class="occ-chart__legend-count">7</span>
-          <span class="occ-chart__legend-pct">(15%)</span>
+          <span class="occ-chart__legend-count">{{ summary?.on_hold ?? 0 }}</span>
+          <span class="occ-chart__legend-pct">({{ pct(summary?.on_hold ?? 0) }}%)</span>
         </div>
       </div>
       <div class="occ-chart__bar-track">
-        <div class="occ-chart__bar-fill" style="width:15%; background:#F59E0B;"></div>
+        <div class="occ-chart__bar-fill" [style.width.%]="pct(summary?.on_hold ?? 0)" style="background:#F59E0B;"></div>
       </div>
     </div>
 
-    <!-- Available -->
     <div class="occ-chart__legend-item">
       <div class="occ-chart__legend-row">
         <div class="occ-chart__legend-left">
           <span class="occ-chart__legend-dot" style="background:#16A34A"></span>
-          <span class="occ-chart__legend-name">Available</span>
+          <span class="occ-chart__legend-name">{{ 'DASH_KPI_AVAILABLE' | translate }}</span>
         </div>
         <div class="occ-chart__legend-right">
-          <span class="occ-chart__legend-count">12</span>
-          <span class="occ-chart__legend-pct">(25%)</span>
+          <span class="occ-chart__legend-count">{{ summary?.available ?? 0 }}</span>
+          <span class="occ-chart__legend-pct">({{ pct(summary?.available ?? 0) }}%)</span>
         </div>
       </div>
       <div class="occ-chart__bar-track">
-        <div class="occ-chart__bar-fill" style="width:25%; background:#16A34A;"></div>
+        <div class="occ-chart__bar-fill" [style.width.%]="pct(summary?.available ?? 0)" style="background:#16A34A;"></div>
       </div>
     </div>
-
   </div>
 
-  <!-- Footer -->
   <div class="occ-chart__total">
-    <span class="occ-chart__total-label">Total Rooms</span>
-    <span class="occ-chart__total-value">48</span>
+    <span class="occ-chart__total-label">{{ 'DASH_KPI_TOTAL' | translate }}</span>
+    <span class="occ-chart__total-value">{{ summary?.total ?? 0 }}</span>
   </div>
-
 </div>

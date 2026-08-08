@@ -1,0 +1,155 @@
+<div class="rd" [class.rd--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="rd__top">
+    <button type="button" class="rd__back" (click)="goBack()">
+      {{ 'ROOM_DETAIL_BACK' | translate }}
+    </button>
+    <a class="rd__link" routerLink="/RoomStatus">{{ 'ROOM_STATUS_TITLE' | translate }}</a>
+  </header>
+
+  @if (loading) {
+  <app-page-skeleton variant="cards" [cards]="4" />
+  } @else if (!room && !statusSnapshot) {
+  <div class="rd-empty">
+    <p>{{ 'ROOM_DETAIL_NOT_FOUND' | translate }}</p>
+    <a routerLink="/RoomStatus" class="rd__cta">{{ 'ROOM_DETAIL_BACK' | translate }}</a>
+  </div>
+  } @else {
+  <section class="rd-hero rd-hero--{{ status }}">
+    <div class="rd-hero__text">
+      <p class="rd-hero__eyebrow">{{ 'ROOM_DETAIL_EYEBROW' | translate }}</p>
+      <h1>{{ roomTitle }}</h1>
+      <p class="rd-hero__sub">{{ locationLabel }}</p>
+      <p class="rd-hero__type">{{ roomTypeName }}
+        @if (room?.name || statusSnapshot?.name) {
+          · {{ room?.name || statusSnapshot?.name }}
+        }
+      </p>
+    </div>
+    <div class="rd-hero__badge">{{ statusLabel }}</div>
+  </section>
+
+  <section class="rd-stats">
+    <div class="rd-stat">
+      <span>{{ 'ROOM_DETAIL_CAPACITY' | translate }}</span>
+      <strong>{{ room?.capacity ?? statusSnapshot?.capacity ?? '—' }}</strong>
+    </div>
+    <div class="rd-stat">
+      <span>{{ 'ROOM_DETAIL_ACTIVE_BOOKINGS' | translate }}</span>
+      <strong>{{ activeBookings }}</strong>
+    </div>
+    <div class="rd-stat">
+      <span>{{ 'ROOM_DETAIL_OCCUPANCY' | translate }}</span>
+      <strong>{{ occupancyPct }}%</strong>
+    </div>
+    <div class="rd-stat">
+      <span>{{ 'ROOM_DETAIL_AT' | translate }}</span>
+      <strong>{{ date }} · {{ time }}</strong>
+    </div>
+  </section>
+
+  <div class="rd-occ">
+    <div class="rd-occ__head">
+      <span>{{ 'ROOM_DETAIL_OCCUPANCY' | translate }}</span>
+      <span>{{ occupancyPct }}%</span>
+    </div>
+    <div class="rd-occ__track">
+      <div class="rd-occ__fill" [style.width.%]="occupancyPct"></div>
+    </div>
+  </div>
+
+  <div class="rd-grid">
+    <section class="rd-card">
+      <h2>{{ 'ROOM_DETAIL_INFO' | translate }}</h2>
+      <dl class="rd-dl">
+        <div><dt>{{ 'ROOM_DETAIL_NUMBER' | translate }}</dt><dd>{{ room?.number || statusSnapshot?.number || '—' }}</dd></div>
+        <div><dt>{{ 'ROOM_DETAIL_NAME' | translate }}</dt><dd>{{ room?.name || statusSnapshot?.name || '—' }}</dd></div>
+        <div><dt>{{ 'ROOM_DETAIL_TYPE' | translate }}</dt><dd>{{ roomTypeName }}</dd></div>
+        <div><dt>{{ 'ROOM_STATUS_BUILDING' | translate }}</dt><dd>{{ room?.floor?.building?.name || statusSnapshot?.building?.name || '—' }}</dd></div>
+        <div><dt>{{ 'ROOM_STATUS_FLOOR' | translate }}</dt><dd>{{ room?.floor?.number ?? statusSnapshot?.floor?.number ?? '—' }}</dd></div>
+        <div><dt>{{ 'ROOM_STATUS_SUITE' | translate }}</dt><dd>{{ room?.suite?.name || room?.suite?.number || statusSnapshot?.suite?.name || statusSnapshot?.suite?.number || '—' }}</dd></div>
+        <div><dt>{{ 'ROOM_DETAIL_ACTIVE' | translate }}</dt><dd>{{ (room?.active === false || room?.active === 0) ? ('ROOM_STATUS_INACTIVE' | translate) : ('ROOM_STATUS_AVAILABLE' | translate) }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="rd-card">
+      <h2>{{ 'ROOM_DETAIL_LOCKS' | translate }}</h2>
+      @if (!room?.locks?.length) {
+      <p class="rd-muted">{{ 'ROOM_DETAIL_NO_LOCKS' | translate }}</p>
+      } @else {
+      <ul class="rd-list">
+        @for (lock of room?.locks; track lock.id) {
+        <li [class.rd-list__item--on]="isHighlightedLock(lock.id)" [attr.id]="isHighlightedLock(lock.id) ? 'rd-lock-focus' : null">
+          <strong>{{ lock.lockAlias || lock.lockName || ('#' + lock.id) }}</strong>
+          <span>{{ lock.lockMac || '—' }}</span>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+  </div>
+
+  <section class="rd-card rd-card--wide">
+    <div class="rd-card__head">
+      <h2>{{ 'ROOM_DETAIL_BOOKINGS' | translate }} ({{ bookings.length }})</h2>
+      <a routerLink="/Reservations/New" [queryParams]="{ room_id: roomId }" class="rd__cta rd__cta--sm">
+        {{ 'ROOM_DETAIL_NEW_BOOKING' | translate }}
+      </a>
+    </div>
+
+    @if (!bookings.length) {
+    <p class="rd-muted">{{ 'ROOM_DETAIL_NO_BOOKINGS' | translate }}</p>
+    } @else {
+    <div class="rd-table-wrap">
+      <table class="rd-table">
+        <thead>
+          <tr>
+            <th>{{ 'ROOM_DETAIL_GUEST' | translate }}</th>
+            <th>{{ 'ROOM_DETAIL_CONTACT' | translate }}</th>
+            <th>{{ 'ROOM_DETAIL_DATES' | translate }}</th>
+            <th>{{ 'ROOM_DETAIL_SCHEDULE' | translate }}</th>
+            <th>{{ 'ROOM_DETAIL_STATUS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of bookings; track b.id) {
+          <tr class="rd-table__row" (click)="openReservation(b.id)">
+            <td>
+              <strong>{{ b.guest }}</strong>
+              <small>#{{ b.id }}</small>
+            </td>
+            <td>
+              <span>{{ b.mobile }}</span>
+              <small>{{ b.email }}</small>
+            </td>
+            <td>{{ b.checkIn }} → {{ b.checkOut }}</td>
+            <td>{{ b.schedule }}</td>
+            <td>
+              <span class="rd-pill rd-pill--{{ b.status }}">{{ b.statusKey | translate }}</span>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </section>
+
+  <section class="rd-card rd-card--wide">
+    <h2>{{ 'ROOM_DETAIL_UNLOCKS' | translate }}</h2>
+    @if (!unlocksAvailable) {
+    <p class="rd-muted">{{ 'ROOM_DETAIL_UNLOCKS_UNAVAILABLE' | translate }}</p>
+    } @else if (!unlocks.length) {
+    <p class="rd-muted">{{ 'ROOM_DETAIL_NO_UNLOCKS' | translate }}</p>
+    } @else {
+    <ul class="rd-list rd-list--timeline">
+      @for (u of unlocks; track u.id || $index) {
+      <li>
+        <strong>{{ u.user_name || ('#' + (u.user_id || '—')) }}</strong>
+        <span>{{ formatDateTime(u.created_at) }}</span>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+  }
+</div>

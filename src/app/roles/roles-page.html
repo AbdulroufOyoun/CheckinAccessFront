@@ -1,0 +1,129 @@
+<div class="rbac" [class.rbac--rtl]="isRTL">
+  <div class="rbac__header">
+    <div>
+      <p class="rbac__eyebrow">{{ 'ROLE_EYEBROW' | translate }}</p>
+      <h1 class="rbac__title">{{ 'ROLE_PAGE_TITLE' | translate }}</h1>
+      <p class="rbac__subtitle">{{ 'ROLE_PAGE_HINT' | translate }}</p>
+    </div>
+    <button class="rbac__primary" type="button" (click)="openCreate()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      {{ 'ROLE_NEW' | translate }}
+    </button>
+  </div>
+
+  @if (loading) {
+  <app-page-skeleton variant="cards" [cards]="4" />
+  } @else {
+  <div class="rbac__layout reveal">
+    <!-- Roles rail -->
+    <aside class="rbac__rail">
+      <div class="rbac__rail-search">
+        <input type="text" [(ngModel)]="roleSearch" [placeholder]="'ROLE_SEARCH' | translate" />
+      </div>
+      <div class="rbac__rail-list">
+        @for (role of filteredRoles; track role.id; let i = $index) {
+        <button type="button" class="rbac__role-card reveal-item"
+          [style.--reveal-i]="i < 12 ? i : 12"
+          [class.rbac__role-card--active]="selectedRoleId === role.id"
+          [class.rbac__role-card--super]="role.name === 'Super Admin'"
+          (click)="selectRole(role)">
+          <div class="rbac__role-card-top">
+            <strong>{{ role.name }}</strong>
+            @if (role.name === 'Super Admin') {
+            <span class="rbac__lock">{{ 'ROLE_LOCKED' | translate }}</span>
+            }
+          </div>
+          <span class="rbac__role-count">
+            {{ 'ROLE_PERM_COUNT' | translate: { n: role.permissions?.length || 0 } }}
+          </span>
+        </button>
+        } @empty {
+        <p class="rbac__empty-rail">{{ 'ROLE_EMPTY' | translate }}</p>
+        }
+      </div>
+    </aside>
+
+    <!-- Detail -->
+    <section class="rbac__panel">
+      @if (!selectedRole) {
+      <div class="rbac__blank">
+        <h2>{{ 'ROLE_SELECT_HINT' | translate }}</h2>
+        <p>{{ 'ROLE_SELECT_HINT_DESC' | translate }}</p>
+      </div>
+      } @else {
+      @for (_ of [selectedRole]; track selectedRole!.id) {
+      <div class="rbac__panel-body reveal">
+      <div class="rbac__panel-head">
+        <div class="rbac__panel-title">
+          @if (renaming) {
+          <input class="rbac__rename" [(ngModel)]="renameValue" (keyup.enter)="saveRename()" />
+          <button type="button" class="rbac__ghost" (click)="saveRename()">{{ 'SAVE' | translate }}</button>
+          <button type="button" class="rbac__ghost" (click)="renaming = false">{{ 'CANCEL' | translate }}</button>
+          } @else {
+          <h2>{{ selectedRole!.name }}</h2>
+          @if (!isSuperAdmin) {
+          <button type="button" class="rbac__ghost" (click)="startRename()">{{ 'EDIT' | translate }}</button>
+          <button type="button" class="rbac__ghost rbac__ghost--danger" (click)="deleteRole()">
+            {{ 'DELETE' | translate }}
+          </button>
+          }
+          }
+        </div>
+        <div class="rbac__panel-actions">
+          <span class="rbac__selected-count">
+            {{ 'ROLE_SELECTED_COUNT' | translate: { n: selectedCount } }}
+          </span>
+          @if (!isSuperAdmin) {
+          <button type="button" class="rbac__primary" [disabled]="!dirty || saving" (click)="savePermissions()">
+            @if (saving) { {{ 'SAVING' | translate }} } @else { {{ 'ROLE_SAVE_PERMS' | translate }} }
+          </button>
+          }
+        </div>
+      </div>
+
+      @if (isSuperAdmin) {
+      <div class="rbac__banner">{{ 'ROLE_SUPER_HINT' | translate }}</div>
+      }
+
+      <div class="rbac__perm-tools">
+        <input type="text" [(ngModel)]="permSearch" [placeholder]="'ROLE_PERM_SEARCH' | translate" />
+      </div>
+
+      <div class="rbac__groups">
+        @for (group of permissionGroups; track group.key; let gi = $index) {
+        <article class="rbac__group reveal-item" [style.--reveal-i]="gi">
+          <header class="rbac__group-head">
+            <h3>{{ group.labelKey | translate }}</h3>
+            @if (!isSuperAdmin) {
+            <div class="rbac__group-actions">
+              <button type="button" (click)="selectAllInGroup(group)">{{ 'ROLE_SELECT_ALL' | translate }}</button>
+              <button type="button" (click)="clearGroup(group)">{{ 'ROLE_CLEAR' | translate }}</button>
+            </div>
+            }
+          </header>
+          <div class="rbac__perms">
+            @for (p of group.permissions; track p.id) {
+            <button type="button" class="rbac__perm"
+              [class.rbac__perm--on]="hasPermission(p.name)"
+              [disabled]="isSuperAdmin"
+              (click)="togglePermission(p.name)">
+              <span class="rbac__perm-dot" aria-hidden="true"></span>
+              <span class="rbac__perm-name">{{ p.name }}</span>
+            </button>
+            }
+          </div>
+        </article>
+        } @empty {
+        <p class="rbac__empty-rail">{{ 'ROLE_PERM_EMPTY' | translate }}</p>
+        }
+      </div>
+      </div>
+      }
+      }
+    </section>
+  </div>
+  }
+
+</div>

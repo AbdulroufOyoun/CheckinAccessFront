@@ -1,0 +1,75 @@
+.ats-dialog {
+  padding: 20px 22px;
+  min-width: min(480px, 92vw);
+}
+
+.ats-dialog h2 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.ats-sub {
+  margin: 0 0 6px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ats-hint {
+  margin: 0 0 14px;
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.ats-empty {
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.ats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(320px, 50vh);
+  overflow: auto;
+  margin-bottom: 16px;
+}
+
+.ats-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ats-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ats-btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ats-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ats-btn--ghost {
+  background: #e2e8f0;
+  color: #0f172a;
+}

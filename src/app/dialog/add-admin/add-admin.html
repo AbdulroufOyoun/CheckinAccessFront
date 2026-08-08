@@ -1,0 +1,96 @@
+<div class="as adm-dlg" role="dialog" aria-modal="true" [class.as--rtl]="isRTL">
+  <div class="as__hero">
+    <div class="as__hero-bg" aria-hidden="true"></div>
+    <button class="as__close" type="button" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="adm-dlg__hero-top">
+      <p class="as__eyebrow">
+        {{ (mode === 'edit' ? 'ADM_DIALOG_EYEBROW_EDIT' : 'ADM_DIALOG_EYEBROW_ADD') | translate }}
+      </p>
+      <h2 class="as__title">
+        {{ (mode === 'edit' ? 'ADM_DIALOG_TITLE_EDIT' : 'ADM_DIALOG_TITLE_ADD') | translate }}
+      </h2>
+    </div>
+
+    <div class="as__preview">
+      <div class="as__preview-code">{{ previewName.slice(0, 2).toUpperCase() || 'AD' }}</div>
+      <div class="as__preview-body">
+        <strong>{{ previewName }}</strong>
+        <span>{{ previewMeta }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="as__body">
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'ADM_SECTION_PROFILE' | translate }}</h3>
+
+      <label class="as__field">
+        <span class="as__label">{{ 'ADM_NAME' | translate }} <i>*</i></span>
+        <input class="as__input as__input--lg" type="text" [(ngModel)]="form.name"
+          [placeholder]="'ADM_NAME_PLACEHOLDER' | translate" autocomplete="off" />
+      </label>
+
+      <div class="as__row as__row--names">
+        <label class="as__field">
+          <span class="as__label">{{ 'EMAIL' | translate }}</span>
+          <input class="as__input" type="email" [(ngModel)]="form.email"
+            [placeholder]="'ADM_EMAIL_PLACEHOLDER' | translate" autocomplete="off" dir="ltr" />
+        </label>
+        <label class="as__field">
+          <span class="as__label">{{ 'ADM_MOBILE' | translate }} <i>*</i></span>
+          <input class="as__input" type="text" [(ngModel)]="form.mobile"
+            [placeholder]="'ADM_MOBILE_PLACEHOLDER' | translate" autocomplete="off" dir="ltr" />
+        </label>
+      </div>
+
+      <label class="as__field">
+        <span class="as__label">
+          {{ 'PASSWORD' | translate }}
+          @if (mode === 'add') { <i>*</i> }
+        </span>
+        <input class="as__input" type="password" [(ngModel)]="form.password"
+          [placeholder]="(mode === 'edit' ? 'ADM_PASSWORD_OPTIONAL' : 'ADM_PASSWORD_PLACEHOLDER') | translate"
+          autocomplete="new-password" dir="ltr" />
+      </label>
+    </section>
+
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'ADM_SECTION_ROLES' | translate }}</h3>
+      <div class="adm-dlg__roles">
+        @for (r of roles; track r.id) {
+        <button type="button" class="adm-dlg__role" [class.adm-dlg__role--on]="hasRole(r.name)"
+          (click)="toggleRole(r.name)">
+          <span>{{ r.name }}</span>
+          <span class="adm-dlg__role-check" aria-hidden="true"></span>
+        </button>
+        } @empty {
+        <div class="adm-dlg__hint-block">
+          <p class="adm-dlg__hint">{{ 'ADM_NO_ROLES_AVAILABLE' | translate }}</p>
+          <p class="adm-dlg__hint-sub">{{ 'ADM_NO_ROLES_AVAILABLE_HINT' | translate }}</p>
+        </div>
+        }
+      </div>
+    </section>
+  </div>
+
+  <div class="as__footer">
+    <button class="as__btn as__btn--ghost" type="button" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
+    <button class="as__btn as__btn--primary" type="button" (click)="save()"
+      [disabled]="saving || !canSave">
+      @if (saving) {
+      <span class="as__spinner"></span> {{ 'SAVING' | translate }}
+      } @else if (mode === 'edit') {
+      {{ 'ADM_SAVE_CHANGES' | translate }}
+      } @else {
+      {{ 'ADM_CREATE' | translate }}
+      }
+    </button>
+  </div>
+</div>

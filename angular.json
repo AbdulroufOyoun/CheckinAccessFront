@@ -19,6 +19,8 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
+              "src/favicon.png",
+              "src/favicon-32.png",
               "src/favicon.ico",
               "src/assets",
               {
@@ -29,13 +31,15 @@
             "styles": [
               "src/styles.css"
             ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
             "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
+              "allowedHosts": [
+                "localhost",
+                "127.0.0.1",
+                ".localhost",
+                "*.localhost",
+                "abd.localhost",
+                "ratco.localhost"
+              ]
             }
           },
           "configurations": {
@@ -64,6 +68,15 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [
+              "localhost",
+              "127.0.0.1",
+              ".localhost",
+              "abd.localhost",
+              "ratco.localhost"
+            ]
+          },
           "configurations": {
             "production": {
               "buildTarget": "Accommodation_Dashboard:build:production"

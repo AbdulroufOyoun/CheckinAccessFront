@@ -1,0 +1,163 @@
+<div class="sched" [class.sched--rtl]="isRTL">
+  <div class="sched__header no-print">
+    <div>
+      <h1 class="sched__title">{{ 'SCHED_PAGE_TITLE' | translate }}</h1>
+      <p class="sched__subtitle">{{ 'SCHED_PAGE_HINT' | translate }}</p>
+      @if (activeTerm) {
+      <div class="sched__term-badge">
+        <span class="sched__term-badge__label">{{ 'SCHED_TERM_LABEL' | translate }}</span>
+        <strong class="sched__term-badge__name">{{ termLabel }}</strong>
+        <span class="sched__term-badge__dates">{{ termDatesLabel }}</span>
+      </div>
+      } @else if (!showSkeleton) {
+      <div class="sched__term-badge sched__term-badge--muted">
+        <span class="sched__term-badge__label">{{ 'SCHED_TERM_NONE' | translate }}</span>
+      </div>
+      }
+    </div>
+    <div class="sched__actions">
+      <button class="sched__btn sched__btn--ghost" type="button" (click)="refresh()" [disabled]="loading">
+        {{ 'SCHED_REFRESH' | translate }}
+      </button>
+      <button class="sched__btn sched__btn--primary" type="button" (click)="print()" [disabled]="loading || !hasEntries">
+        {{ 'SCHED_PRINT' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="sched__toolbar no-print">
+    <label class="sched__filter">
+      <span>{{ 'SCHED_FILTER_TERM' | translate }}</span>
+      <select
+        [ngModel]="filterTermId ?? ''"
+        (ngModelChange)="onTermFilterChange($event)"
+        [disabled]="loading || !hasOpenTerms"
+      >
+        @if (!hasOpenTerms) {
+        <option [ngValue]="''">{{ 'SCHED_TERM_NONE' | translate }}</option>
+        }
+        @for (t of openTerms; track t.id) {
+        <option [ngValue]="t.id">{{ termOptionLabel(t) }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="sched__filter">
+      <span>{{ 'SCHED_FILTER_SUBJECT' | translate }}</span>
+      <select
+        [ngModel]="filterSubjectId ?? ''"
+        (ngModelChange)="onSubjectFilterChange($event)"
+        [disabled]="loading"
+      >
+        <option [ngValue]="''">{{ 'SCHED_FILTER_ALL' | translate }}</option>
+        @for (s of subjects; track s.id) {
+        <option [ngValue]="s.id">{{ subjectLabel(s) }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (showSkeleton || loading) {
+  <app-page-skeleton variant="table" [rows]="8" [cols]="8" />
+  } @else if (!days.length) {
+  <div class="sched__empty reveal">
+    <p>{{ 'SCHED_NO_DAYS' | translate }}</p>
+  </div>
+  } @else if (!hasEntries) {
+  <div class="sched__empty reveal">
+    <p>{{ (activeTerm ? 'SCHED_EMPTY_TERM' : 'SCHED_EMPTY') | translate }}</p>
+    <a class="sched__btn sched__btn--ghost" routerLink="/Education/Sections">{{ 'SCHED_GO_SECTIONS' | translate }}</a>
+  </div>
+  } @else {
+  <div class="sched__sheet reveal" id="schedule-print-area">
+    <div class="sched__print-head print-only">
+      <div class="sched__print-head__row">
+        <h2>{{ 'SCHED_PAGE_TITLE' | translate }}</h2>
+        <span class="sched__print-meta">{{ printedAt }}</span>
+      </div>
+      @if (filterSubjectLabel) {
+      <p class="sched__print-filter">{{ 'SCHED_FILTER_SUBJECT' | translate }}: {{ filterSubjectLabel }}</p>
+      }
+    </div>
+
+    @if (activeTerm) {
+    <div class="sched__term-bar no-print">
+      <div class="sched__term-bar__main">
+        <span class="sched__term-bar__eyebrow">{{ 'SCHED_TERM_LABEL' | translate }}</span>
+        <strong>{{ termLabel }}</strong>
+      </div>
+      <span class="sched__term-bar__dates">{{ termDatesLabel }}</span>
+    </div>
+    }
+
+    <div class="sched__table-wrap">
+      <div
+        class="sched__week"
+        [style.--day-count]="days.length"
+        [style.--sched-rows-fr]="rowsTemplateFr"
+      >
+        <div class="sched__week-head">
+          <div class="sched__corner">{{ 'SCHED_TIME_COL' | translate }}</div>
+          @for (track of dayTracks; track track.day.id) {
+          <div class="sched__day-head">{{ dayLabel(track.day) }}</div>
+          }
+        </div>
+
+        <div class="sched__week-body" [style.height.px]="trackHeightPx">
+          <div class="sched__time-axis" [style.grid-template-rows]="rowsTemplate">
+            @for (row of atomicRows; track row.key) {
+            <div class="sched__time-seg">
+              <span class="sched__time-from">{{ formatTime(row.start) }}</span>
+              <span class="sched__time-sep">→</span>
+              <span class="sched__time-to">{{ formatTime(row.end) }}</span>
+            </div>
+            }
+          </div>
+
+          @for (track of dayTracks; track track.day.id) {
+          <div class="sched__day-track" [style.height.px]="trackHeightPx">
+            <div class="sched__day-lines" [style.grid-template-rows]="rowsTemplate" aria-hidden="true">
+              @for (row of atomicRows; track row.key) {
+              <div class="sched__day-line"></div>
+              }
+            </div>
+            <div
+              class="sched__day-events"
+              [style.grid-template-rows]="rowsTemplate"
+              [style.grid-template-columns]="track.columnTemplate"
+            >
+              @for (ev of track.events; track ev.id) {
+              <article
+                class="sched__event"
+                [class.sched__event--lab]="ev.practical"
+                [class.sched__event--overlap]="track.laneCount > 1"
+                [style.grid-row]="eventGridRow(ev)"
+                [style.grid-column]="eventGridColumn(ev)"
+                [attr.title]="ev.subject + ' · ' + ev.timeLabel + ' · ' + ev.doctor + ' · ' + ev.room"
+              >
+                <strong>{{ ev.subject }}</strong>
+                <span class="sched__event-section">{{ 'SCHED_SECTION' | translate: { n: ev.sectionNumber } }}</span>
+                <em class="sched__event-time">{{ ev.timeLabel }}</em>
+                <small class="sched__event-doctor">{{ ev.doctor }}</small>
+                <small class="sched__event-room">{{ ev.room }}</small>
+              </article>
+              }
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="sched__print-foot print-only">
+      @if (activeTerm) {
+      <span>{{ 'SCHED_TERM_LABEL' | translate }}: {{ termLabel }}</span>
+      <span class="sched__print-foot__sep">·</span>
+      <span>{{ termDatesLabel }}</span>
+      } @else {
+      <span>{{ 'SCHED_TERM_NONE' | translate }}</span>
+      }
+    </div>
+  </div>
+  }
+</div>

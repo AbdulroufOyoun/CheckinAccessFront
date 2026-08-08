@@ -12,10 +12,22 @@ export class SnackbarService {
     message: string,
     type: 'success' | 'error' = 'success'
   ) {
+    const text =
+      typeof message === 'string' && message.trim()
+        ? message
+        : message == null
+          ? 'Unexpected error'
+          : (() => {
+              try {
+                return JSON.stringify(message);
+              } catch {
+                return 'Unexpected error';
+              }
+            })();
 
     const isArabic = 'en';
 
-    this.snackBar.open(message, undefined, {
+    this.snackBar.open(text, undefined, {
       duration: 5000,
 
       horizontalPosition:

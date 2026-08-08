@@ -1,0 +1,28 @@
+<div class="abl-dialog">
+  <h2>{{ 'BOOK_LOCKS_TITLE' | translate }}</h2>
+  <p class="abl-sub">#{{ bookingId }} · {{ guestName }}</p>
+
+  @if (loading) {
+  <p>{{ 'LOADING' | translate }}</p>
+  } @else if (!locks.length) {
+  <p>{{ 'BOOK_LOCKS_EMPTY' | translate }}</p>
+  } @else {
+  <div class="abl-list">
+    @for (lock of locks; track lock.id) {
+    <label class="abl-item">
+      <input type="checkbox" [checked]="isChecked(lock.id)" (change)="toggle(lock.id)" />
+      <span>{{ lockLabel(lock) }}</span>
+    </label>
+    }
+  </div>
+  }
+
+  <div class="abl-actions">
+    <button type="button" class="abl-btn abl-btn--ghost" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
+    <button type="button" class="abl-btn" (click)="save()" [disabled]="loading || saving || !locks.length">
+      {{ saving ? ('LOADING' | translate) : ('SAVE' | translate) }}
+    </button>
+  </div>
+</div>

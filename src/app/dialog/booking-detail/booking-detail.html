@@ -1,0 +1,159 @@
+<div class="bd" [class.bd--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="bd__head">
+    <div>
+      <p class="bd__eyebrow">{{ 'BOOK_DETAIL_EYEBROW' | translate }}</p>
+      <h2 class="bd__title">{{ 'BOOK_DETAIL_TITLE' | translate: { id: data.bookingId } }}</h2>
+    </div>
+    <button type="button" class="bd__close" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18" />
+        <path d="m6 6 12 12" />
+      </svg>
+    </button>
+  </header>
+
+  @if (loading) {
+  <div class="bd__loading" aria-busy="true">
+    <div class="bd__skel"></div>
+    <div class="bd__skel bd__skel--sm"></div>
+    <div class="bd__skel"></div>
+  </div>
+  } @else if (booking) {
+  <div class="bd__body">
+    <section class="bd__section">
+      <div class="bd__guest">
+        <span class="bd__avatar" aria-hidden="true">
+          {{ (booking.user?.name || '?').trim().slice(0, 1).toUpperCase() }}
+        </span>
+        <div>
+          <strong>{{ booking.user?.name || ('#' + booking.user_id) }}</strong>
+          @if (booking.user?.email) {
+          <p>{{ booking.user?.email }}</p>
+          }
+          @if (booking.user?.mobile) {
+          <p>{{ booking.user?.mobile }}</p>
+          }
+        </div>
+        <span class="bd__status bd__status--{{ status }}">
+          {{ ('BOOK_STATUS_' + status.toUpperCase()) | translate }}
+        </span>
+      </div>
+    </section>
+
+    <section class="bd__section">
+      <h3>{{ 'BOOK_DETAIL_UNITS' | translate }}</h3>
+      @if (!units.length) {
+      <p class="bd__muted">{{ 'BOOK_DETAIL_NO_UNITS' | translate }}</p>
+      } @else {
+      <ul class="bd__list">
+        @for (u of units; track u.id || $index) {
+        <li>
+          @if (unitClickable(u)) {
+          <button type="button" class="bd__link-row" (click)="goToUnit(u)"
+            [attr.aria-label]="'BOOK_DETAIL_GO_ROOM' | translate">
+            <span class="bd__link-main">
+              <strong>{{ unitLabel(u) }}</strong>
+              @if (buildingLabel(u); as b) {
+              <span>{{ b }}</span>
+              }
+            </span>
+            <span class="bd__link-hint" aria-hidden="true">↗</span>
+          </button>
+          } @else {
+          <strong>{{ unitLabel(u) }}</strong>
+          @if (buildingLabel(u); as b) {
+          <span>{{ b }}</span>
+          }
+          }
+        </li>
+        }
+      </ul>
+      }
+    </section>
+
+    <section class="bd__section">
+      <h3>{{ 'BOOK_DETAIL_PERIODS' | translate }}</h3>
+      @if (!periods.length) {
+      <p class="bd__muted">{{ 'BOOK_DETAIL_NO_PERIODS' | translate }}</p>
+      } @else {
+      @for (p of periods; track p.id || $index; let i = $index) {
+      <article class="bd__period">
+        <header>
+          <strong>{{ 'BOOK_DETAIL_PERIOD_N' | translate: { n: i + 1 } }}</strong>
+          <span>{{ formatDate(p.check_in_date) }} → {{ formatDate(p.check_out_date) }}</span>
+        </header>
+
+        <dl class="bd__meta">
+          <div>
+            <dt>{{ 'BOOK_COL_SCHEDULE' | translate }}</dt>
+            <dd>
+              @if (p.time_scheduled && periodTimes(p).length) {
+              @for (t of periodTimes(p); track $index) {
+              <span class="bd__chip">{{ fmtTime(t.start_time) }}–{{ fmtTime(t.end_time) }}</span>
+              }
+              } @else {
+              {{ 'BOOK_FULL_DAY' | translate }}
+              }
+            </dd>
+          </div>
+          <div>
+            <dt>{{ 'BOOK_DETAIL_INCLUSIONS' | translate }}</dt>
+            <dd>
+              @if (inclusionFlags(p).length) {
+              {{ inclusionFlags(p).join(' · ') }}
+              } @else {
+              {{ 'BOOK_DETAIL_NO_INCLUSIONS' | translate }}
+              }
+            </dd>
+          </div>
+          <div>
+            <dt>{{ 'BOOK_DETAIL_EXCLUDED_DAYS' | translate }}</dt>
+            <dd>{{ excludedWeekdays(p) }}</dd>
+          </div>
+          @if (periodGuests(p).length) {
+          <div>
+            <dt>{{ 'BOOK_DETAIL_EXTRA_GUESTS' | translate }}</dt>
+            <dd>
+              @for (g of periodGuests(p); track g.id) {
+              <span class="bd__chip">{{ g.name || ('#' + g.id) }}</span>
+              }
+            </dd>
+          </div>
+          }
+        </dl>
+      </article>
+      }
+      }
+    </section>
+
+    <section class="bd__section">
+      <h3>{{ 'BOOK_DETAIL_LOCKS' | translate }}</h3>
+      @if (!locks.length) {
+      <p class="bd__muted">{{ 'BOOK_DETAIL_NO_LOCKS' | translate }}</p>
+      } @else {
+      <ul class="bd__list">
+        @for (lock of locks; track lock.id) {
+        <li>
+          <button type="button" class="bd__link-row" (click)="goToLock(lock)"
+            [attr.aria-label]="'BOOK_DETAIL_GO_LOCK' | translate">
+            <span class="bd__link-main">
+              <strong>{{ lockLabel(lock) }}</strong>
+              @if (lock.lockMac) {
+              <span>{{ lock.lockMac }}</span>
+              }
+            </span>
+            <span class="bd__link-hint" aria-hidden="true">↗</span>
+          </button>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+  </div>
+
+  <footer class="bd__foot">
+    <button type="button" class="bd__btn" (click)="close()">{{ 'CLOSE' | translate }}</button>
+  </footer>
+  }
+</div>

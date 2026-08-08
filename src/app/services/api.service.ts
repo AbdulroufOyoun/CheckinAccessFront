@@ -1,28 +1,30 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
+  constructor(private http: HttpClient) {}
 
-  constructor(private http: HttpClient) { }
-
-  get(url: string) {
-    return firstValueFrom(this.http.get(url));
+  get<T = unknown>(url: string): Promise<T> {
+    return firstValueFrom(this.http.get<T>(url));
   }
 
-  async post<T>(url: string, body: any): Promise<T> {
+  async post<T>(url: string, body: unknown = {}): Promise<T> {
     return await firstValueFrom(this.http.post<T>(url, body));
   }
 
-  put(url: string, body: any) {
-    return firstValueFrom(this.http.put(url, body));
+  put<T = unknown>(url: string, body: unknown = {}): Promise<T> {
+    return firstValueFrom(this.http.put<T>(url, body));
   }
 
-  delete(url: string) {
-    return firstValueFrom(this.http.delete(url));
+  delete<T = unknown>(url: string): Promise<T> {
+    return firstValueFrom(this.http.delete<T>(url));
   }
 
+  deleteWithBody<T = unknown>(url: string, body: unknown): Promise<T> {
+    return firstValueFrom(this.http.delete<T>(url, { body }));
+  }
 }

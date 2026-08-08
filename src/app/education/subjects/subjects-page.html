@@ -1,0 +1,116 @@
+<div class="subj-page" [class.subj-page--rtl]="isRTL">
+  <div class="subj-page__header">
+    <div>
+      <h1 class="subj-page__title">{{ 'SUBJ_PAGE_TITLE' | translate }}</h1>
+      <p class="subj-page__subtitle">
+        {{ 'SUBJ_PAGE_COUNT' | translate: { filtered: filtered.length, total: subjects.length } }}
+      </p>
+    </div>
+    <button class="subj-page__add" type="button" (click)="openCreate()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      {{ 'SUBJ_NEW' | translate }}
+    </button>
+  </div>
+
+  <div class="subj-search">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+      stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input type="text" [placeholder]="'SUBJ_SEARCH_PLACEHOLDER' | translate" [(ngModel)]="search"
+      (ngModelChange)="applyFilter()" />
+  </div>
+
+  @if (showSkeleton) {
+  <app-page-skeleton variant="table" [rows]="7" [cols]="6" />
+  } @else if (!filtered.length) {
+  <div class="subj-empty reveal">
+    <div class="subj-empty__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+        stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    </div>
+    <p>{{ (subjects.length ? 'SUBJ_EMPTY_SEARCH' : 'SUBJ_EMPTY') | translate }}</p>
+    @if (!subjects.length) {
+    <button class="subj-page__add" type="button" (click)="openCreate()">
+      {{ 'SUBJ_CREATE_FIRST' | translate }}
+    </button>
+    }
+  </div>
+  } @else {
+  <div class="subj-table-wrap reveal">
+    <table class="subj-table">
+      <colgroup>
+        <col class="subj-col-name" />
+        <col class="subj-col-code" />
+        <col class="subj-col-hours" />
+        <col class="subj-col-prereq" />
+        <col class="subj-col-status" />
+        <col class="subj-col-actions" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>{{ 'SUBJ_COL_SUBJECT' | translate }}</th>
+          <th>{{ 'SUBJ_SHORT_CODE' | translate }}</th>
+          <th>{{ 'SUBJ_COL_HOURS' | translate }}</th>
+          <th>{{ 'SUBJ_COL_PREREQ' | translate }}</th>
+          <th>{{ 'SUBJ_COL_FLAGS' | translate }}</th>
+          <th class="subj-th-actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of filtered; track s.id; let i = $index) {
+        <tr class="subj-row reveal-item" [style.--reveal-i]="i < 12 ? i : 12" role="link" tabindex="0"
+          [attr.title]="'SUBJ_OPEN_SECTIONS' | translate" (click)="openSections(s)"
+          (keydown.enter)="openSections(s)">
+          <td>
+            <div class="subj-name-cell">
+              <span class="subj-text" [title]="displayName(s)">{{ displayName(s) }}</span>
+              @if (secondaryName(s)) {
+              <span class="subj-text-secondary" [title]="secondaryName(s)">{{ secondaryName(s) }}</span>
+              }
+            </div>
+          </td>
+          <td>
+            <span class="subj-code">{{ s.short_name || '—' }}</span>
+          </td>
+          <td>
+            <span class="subj-chip">{{ 'SUBJ_HOURS_UNIT' | translate: { hours: s.hours ?? 0 } }}</span>
+          </td>
+          <td>
+            <span class="subj-text"
+              [title]="s.required_subject ? displayName(s.required_subject) : ''">
+              {{ s.required_subject ? displayName(s.required_subject) : '—' }}
+            </span>
+          </td>
+          <td>
+            <div class="subj-flags">
+              @if (s.has_practical) {
+              <span class="subj-badge subj-badge--lab">{{ 'SUBJ_PRACTICAL' | translate }}</span>
+              }
+              <span class="subj-badge" [class.subj-badge--on]="s.active !== false"
+                [class.subj-badge--off]="s.active === false">
+                {{ (s.active === false ? 'INACTIVE' : 'ACTIVE') | translate }}
+              </span>
+            </div>
+          </td>
+          <td class="subj-actions" (click)="$event.stopPropagation()">
+            <button type="button" class="subj-icon-btn" [title]="'EDIT' | translate"
+              (click)="openEdit(s, $event)">{{ 'EDIT' | translate }}</button>
+            <button type="button" class="subj-icon-btn subj-icon-btn--danger" [title]="'DELETE' | translate"
+              (click)="remove(s, $event)">{{ 'DELETE' | translate }}</button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>

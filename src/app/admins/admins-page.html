@@ -1,0 +1,107 @@
+<div class="edu-ui adm-page" [class.edu-ui--rtl]="isRTL">
+  <div class="edu-ui__header">
+    <div>
+      <h1 class="edu-ui__title">{{ 'ADM_PAGE_TITLE' | translate }}</h1>
+      <p class="edu-ui__subtitle">
+        @if (loading) {
+        <span class="edu-skel-line" aria-hidden="true"></span>
+        } @else {
+        {{ 'ADM_PAGE_COUNT' | translate: { filtered: filtered.length, total: admins.length } }}
+        }
+      </p>
+    </div>
+    <button class="edu-ui__add" type="button" (click)="openCreate()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      {{ 'ADM_NEW' | translate }}
+    </button>
+  </div>
+
+  <div class="edu-ui__toolbar">
+    <div class="edu-ui__search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+        stroke="#9CA3AF" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input type="text" [placeholder]="'ADM_SEARCH_PLACEHOLDER' | translate" [(ngModel)]="search"
+        (ngModelChange)="applyFilter()" />
+    </div>
+  </div>
+
+  @if (loading) {
+  <app-page-skeleton variant="table" [rows]="6" [cols]="5" />
+  } @else if (!filtered.length) {
+  <div class="edu-ui__empty reveal">
+    <p>{{ (admins.length ? 'ADM_EMPTY_SEARCH' : 'ADM_EMPTY') | translate }}</p>
+    @if (!admins.length) {
+    <button class="edu-ui__add" type="button" (click)="openCreate()">{{ 'ADM_CREATE_FIRST' | translate }}</button>
+    }
+  </div>
+  } @else {
+  <div class="edu-ui__table-wrap reveal">
+    <table class="edu-ui__table">
+      <thead>
+        <tr>
+          <th>{{ 'ADM_COL_ADMIN' | translate }}</th>
+          <th>{{ 'ADM_COL_CONTACT' | translate }}</th>
+          <th>{{ 'ADM_COL_ROLES' | translate }}</th>
+          <th>{{ 'ADM_COL_STATUS' | translate }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of filtered; track a.id; let i = $index) {
+        <tr class="reveal-item" [style.--reveal-i]="i < 12 ? i : 12">
+          <td>
+            <div class="adm-page__person">
+              <div class="adm-page__avatar">{{ initials(a) }}</div>
+              <div class="edu-ui__name-cell">
+                <span class="edu-ui__text">{{ a.name }}</span>
+                <span class="edu-ui__text-secondary">#{{ a.id }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="edu-ui__name-cell">
+              <span class="edu-ui__text">{{ a.mobile || '—' }}</span>
+              <span class="edu-ui__text-secondary">{{ a.email || '—' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="edu-ui__flags">
+              @for (r of a.roles || []; track r.id) {
+              <span class="edu-ui__badge edu-ui__badge--lab">{{ r.name }}</span>
+              } @empty {
+              <span class="edu-ui__text-secondary">{{ 'ADM_NO_ROLES' | translate }}</span>
+              }
+            </div>
+          </td>
+          <td>
+            <span class="edu-ui__badge"
+              [class.edu-ui__badge--on]="isActive(a)"
+              [class.edu-ui__badge--off]="!isActive(a)">
+              {{ (isActive(a) ? 'ACTIVE' : 'INACTIVE') | translate }}
+            </span>
+          </td>
+          <td class="edu-ui__actions">
+            <button type="button" class="edu-ui__btn" (click)="openEdit(a)">{{ 'EDIT' | translate }}</button>
+            <button type="button" class="edu-ui__btn" (click)="openResetPassword(a)">
+              {{ 'ADM_CHANGE_PASSWORD' | translate }}
+            </button>
+            <button type="button" class="edu-ui__btn"
+              [class.edu-ui__btn--danger]="isActive(a)"
+              (click)="toggleActive(a)">
+              {{ (isActive(a) ? 'ADM_DEACTIVATE' : 'ADM_ACTIVATE') | translate }}
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>

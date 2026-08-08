@@ -1,85 +1,8 @@
-<div class="shell" [class.shell--rtl]="isRTL"> <!-- ═══════════════════════════════════════════════ -->
-  <!-- SKELETON LOADING --> <!-- ═══════════════════════════════════════════════ -->
-  @if (isLoading) {
-  <!-- SIDEBAR SKELETON -->
-  <aside class="sidebar sidebar--open"> <!-- LOGO -->
-    <div class="sidebar__logo">
-      <div class="skeleton-box w-40 h-40 circle"></div>
-      <div class="sidebar__logo-text sidebar__logo-text--visible">
-        <div class="skeleton-box w-140 h-16"></div>
-        <div class="skeleton-box w-100 h-12"></div>
-      </div>
-    </div> <!-- NAVIGATION -->
-    <nav class="sidebar__nav">
-      <div class="sidebar__nav-group"> @for (item of [1,2,3,4,5]; track item) { <div
-          class="sidebar__nav-item sidebar__nav-item--skeleton">
-          <div class="skeleton-box w-18 h-18 circle"></div>
-          <div class="skeleton-box w-120 h-14"></div>
-        </div> } </div>
-      <div class="sidebar__divider"></div>
-      <div class="sidebar__nav-group">
-        <div class="sidebar__nav-item sidebar__nav-item--skeleton">
-          <div class="skeleton-box w-18 h-18 circle"></div>
-          <div class="skeleton-box w-90 h-14"></div>
-        </div>
-      </div>
-    </nav> <!-- BOTTOM -->
-    <div class="sidebar__bottom">
-      <div class="sidebar__logout-btn sidebar__nav-item--skeleton">
-        <div class="skeleton-box w-18 h-18 circle"></div>
-        <div class="skeleton-box w-80 h-14"></div>
-      </div>
-      <div class="sidebar__user-card sidebar__user-card--visible">
-        <div class="skeleton-box w-42 h-42 circle"></div>
-        <div class="sidebar__user-info">
-          <div class="skeleton-box w-110 h-14"></div>
-          <div class="skeleton-box w-150 h-12"></div>
-        </div>
-      </div>
-    </div>
-  </aside> <!-- MAIN AREA -->
-  <div class="main-area"> <!-- NAVBAR -->
-    <header class="navbar">
-      <div class="navbar__left">
-        <div class="skeleton-box w-40 h-40 circle"></div>
-        <div class="skeleton-box w-150 h-16"></div>
-      </div>
-      <div class="navbar__right">
-        <div class="skeleton-box w-200 h-32"></div>
-        <div class="skeleton-box w-80 h-32"></div>
-        <div class="skeleton-box w-40 h-40 circle"></div>
-      </div>
-    </header> <!-- PAGE CONTENT -->
-    <main class="page-content"> <!-- CARDS -->
-      <div class="page-grid"> @for (item of [1,2,3,4]; track item) { <div class="skeleton-card">
-          <div class="skeleton-box w-120 h-18"></div>
-          <div class="skeleton-box w-100 h-14"></div>
-          <div class="skeleton-box w-full h-120"></div>
-        </div> } </div> <!-- TABLE -->
-      <div class="skeleton-table">
-        <div class="skeleton-table__header">
-          <div class="skeleton-box w-120 h-18"></div>
-          <div class="skeleton-box w-80 h-32"></div>
-        </div> @for (row of [1,2,3,4,5]; track row) { <div class="skeleton-table__row">
-          <div class="skeleton-box w-120 h-14"></div>
-          <div class="skeleton-box w-80 h-14"></div>
-          <div class="skeleton-box w-100 h-14"></div>
-          <div class="skeleton-box w-60 h-14"></div>
-        </div> }
-      </div>
-    </main>
-  </div> } <!-- ═══════════════════════════════════════════════ --> <!-- REAL CONTENT -->
-  <!-- ═══════════════════════════════════════════════ -->
-  @else {
-  <!-- <div class="shell" [class.shell--rtl]="isRTL"> -->
-  <!-- ═══════════════════════════════════════════════════════
-       SIDEBAR
-  ═══════════════════════════════════════════════════════ -->
+<div class="shell" [class.shell--rtl]="isRTL">
+  <!-- SIDEBAR — always mounted; never skeleton on page navigation -->
   <aside class="sidebar" [class.sidebar--open]="sidebarOpen" [class.sidebar--collapsed]="!sidebarOpen">
-    <!-- Logo Row -->
     <div class="sidebar__logo">
       <div class="sidebar__logo-icon">
-        <!-- SVG: Building2 icon -->
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
@@ -87,119 +10,126 @@
           <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M8 10h.01M16 10h.01M12 14h.01M8 14h.01M16 14h.01" />
         </svg>
       </div>
-      <!-- *ngIf="sidebarOpen" -->
       <div class="sidebar__logo-text sidebar__logo-text--visible">
         <p class="sidebar__app-name">Accommodtion System</p>
         <p class="sidebar__app-subtitle">Management System</p>
       </div>
     </div>
 
-    <!-- Navigation -->
     <nav class="sidebar__nav">
-      <div class="sidebar__nav-group">
-        <!-- Dashboard (active state example) -->
-        <a class="sidebar__nav-link" routerLink="/Dashboard" routerLinkActive="sidebar__nav-item--active"
-          [routerLinkActiveOptions]="{ exact: true }" (click)="currentPage('DASHBOARD')">
-          <div class="sidebar__nav-item">
-            <!-- <span class="sidebar__nav-active-bar"></span>
-            <span class="sidebar__nav-active-bg"></span> -->
-            <!-- SVG: LayoutDashboard -->
-            <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-            </svg>
-            <!-- *ngIf="sidebarOpen" -->
-            <span class="sidebar__nav-label sidebar__nav-label--visible"> {{ 'DASHBOARD' | translate }}</span>
-          </div>
-        </a>
-
-        <!-- Reservations -->
-        <a class="sidebar__nav-link" routerLink="/Reservations" routerLinkActive="sidebar__nav-item--active"
-          (click)="currentPage('RESERVATIONS')">
-          <!-- <div class="sidebar__nav-item"> -->
-          <div class="sidebar__nav-item">
-            <!-- SVG: CalendarDays -->
-            <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-              <line x1="8" y1="14" x2="8.01" y2="14" />
-              <line x1="12" y1="14" x2="12.01" y2="14" />
-              <line x1="16" y1="14" x2="16.01" y2="14" />
-              <line x1="8" y1="18" x2="8.01" y2="18" />
-              <line x1="12" y1="18" x2="12.01" y2="18" />
-            </svg>
-            <!-- *ngIf="sidebarOpen" -->
-            <span class="sidebar__nav-label sidebar__nav-label--visible"> {{ 'RESERVATIONS' | translate }} </span>
-          </div>
-        </a>
-
-        <!-- Users -->
-        <a class="sidebar__nav-link" routerLink="/Users" routerLinkActive="sidebar__nav-item--active"
-          (click)="currentPage('USERS')">
-          <!-- <div class="sidebar__nav-item"> -->
-          <div class="sidebar__nav-item">
-            <!-- SVG: Users -->
-            <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            <!-- *ngIf="sidebarOpen" -->
-            <span class="sidebar__nav-label sidebar__nav-label--visible">{{'USERS'|translate}}</span>
-          </div>
-        </a>
-
-        <!-- Reports -->
-        <a class="sidebar__nav-link" routerLink="/Reports" routerLinkActive="sidebar__nav-item--active"
-          (click)="currentPage('REPORTS')">
-          <div class="sidebar__nav-item">
-            <!-- <div class="sidebar__nav-item"> -->
-            <!-- SVG: BarChart3 -->
-            <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 20V10" />asd
-              <path d="M12 20V4" />
-              <path d="M6 20v-6" />
-            </svg>
-            <!-- *ngIf="sidebarOpen" -->
-            <span class="sidebar__nav-label sidebar__nav-label--visible">{{'REPORTS'|translate}}</span>
-          </div>
-        </a>
-
-        <!-- Facilites Management -->
-        <a class="sidebar__nav-link" routerLink="/FacilitiesManagement" routerLinkActive="sidebar__nav-item--active"
-          (click)="currentPage('FACILITIESMANAGENET')">
-          <div class="sidebar__nav-item">
-            <!-- <div class="sidebar__nav-item"> -->
-            <!-- SVG: BarChart3 -->
-            <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 20V10" />
-              <path d="M12 20V4" />
-              <path d="M6 20v-6" />
-            </svg>
-            <!-- *ngIf="sidebarOpen" -->
-            <span class="sidebar__nav-label sidebar__nav-label--visible">{{'FACILITIESMANAGENET'|translate}}</span>
-          </div>
-        </a>
+      @for (section of navSections; track section.id) {
+      <div class="sidebar__section">
+        <p class="sidebar__section-label" [class.sidebar__section-label--hidden]="!sidebarOpen">
+          {{ section.labelKey | translate }}
+        </p>
+        <div class="sidebar__nav-group">
+          @for (item of section.items; track item.route) {
+          <a class="sidebar__nav-link" [routerLink]="item.route" routerLinkActive="sidebar__nav-item--active"
+            [routerLinkActiveOptions]="{ exact: item.route === '/Dashboard' }" (click)="currentPage(item.labelKey)">
+            <div class="sidebar__nav-item">
+              <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                @switch (item.icon) {
+                @case ('dashboard') {
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                }
+                @case ('reservations') {
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                }
+                @case ('room-status') {
+                <path d="M2 4v16" />
+                <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+                <path d="M2 17h20" />
+                <path d="M6 8v9" />
+                }
+                @case ('holidays') {
+                <path d="M8 2v4" />
+                <path d="M16 2v4" />
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M3 10h18" />
+                <path d="M8 14h.01" />
+                <path d="M12 14h.01" />
+                <path d="M16 14h.01" />
+                <path d="M8 18h.01" />
+                <path d="M12 18h.01" />
+                }
+                @case ('facilities') {
+                <path d="M3 21h18" />
+                <path d="M5 21V7l7-4 7 4v14" />
+                <path d="M9 21v-6h6v6" />
+                }
+                @case ('reports') {
+                <path d="M18 20V10" />
+                <path d="M12 20V4" />
+                <path d="M6 20v-6" />
+                }
+                @case ('subjects') {
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                }
+                @case ('sections') {
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" />
+                <path d="M9 12h6" />
+                <path d="M9 16h6" />
+                }
+                @case ('schedule') {
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" />
+                }
+                @case ('enrollments') {
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                }
+                @case ('edu-reports') {
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                }
+                @case ('users') {
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                }
+                @case ('admins') {
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                }
+                @case ('roles') {
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                }
+                @default {
+                <circle cx="12" cy="12" r="3" />
+                }
+                }
+              </svg>
+              <span class="sidebar__nav-label sidebar__nav-label--visible">{{ item.labelKey | translate }}</span>
+            </div>
+          </a>
+          }
+        </div>
       </div>
+      }
 
-      <!-- Divider -->
       <div class="sidebar__divider"></div>
 
-      <!-- Settings -->
       <div class="sidebar__nav-group">
-        <a class="sidebar__nav-link">
-          <div class="sidebar__nav-item sidebar__nav-item--muted">
-            <!-- SVG: Settings -->
+        <a class="sidebar__nav-link" routerLink="/Settings" routerLinkActive="sidebar__nav-link--active"
+          (click)="currentPage('SETTINGS')">
+          <div class="sidebar__nav-item" routerLinkActive="sidebar__nav-item--active">
             <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3" />
@@ -216,49 +146,36 @@
                        A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21
                        a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
-            <!-- *ngIf="sidebarOpen" -->
             <span class="sidebar__nav-label sidebar__nav-label--visible">{{'SETTINGS'|translate}}</span>
           </div>
         </a>
       </div>
     </nav>
 
-    <!-- Bottom: Logout + User Card -->
     <div class="sidebar__bottom">
-
-      <!-- Logout Button -->
       <button class="sidebar__logout-btn" (click)="logOut()">
-        <!-- SVG: LogOut -->
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
           <polyline points="16 17 21 12 16 7" />
           <line x1="21" y1="12" x2="9" y2="12" />
         </svg>
-        <!-- *ngIf="sidebarOpen" -->
         <span class="sidebar__nav-label sidebar__nav-label--visible">{{'LOGOUT'|translate}}</span>
       </button>
 
-      <!-- User Card — *ngIf="sidebarOpen" -->
       <div class="sidebar__user-card sidebar__user-card--visible">
-        <div class="sidebar__user-avatar">AM</div>
+        <div class="sidebar__user-avatar">{{ user?.initials || '?' }}</div>
         <div class="sidebar__user-info">
-          <p class="sidebar__user-name">Admin Manager</p>
-          <p class="sidebar__user-email">admin@resmanager.sa</p>
+          <p class="sidebar__user-name">{{ user?.name || 'Admin' }}</p>
+          <p class="sidebar__user-email">{{ user?.email || '' }}</p>
         </div>
       </div>
     </div>
   </aside>
 
-  <!-- ═══════════════════════════════════════════════════════
-       MAIN CONTENT AREA
-  ═══════════════════════════════════════════════════════ -->
   <div class="main-area">
-    <!-- ─── TOP NAVBAR ──────────────────────────────── -->
     <header class="navbar">
-      <!-- Left: Toggle + Breadcrumb -->
       <div class="navbar__left">
-        <!-- Toggle Button -->
         <button class="navbar__toggle-btn" (click)="toggleSidebar()">
           @if (sidebarOpen) {
           <svg class="icon-x" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -277,10 +194,8 @@
           }
         </button>
 
-        <!-- Breadcrumb -->
         <div class="navbar__breadcrumb">
           <span class="navbar__breadcrumb-root">Accommodtion System</span>
-          <!-- ChevronRight / ChevronLeft for RTL -->
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
             stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6" />
@@ -289,10 +204,7 @@
         </div>
       </div>
 
-      <!-- Right: Search + Language + Bell + User -->
       <div class="navbar__right">
-
-        <!-- Search Input -->
         <div class="navbar__search">
           <svg class="navbar__search-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
             fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -302,7 +214,6 @@
           <input class="navbar__search-input" type="text" placeholder="Search..." />
         </div>
 
-        <!-- Language Toggle -->
         <button class="navbar__lang-btn" (click)="setLang()">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
             stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -311,70 +222,19 @@
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
                      15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
           </svg>
-          <!-- <span>عربي</span> -->
           <span>{{ currentLang === 'ar' ? 'English' : 'عربي' }}</span>
         </button>
 
-        <!-- Notifications Bell -->
-        <div class="navbar__notif-wrapper">
-          <button class="navbar__notif-btn" [class.navbar__notif-btn--active]="notifOpen" (click)="toggleNotif()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            <span class="navbar__notif-badge">3</span>
-          </button>
-
-          <!-- Notification Dropdown — *ngIf="notifOpen" -->
-          <div class="navbar__dropdown navbar__dropdown--notif" [class.navbar__dropdown--open]="notifOpen">
-            <div class="navbar__dropdown-header">
-              <p class="navbar__dropdown-title">Notifications</p>
-            </div>
-            <div class="navbar__notif-list">
-
-              <!-- Notification Item — *ngFor -->
-              <div class="navbar__notif-item">
-                <div class="navbar__notif-dot navbar__notif-dot--danger"></div>
-                <div>
-                  <p class="navbar__notif-text">Room 101 is nearly at full capacity</p>
-                  <p class="navbar__notif-meta">Building A · Room 101</p>
-                </div>
-              </div>
-
-              <div class="navbar__notif-item">
-                <div class="navbar__notif-dot navbar__notif-dot--warning"></div>
-                <div>
-                  <p class="navbar__notif-text">Reservation ending in 2 days for Room 206</p>
-                  <p class="navbar__notif-meta">Building A · Room 206</p>
-                </div>
-              </div>
-
-              <div class="navbar__notif-item">
-                <div class="navbar__notif-dot navbar__notif-dot--info"></div>
-                <div>
-                  <p class="navbar__notif-text">Check-out overdue for Room B103</p>
-                  <p class="navbar__notif-meta">Building B · Room 103</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- User Avatar / Menu -->
         <div class="navbar__user-wrapper">
           <button class="navbar__user-btn" [class.navbar__user-btn--active]="userMenuOpen" (click)="toggleUserMenu()">
-            <div class="navbar__user-avatar">AM</div>
-            <span class="navbar__user-label">Admin</span>
-            <!-- ChevronDown -->
+            <div class="navbar__user-avatar">{{ user?.initials || '?' }}</div>
+            <span class="navbar__user-label">{{ user?.name || 'Admin' }}</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
               stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
 
-          <!-- User Dropdown — *ngIf="userMenuOpen" -->
           <div class="navbar__dropdown navbar__dropdown--user" [class.navbar__dropdown--open]="userMenuOpen">
             <button class="navbar__user-menu-item">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -384,22 +244,13 @@
               </svg>
               Profile
             </button>
-            <button class="navbar__user-menu-item">
+            <button class="navbar__user-menu-item" type="button" (click)="openChangePassword()">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
-                         a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09
-                         A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06
-                         a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15
-                         a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9
-                         a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06
-                         A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09
-                         a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06
-                         a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9
-                         a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              Settings
+              {{ 'PWD_TITLE_SELF' | translate }}
             </button>
             <div class="navbar__user-menu-divider"></div>
             <button class="navbar__user-menu-item navbar__user-menu-item--danger" (click)="logOut()">
@@ -413,19 +264,15 @@
             </button>
           </div>
         </div>
-
       </div>
     </header>
 
-    <!-- ─── PAGE CONTENT (router-outlet) ──────────────── -->
     <main class="page-content">
       <router-outlet></router-outlet>
     </main>
   </div>
 
-  <!-- Click-outside overlay for dropdowns — *ngIf="notifOpen || userMenuOpen" -->
-  @if (notifOpen || userMenuOpen) {
+  @if (userMenuOpen) {
   <div class="shell__overlay" (click)="closeDropdowns()"></div>
   }
-  <!-- </div> -->
-  }
+</div>

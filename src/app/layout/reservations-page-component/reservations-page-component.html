@@ -1,181 +1,211 @@
-<div class="reservations-page">
-
-  <!-- Header -->
-  <div class="header">
+<div class="rp" [class.rp--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="rp__header">
     <div>
-      <h1>Reservations</h1>
-      <p>{{ filteredReservations.length }} reservations</p>
+      <p class="rp__eyebrow">{{ 'BOOK_LIST_EYEBROW' | translate }}</p>
+      <h1 class="rp__title">{{ 'BOOK_PAGE_TITLE' | translate }}</h1>
+      <p class="rp__subtitle">
+        @if (loading) {
+        <span class="rp__skel" aria-hidden="true"></span>
+        } @else {
+        {{ 'BOOK_PAGE_COUNT' | translate: { n: filteredReservations.length } }}
+        }
+      </p>
     </div>
-
-    <div class="header-actions">
-
-      <button class="export-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" x2="12" y1="15" y2="3"></line>
-        </svg>
-        <span>Export to Excel</span>
+    <div class="rp__actions">
+      <button type="button" class="rp-btn rp-btn--ghost" (click)="load()" [disabled]="loading">
+        {{ loading ? ('LOADING' | translate) : ('BOOK_REFRESH' | translate) }}
       </button>
-
-      <button class="new-btn" (click)="openNewReservation()">
+      <button type="button" class="rp-btn rp-btn--primary" (click)="openNewReservation()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12h14"></path>
-          <path d="M12 5v14"></path>
+          stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
         </svg>
-        <span>New Reservation</span>
+        {{ 'BOOK_NEW' | translate }}
       </button>
-
     </div>
+  </header>
+
+  <div class="rp__toolbar">
+    <div class="rp__tabs" role="tablist">
+      <button type="button" role="tab" class="rp-tab" [class.is-on]="statusFilter === ''"
+        [attr.aria-selected]="statusFilter === ''" (click)="setStatusFilter('')">
+        <span>{{ 'BOOK_TAB_ALL' | translate }}</span>
+        <em>{{ statCounts.all }}</em>
+      </button>
+      <button type="button" role="tab" class="rp-tab" [class.is-on]="statusFilter === 'active'"
+        [attr.aria-selected]="statusFilter === 'active'" (click)="setStatusFilter('active')">
+        <span>{{ 'BOOK_TAB_ACTIVE' | translate }}</span>
+        <em>{{ statCounts.active }}</em>
+      </button>
+      <button type="button" role="tab" class="rp-tab" [class.is-on]="statusFilter === 'paused'"
+        [attr.aria-selected]="statusFilter === 'paused'" (click)="setStatusFilter('paused')">
+        <span>{{ 'BOOK_TAB_PAUSED' | translate }}</span>
+        <em>{{ statCounts.paused }}</em>
+      </button>
+      <button type="button" role="tab" class="rp-tab" [class.is-on]="statusFilter === 'cancelled'"
+        [attr.aria-selected]="statusFilter === 'cancelled'" (click)="setStatusFilter('cancelled')">
+        <span>{{ 'BOOK_TAB_CANCELLED' | translate }}</span>
+        <em>{{ statCounts.cancelled }}</em>
+      </button>
+    </div>
+
+    <label class="rp__search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <input type="search" [(ngModel)]="search" (ngModelChange)="onSearchChange()"
+        [placeholder]="'BOOK_SEARCH' | translate" [attr.aria-label]="'BOOK_SEARCH' | translate" />
+    </label>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button (click)="setStatusFilter('')" [class.active]="statusFilter === ''">
-      All <span>{{ statCounts.all }}</span>
+  @if (loading) {
+  <app-page-skeleton variant="table" [rows]="7" [cols]="7" />
+  } @else if (!filteredReservations.length) {
+  <div class="rp-empty">
+    <strong>{{ (reservations.length ? 'BOOK_EMPTY_SEARCH' : 'BOOK_EMPTY') | translate }}</strong>
+    @if (!reservations.length) {
+    <p>{{ 'BOOK_EMPTY_HINT' | translate }}</p>
+    <button type="button" class="rp-btn rp-btn--primary" (click)="openNewReservation()">
+      {{ 'BOOK_CREATE_FIRST' | translate }}
     </button>
-
-    <button (click)="setStatusFilter('active')" [class.active]="statusFilter === 'active'">
-      Active <span>{{ statCounts.active }}</span>
-    </button>
-
-    <button (click)="setStatusFilter('paused')" [class.active]="statusFilter === 'paused'">
-      Paused <span>{{ statCounts.paused }}</span>
-    </button>
-
-    <button (click)="setStatusFilter('cancelled')" [class.active]="statusFilter === 'cancelled'">
-      Cancelled <span>{{ statCounts.cancelled }}</span>
-    </button>
-
-    <button (click)="setStatusFilter('completed')" [class.active]="statusFilter === 'completed'">
-      Completed <span>{{ statCounts.completed }}</span>
-    </button>
+    } @else {
+    <p>{{ 'BOOK_EMPTY_SEARCH_HINT' | translate }}</p>
+    }
   </div>
-
-  <!-- Search -->
-
-  <div class="search-box">
-    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
-      <circle cx="11" cy="11" r="8"></circle>
-      <path d="m21 21-4.3-4.3"></path>
-    </svg>
-    <input type="text" [(ngModel)]="search" (input)="onSearchChange()" placeholder="Search reservations..." />
-  </div>
-
-  <!-- Table -->
-  <div class="table-container">
-    <table>
+  } @else {
+  <div class="rp-table-wrap reveal">
+    <table class="rp-table">
+      <colgroup>
+        <col class="rp-table__col-id" />
+        <col class="rp-table__col-guest" />
+        <col class="rp-table__col-unit" />
+        <col class="rp-table__col-dates" />
+        <col class="rp-table__col-sched" />
+        <col class="rp-table__col-status" />
+        <col class="rp-table__col-actions" />
+      </colgroup>
       <thead>
         <tr>
-          <th>Reservation ID</th>
-          <th>Guest Name</th>
-          <th>Room</th>
-          <th>Building</th>
-          <th>Check In</th>
-          <th>Check Out</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th scope="col">{{ 'BOOK_COL_ID' | translate }}</th>
+          <th scope="col">{{ 'BOOK_COL_GUEST' | translate }}</th>
+          <th scope="col">{{ 'BOOK_COL_UNIT' | translate }}</th>
+          <th scope="col">{{ 'BOOK_COL_DATES' | translate }}</th>
+          <th scope="col">{{ 'BOOK_COL_SCHEDULE' | translate }}</th>
+          <th scope="col">{{ 'BOOK_COL_STATUS' | translate }}</th>
+          <th scope="col" class="rp-table__actions-head">{{ 'BOOK_COL_ACTIONS' | translate }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let res of filteredReservations" @fadeInOut>
-          <td class="reservation-id">{{ res.id }}</td>
-          <td style="font-weight: 500;">{{ res.tenantName }}</td>
-          <td><span class="room-badge">{{ res.roomNumber }}</span></td>
-          <td>{{ res.building }}</td>
-          <td class="date-cell">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-icon">
-              <path d="M8 2v4"></path>
-              <path d="M16 2v4"></path>
-              <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-              <path d="M3 10h18"></path>
-            </svg>
-            <span style="padding-right: 3px; padding-left: 3px;">{{ res.checkIn }}</span>
-          </td>
-          <td class="date-cell">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-icon">
-              <path d="M8 2v4"></path>
-              <path d="M16 2v4"></path>
-              <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-              <path d="M3 10h18"></path>
-            </svg>
-            <span style="padding-right: 3px; padding-left: 3px;">{{ res.checkOut }}</span>
+        @for (res of filteredReservations; track res.id; let i = $index) {
+        <tr class="reveal-item rp-row" [style.--reveal-i]="i < 12 ? i : 12" @fadeInOut
+          (click)="openDetails(res)" (keydown.enter)="openDetails(res)" tabindex="0" role="link"
+          [attr.aria-label]="'BOOK_DETAIL_OPEN' | translate: { id: res.id }">
+          <td>
+            <span class="rp-id">#{{ res.id }}</span>
           </td>
           <td>
-            <!-- <span class="status" [ngClass]="res.status">
-              {{ res.status | titlecase }}
-            </span> -->
-
-            <span class="status" [ngClass]="res.status">
-              <!-- ACTIVE -->
-              @if (res.status === 'active'){
-              <ng-container>
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                  stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="m9 12 2 2 4-4"></path>
-                </svg>
-              </ng-container>
+            <div class="rp-guest">
+              <span class="rp-guest__avatar" aria-hidden="true">{{ guestInitials(res.guestName) }}</span>
+              <span class="rp-guest__name">{{ res.guestName }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="rp-unit">
+              <span class="rp-unit__badge">{{ res.unitLabel }}</span>
+              @if (res.building !== '—') {
+              <small>{{ res.building }}</small>
               }
-              <!-- PAUSED -->
-              @if(res.status === 'paused'){
-              <ng-container>
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                  stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="14" y="4" width="4" height="16" rx="1"></rect>
-                  <rect x="6" y="4" width="4" height="16" rx="1"></rect>
-                </svg>
-              </ng-container>
-              }
-              <!-- CANCELLED -->
-              @if(res.status === 'cancelled'){
-              <ng-container *ngIf="res.status === 'cancelled'">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                  stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="m15 9-6 6"></path>
-                  <path d="m9 9 6 6"></path>
-                </svg>
-              </ng-container>
-              }
-              <span class="status-text">{{ res.status }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="rp-dates">
+              <span>{{ formatDate(res.checkIn) }}</span>
+              <em aria-hidden="true">→</em>
+              <span>{{ formatDate(res.checkOut) }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="rp-sched" [class.rp-sched--timed]="res.timed">{{ res.scheduleLabel }}</span>
+          </td>
+          <td>
+            <span class="rp-status rp-status--{{ res.status }}">
+              {{ ('BOOK_STATUS_' + res.status.toUpperCase()) | translate }}
             </span>
           </td>
-          <td class="actions-cell">
-            <!-- View -->
-            <button class="action-btn view-btn" (click)="viewReservation(res.id)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path
-                  d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0">
-                </path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-            <!-- Delete -->
-            <button class="action-btn delete-btn" (click)="deleteReservation(res.id)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
-                stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                <line x1="10" x2="10" y1="11" y2="17"></line>
-                <line x1="14" x2="14" y1="11" y2="17"></line>
-              </svg>
-            </button>
+          <td class="rp-actions-cell" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+            <div class="rp-row-actions">
+              <button type="button" class="rp-icon-btn" [attr.aria-label]="'BOOK_DETAIL_OPEN' | translate: { id: res.id }"
+                [title]="'BOOK_DETAIL_VIEW' | translate" (click)="openDetails(res, $event)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+              @if (res.status !== 'cancelled') {
+              <button type="button" class="rp-icon-btn" [attr.aria-label]="'BOOK_LOCKS' | translate"
+                [title]="'BOOK_LOCKS' | translate" (click)="openAssignLocks(res)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </button>
+              }
+              @if (res.status === 'active') {
+              <button type="button" class="rp-icon-btn" [attr.aria-label]="'BOOK_HOLD' | translate"
+                [title]="'BOOK_HOLD' | translate" (click)="holdReservation(res)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+              </button>
+              <button type="button" class="rp-icon-btn rp-icon-btn--danger" [attr.aria-label]="'BOOK_CANCEL' | translate"
+                [title]="'BOOK_CANCEL' | translate" (click)="cancelReservation(res)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+              } @else if (res.status === 'paused') {
+              <button type="button" class="rp-icon-btn rp-icon-btn--ok" [attr.aria-label]="'BOOK_RESUME' | translate"
+                [title]="'BOOK_RESUME' | translate" (click)="resumeReservation(res)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="6 3 20 12 6 21 6 3" />
+                </svg>
+              </button>
+              <button type="button" class="rp-icon-btn rp-icon-btn--danger" [attr.aria-label]="'BOOK_CANCEL' | translate"
+                [title]="'BOOK_CANCEL' | translate" (click)="cancelReservation(res)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+              }
+              @if (res.status === 'cancelled' || res.status === 'paused') {
+              <button type="button" class="rp-icon-btn rp-icon-btn--danger" [attr.aria-label]="'DELETE' | translate"
+                [title]="'DELETE' | translate" (click)="deleteReservation(res)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </button>
+              }
+            </div>
           </td>
-          <!-- <td>
-            <button *ngIf="res.status === 'active'" class="cancel-btn" (click)="cancelReservation(res.id)">
-              Cancel
-            </button>
-          </td> -->
         </tr>
+        }
       </tbody>
     </table>
   </div>
+  }
 </div>

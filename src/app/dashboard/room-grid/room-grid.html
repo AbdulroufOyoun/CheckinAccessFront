@@ -1,385 +1,76 @@
-<!-- room-grid.component.html -->
-<div class="room-grid-card">
-
-  <!-- Header -->
+<div class="room-grid-card dash-card-bg">
   <div class="room-grid__header">
     <div>
-      <h3 class="room-grid__title">Room Layout Map</h3>
-      <p class="room-grid__subtitle">36 rooms · Click for details</p>
+      <h3 class="room-grid__title">{{ 'DASH_ROOMS_TITLE' | translate }}</h3>
+      <p class="room-grid__subtitle">
+        {{ 'DASH_ROOMS_SUB' | translate: { n: summary?.total ?? rooms.length } }}
+      </p>
     </div>
-    <!-- Legend -->
-    <div class="room-grid__legend">
-      <div class="room-grid__legend-item">
-        <span class="room-grid__legend-dot" style="background: #DC2626;"></span>
-        <span>Full (29)</span>
+    <div class="room-grid__header-actions">
+      <div class="room-grid__legend">
+        <div class="room-grid__legend-item">
+          <span class="room-grid__legend-dot room-grid__legend-dot--occupied"></span>
+          <span>{{ 'DASH_KPI_OCCUPIED' | translate }} ({{ summary?.occupied ?? 0 }})</span>
+        </div>
+        <div class="room-grid__legend-item">
+          <span class="room-grid__legend-dot room-grid__legend-dot--hold"></span>
+          <span>{{ 'DASH_KPI_ON_HOLD' | translate }} ({{ summary?.on_hold ?? 0 }})</span>
+        </div>
+        <div class="room-grid__legend-item">
+          <span class="room-grid__legend-dot room-grid__legend-dot--available"></span>
+          <span>{{ 'DASH_KPI_AVAILABLE' | translate }} ({{ summary?.available ?? 0 }})</span>
+        </div>
       </div>
-      <div class="room-grid__legend-item">
-        <span class="room-grid__legend-dot" style="background: #D97706;"></span>
-        <span>Partial (7)</span>
-      </div>
-      <div class="room-grid__legend-item">
-        <span class="room-grid__legend-dot" style="background: #16A34A;"></span>
-        <span>Available (12)</span>
-      </div>
+      <a class="room-grid__link" routerLink="/RoomStatus">{{ 'DASH_VIEW_ROOMS' | translate }}</a>
     </div>
   </div>
 
-  <!-- Floor Sections — *ngFor floors -->
+  @if (loading) {
+  <div class="room-grid__skeleton" aria-hidden="true">
+    @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+    <div class="room-grid__skel-card"></div>
+    }
+  </div>
+  } @else if (!floors.length) {
+  <div class="room-grid__empty">
+    <div class="room-grid__empty-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M2 4v16" /><path d="M2 8h18a2 2 0 0 1 2 2v10" /><path d="M2 17h20" />
+      </svg>
+    </div>
+    <p>{{ 'DASH_ROOMS_EMPTY' | translate }}</p>
+    <a class="room-grid__link" routerLink="/RoomStatus">{{ 'DASH_VIEW_ROOMS' | translate }}</a>
+  </div>
+  } @else {
   <div class="room-grid__floors">
-
-    <!-- ── Floor 1 ── -->
+    @for (floor of floors; track floor.key) {
     <div class="room-grid__floor-section">
       <div class="room-grid__floor-header">
-        <span class="room-grid__floor-badge">Floor 1</span>
+        <span class="room-grid__floor-badge">{{ floor.label }}</span>
         <div class="room-grid__floor-divider"></div>
-        <span class="room-grid__floor-count">6 rooms</span>
+        <span class="room-grid__floor-count">{{ floor.rooms.length }}</span>
       </div>
       <div class="room-grid__rooms">
-
-        <!-- Occupied Room -->
-        <div class="room-card room-card--occupied" (click)="openDetail()">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">101</p>
-          <p class="room-card__building">A1</p>
+        @for (room of floor.rooms; track room.id) {
+        <a class="room-card" [class]="'room-card--' + statusClass(room.status)" [routerLink]="['/RoomStatus', room.id]">
+          <div class="room-card__status-dot" [class]="'room-card__status-dot--' + statusClass(room.status)"></div>
+          <p class="room-card__number">{{ room.number || room.name || room.id }}</p>
+          <p class="room-card__building">{{ room.building?.name || '—' }}</p>
           <div class="room-card__occupancy">
-            <!-- BedDouble mini -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 4v16" />
-              <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-              <path d="M2 17h20" />
-              <path d="M6 8v9" />
-            </svg>
-            <span class="room-card__occ-text room-card__occ-text--occupied">4/4</span>
+            <span class="room-card__occ-text" [class]="'room-card__occ-text--' + statusClass(room.status)">
+              {{ statusLabel(room.status) }}
+            </span>
           </div>
           <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width: 100%; background: #DC2626;"></div>
+            <div class="room-card__bar-fill"
+              [style.width]="barWidth(room.status)"
+              [style.background]="barColor(room.status)"></div>
           </div>
-        </div>
-
-        <!-- Partial Room -->
-        <div class="room-card room-card--partial" (click)="openDetail()">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">102</p>
-          <p class="room-card__building">A1</p>
-          <div class="room-card__occupancy">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 4v16" />
-              <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-              <path d="M2 17h20" />
-              <path d="M6 8v9" />
-            </svg>
-            <span class="room-card__occ-text room-card__occ-text--partial">2/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width: 66%; background: #D97706;"></div>
-          </div>
-        </div>
-
-        <!-- Available Room -->
-        <div class="room-card room-card--available" (click)="openDetail()">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">103</p>
-          <p class="room-card__building">A1</p>
-          <div class="room-card__occupancy">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 4v16" />
-              <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-              <path d="M2 17h20" />
-              <path d="M6 8v9" />
-            </svg>
-            <span class="room-card__occ-text room-card__occ-text--available">0/2</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width: 0%; background: #16A34A;"></div>
-          </div>
-        </div>
-
-        <!-- More room cards... (repeat pattern) -->
-        <div class="room-card room-card--partial" (click)="openDetail()">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">104</p>
-          <p class="room-card__building">A1</p>
-          <div class="room-card__occupancy">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 4v16" />
-              <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-              <path d="M2 17h20" />
-              <path d="M6 8v9" />
-            </svg>
-            <span class="room-card__occ-text room-card__occ-text--partial">3/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width: 75%; background: #D97706;"></div>
-          </div>
-        </div>
-
-        <div class="room-card room-card--available" (click)="openDetail()">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">105</p>
-          <p class="room-card__building">A1</p>
-          <div class="room-card__occupancy">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 4v16" />
-              <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-              <path d="M2 17h20" />
-              <path d="M6 8v9" />
-            </svg>
-            <span class="room-card__occ-text room-card__occ-text--available">0/2</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width: 0%; background: #16A34A;"></div>
-          </div>
-        </div>
-
-        <div class="room-card room-card--occupied" (click)="openDetail()">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">106</p>
-          <p class="room-card__building">A1</p>
-          <div class="room-card__occupancy">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 4v16" />
-              <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-              <path d="M2 17h20" />
-              <path d="M6 8v9" />
-            </svg>
-            <span class="room-card__occ-text room-card__occ-text--occupied">3/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width: 100%; background: #DC2626;"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--occupied" (click)="openDetail()">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">106</p>
-          <p class="room-card__building">A1</p>
-          <div class="room-card__occupancy">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-              stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 4v16" />
-              <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-              <path d="M2 17h20" />
-              <path d="M6 8v9" />
-            </svg>
-            <span class="room-card__occ-text room-card__occ-text--occupied">3/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width: 100%; background: #DC2626;"></div>
-          </div>
-        </div>
-
+        </a>
+        }
       </div>
     </div>
-
-    <!-- ── Floor 2 ── (same pattern, truncated for brevity) -->
-    <div class="room-grid__floor-section">
-      <div class="room-grid__floor-header">
-        <span class="room-grid__floor-badge">Floor 2</span>
-        <div class="room-grid__floor-divider"></div>
-        <span class="room-grid__floor-count">6 rooms</span>
-      </div>
-      <div class="room-grid__rooms">
-        <!-- Repeat room cards with Floor 2 data -->
-        <div class="room-card room-card--available">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">201</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--available">0/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:0%;background:#16A34A"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--occupied">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">202</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--occupied">4/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:100%;background:#DC2626"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--partial">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">203</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--partial">1/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:33%;background:#D97706"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--available">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">204</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--available">0/2</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:0%;background:#16A34A"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--partial">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">205</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--partial">2/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:50%;background:#D97706"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--occupied">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">206</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--occupied">3/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:100%;background:#DC2626"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Floor 2 ── (same pattern, truncated for brevity) -->
-    <div class="room-grid__floor-section">
-      <div class="room-grid__floor-header">
-        <span class="room-grid__floor-badge">Floor 3</span>
-        <div class="room-grid__floor-divider"></div>
-        <span class="room-grid__floor-count">6 rooms</span>
-      </div>
-      <div class="room-grid__rooms">
-        <!-- Repeat room cards with Floor 2 data -->
-        <div class="room-card room-card--available">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">301</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--available">0/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:0%;background:#16A34A"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--occupied">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">302</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--occupied">4/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:100%;background:#DC2626"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--partial">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">303</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--partial">1/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:33%;background:#D97706"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--available">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">304</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--available">0/2</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:0%;background:#16A34A"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--partial">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">305</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--partial">2/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:50%;background:#D97706"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--occupied">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">306</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--occupied">3/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:100%;background:#DC2626"></div>
-          </div>
-        </div>
-
-        <div class="room-card room-card--available">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">301</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--available">0/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:0%;background:#16A34A"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--occupied">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">302</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--occupied">4/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:100%;background:#DC2626"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--partial">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">303</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--partial">1/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:33%;background:#D97706"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--available">
-          <div class="room-card__status-dot room-card__status-dot--available"></div>
-          <p class="room-card__number">304</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--available">0/2</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:0%;background:#16A34A"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--partial">
-          <div class="room-card__status-dot room-card__status-dot--partial"></div>
-          <p class="room-card__number">305</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--partial">2/4</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:50%;background:#D97706"></div>
-          </div>
-        </div>
-        <div class="room-card room-card--occupied">
-          <div class="room-card__status-dot room-card__status-dot--occupied"></div>
-          <p class="room-card__number">306</p>
-          <p class="room-card__building">A2</p>
-          <div class="room-card__occupancy"><span class="room-card__occ-text room-card__occ-text--occupied">3/3</span>
-          </div>
-          <div class="room-card__bar">
-            <div class="room-card__bar-fill" style="width:100%;background:#DC2626"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    }
   </div>
+  }
 </div>

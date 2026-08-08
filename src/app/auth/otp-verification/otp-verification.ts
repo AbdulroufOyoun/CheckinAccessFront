@@ -30,10 +30,10 @@ export class OtpVerification {
   constructor(private router: Router, private cdr: ChangeDetectorRef, private translate: TranslateService, private api: ApiService, public authService: AuthService, private snackbar: SnackbarService,) { }
 
   ngOnInit(): void {
-    const state = history.state;
+    const state =
+      typeof history !== 'undefined' && history.state ? history.state : {};
     this.email = state.email ?? '';
     this.password = state.password ?? '';
-    console.log("Email = " + this.email);
   }
 
   verifyOtp1() {

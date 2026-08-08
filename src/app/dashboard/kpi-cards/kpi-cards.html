@@ -1,163 +1,104 @@
-<!-- kpi-cards.component.html -->
-<!--
-  *ngFor="let card of cards; let i = index"
-  [style.animation-delay]="card.delay + 's'"
--->
 <div class="kpi-grid">
-
-  <!-- Card 1: Total Rooms (Blue) -->
   <div class="kpi-card kpi-card--animate" style="--delay: 0s; --accent: #2563EB; --light-bg: #DBEAFE;">
     <div class="kpi-card__decor-circle"></div>
     <div class="kpi-card__content">
       <div class="kpi-card__top">
         <div class="kpi-card__icon" style="background: #EFF6FF; box-shadow: 0 4px 12px rgba(37,99,235,0.18);">
-          <!-- BedDouble icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-               fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 4v16"/>
-            <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
-            <path d="M2 17h20"/>
-            <path d="M6 8v9"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2">
+            <path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>
           </svg>
         </div>
-        <div class="kpi-card__trend kpi-card__trend--up">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
-          </svg>
-          <span>2%</span>
-        </div>
       </div>
-      <div class="kpi-card__value" style="color: #111827;">
-        <span class="kpi-card__number">48</span>
-      </div>
-      <p class="kpi-card__label">Total Rooms</p>
+      @if (loading) {
+      <div class="kpi-card__value"><span class="kpi-card__skel"></span></div>
+      } @else {
+      <div class="kpi-card__value"><span class="kpi-card__number">{{ summary?.total ?? 0 }}</span></div>
+      }
+      <p class="kpi-card__label">{{ 'DASH_KPI_TOTAL' | translate }}</p>
     </div>
     <div class="kpi-card__accent-bar" style="background: linear-gradient(90deg, #2563EB, transparent);"></div>
   </div>
 
-  <!-- Card 2: Occupied (Red) -->
   <div class="kpi-card kpi-card--animate" style="--delay: 0.08s; --accent: #DC2626; --light-bg: #FECDD3;">
     <div class="kpi-card__decor-circle"></div>
     <div class="kpi-card__content">
       <div class="kpi-card__top">
         <div class="kpi-card__icon" style="background: #FFF1F2; box-shadow: 0 4px 12px rgba(220,38,38,0.18);">
-          <!-- XCircle icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-               fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
           </svg>
         </div>
-        <div class="kpi-card__trend kpi-card__trend--up">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
-          </svg>
-          <span>5%</span>
-        </div>
       </div>
-      <div class="kpi-card__value" style="color: #111827;">
-        <span class="kpi-card__number">29</span>
-      </div>
-      <p class="kpi-card__label">Occupied</p>
+      @if (loading) {
+      <div class="kpi-card__value"><span class="kpi-card__skel"></span></div>
+      } @else {
+      <div class="kpi-card__value"><span class="kpi-card__number">{{ summary?.occupied ?? 0 }}</span></div>
+      }
+      <p class="kpi-card__label">{{ 'DASH_KPI_OCCUPIED' | translate }}</p>
     </div>
     <div class="kpi-card__accent-bar" style="background: linear-gradient(90deg, #DC2626, transparent);"></div>
   </div>
 
-  <!-- Card 3: Available (Green) -->
   <div class="kpi-card kpi-card--animate" style="--delay: 0.16s; --accent: #16A34A; --light-bg: #BBF7D0;">
     <div class="kpi-card__decor-circle"></div>
     <div class="kpi-card__content">
       <div class="kpi-card__top">
         <div class="kpi-card__icon" style="background: #F0FDF4; box-shadow: 0 4px 12px rgba(22,163,74,0.18);">
-          <!-- CheckCircle2 icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-               fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-            <path d="m9 12 2 2 4-4"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2">
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/>
           </svg>
         </div>
-        <div class="kpi-card__trend kpi-card__trend--down">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5"
-               style="transform: scaleY(-1);">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
-          </svg>
-          <span>3%</span>
-        </div>
       </div>
-      <div class="kpi-card__value" style="color: #111827;">
-        <span class="kpi-card__number">12</span>
-      </div>
-      <p class="kpi-card__label">Available</p>
+      @if (loading) {
+      <div class="kpi-card__value"><span class="kpi-card__skel"></span></div>
+      } @else {
+      <div class="kpi-card__value"><span class="kpi-card__number">{{ summary?.available ?? 0 }}</span></div>
+      }
+      <p class="kpi-card__label">{{ 'DASH_KPI_AVAILABLE' | translate }}</p>
     </div>
     <div class="kpi-card__accent-bar" style="background: linear-gradient(90deg, #16A34A, transparent);"></div>
   </div>
 
-  <!-- Card 4: Partial (Amber) -->
   <div class="kpi-card kpi-card--animate" style="--delay: 0.24s; --accent: #D97706; --light-bg: #FDE68A;">
     <div class="kpi-card__decor-circle"></div>
     <div class="kpi-card__content">
       <div class="kpi-card__top">
         <div class="kpi-card__icon" style="background: #FFFBEB; box-shadow: 0 4px 12px rgba(217,119,6,0.18);">
-          <!-- PieChart icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-               fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
         </div>
-        <div class="kpi-card__trend kpi-card__trend--up">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
-          </svg>
-          <span>1%</span>
-        </div>
       </div>
-      <div class="kpi-card__value" style="color: #111827;">
-        <span class="kpi-card__number">7</span>
-      </div>
-      <p class="kpi-card__label">Partial</p>
+      @if (loading) {
+      <div class="kpi-card__value"><span class="kpi-card__skel"></span></div>
+      } @else {
+      <div class="kpi-card__value"><span class="kpi-card__number">{{ summary?.on_hold ?? 0 }}</span></div>
+      }
+      <p class="kpi-card__label">{{ 'DASH_KPI_ON_HOLD' | translate }}</p>
     </div>
     <div class="kpi-card__accent-bar" style="background: linear-gradient(90deg, #D97706, transparent);"></div>
   </div>
 
-  <!-- Card 5: Occupancy Rate (Purple) -->
   <div class="kpi-card kpi-card--animate" style="--delay: 0.32s; --accent: #7C3AED; --light-bg: #DDD6FE;">
     <div class="kpi-card__decor-circle"></div>
     <div class="kpi-card__content">
       <div class="kpi-card__top">
         <div class="kpi-card__icon" style="background: #F5F3FF; box-shadow: 0 4px 12px rgba(124,58,237,0.18);">
-          <!-- TrendingUp icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-               fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
           </svg>
-        </div>
-        <div class="kpi-card__trend kpi-card__trend--up">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
-          </svg>
-          <span>4%</span>
         </div>
       </div>
-      <div class="kpi-card__value" style="color: #111827;">
-        <span class="kpi-card__number">75</span>
+      @if (loading) {
+      <div class="kpi-card__value"><span class="kpi-card__skel"></span></div>
+      } @else {
+      <div class="kpi-card__value">
+        <span class="kpi-card__number">{{ occupancyRate }}</span>
         <span class="kpi-card__suffix" style="color: #7C3AED;">%</span>
       </div>
-      <p class="kpi-card__label">Occupancy Rate</p>
+      }
+      <p class="kpi-card__label">{{ 'DASH_KPI_RATE' | translate }}</p>
     </div>
     <div class="kpi-card__accent-bar" style="background: linear-gradient(90deg, #7C3AED, transparent);"></div>
   </div>
-
 </div>

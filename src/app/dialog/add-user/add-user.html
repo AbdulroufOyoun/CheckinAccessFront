@@ -1,32 +1,6 @@
-<!-- add-user-dialog.component.html -->
-<!--
-  BINDINGS:
-  [class.dialog-overlay--visible]="isOpen"
-  (click) backdrop to close
-  [class.users-page--rtl]="isRTL" on host or wrapper
-  isEditMode: boolean — swaps title between "Add User" / "Edit User"
-  [class.dialog-btn--loading]="isLoading"
-  [class.dialog-btn--disabled]="!isFormValid"
-  [class.gender-btn--active]="selectedGender === 'male'" etc.
--->
-
-<!-- ══════════════════════════════════════════════════════════
-     MODAL BACKDROP
-══════════════════════════════════════════════════════════ -->
-<!-- Backdrop click area -->
-@if(data.mode === 'add' || data.mode === 'edit'){
-
-<!-- <div class="dialog-backdrop" (click)="close()"></div> -->
-
-<!-- ══════════════════════════════════════════════════
-       DIALOG PANEL
-  ══════════════════════════════════════════════════ -->
 <div class="dialog-panel" role="dialog" aria-modal="true" [class.dialog-panel--rtl]="isRTL">
-
-  <!-- ── Dialog Header ──────────────────────────── -->
   <div class="dialog-header">
     <div class="dialog-header__left">
-      <!-- Icon -->
       <div class="dialog-header__icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -35,15 +9,13 @@
         </svg>
       </div>
       <div>
-        @if(data.mode === 'edit'){
-        <h2 class="dialog-header__title">Edit User</h2>
-        }@else if (data.mode === 'add') {
-        <h2 class="dialog-header__title">Add User</h2>
-        }
-        <p class="dialog-header__subtitle">Fill in user information</p>
+        <h2 class="dialog-header__title">{{ mode === 'edit' ? 'Edit User' : 'Add User' }}</h2>
+        <p class="dialog-header__subtitle">
+          Shared central users table — existing email/mobile will be linked to this tenant
+        </p>
       </div>
     </div>
-    <button class="dialog-header__close" (click)="close()" aria-label="Close dialog">
+    <button class="dialog-header__close" type="button" (click)="close()" aria-label="Close dialog">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280"
         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
@@ -52,397 +24,65 @@
     </button>
   </div>
 
-  <!-- ── Form Body ───────────────────────────────── -->
   <div class="dialog-body">
     <div class="dialog-form">
-
-      <!-- Full Name (English) -->
       <div class="form-field">
-        <label class="form-field__label">
-          Full Name (English)
-          <span class="form-field__required">*</span>
-        </label>
-        <div class="form-input-wrap">
-          <span class="form-input__prefix-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </span>
-          <input type="text" class="form-input form-input--with-icon" placeholder="Ahmed Al-Rashidi"
-            [(ngModel)]="form.fullNameEn" autocomplete="name" />
-        </div>
+        <label class="form-field__label">Full name <span class="form-field__required">*</span></label>
+        <input type="text" class="form-input" name="name" [(ngModel)]="form.name" placeholder="Ahmed Al-Rashidi" />
       </div>
 
-      <!-- Full Name (Arabic) -->
       <div class="form-field">
-        <label class="form-field__label">
-          Full Name (Arabic)
-        </label>
-        <div class="form-input-wrap">
-          <span class="form-input__prefix-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </span>
-          <input type="text" class="form-input form-input--with-icon" placeholder="أحمد الراشدي"
-            [(ngModel)]="form.fullNameAr" dir="rtl" />
-        </div>
+        <label class="form-field__label">Title</label>
+        <select class="form-select" name="title" [(ngModel)]="form.title">
+          <option value="">—</option>
+          @for (t of titles; track t) {
+          <option [value]="t">{{ t }}</option>
+          }
+        </select>
       </div>
 
-      <!-- Phone -->
       <div class="form-field">
-        <label class="form-field__label">
-          Phone
-          <span class="form-field__required">*</span>
-        </label>
-        <div class="form-input-wrap">
-          <span class="form-input__prefix-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07
-                         A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.36
-                         A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72
-                         c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91
-                         a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45
-                         c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-          </span>
-          <input type="tel" class="form-input form-input--with-icon" placeholder="+966 5XX XXX XXXX"
-            [(ngModel)]="form.phone" dir="ltr" autocomplete="tel" />
-        </div>
+        <label class="form-field__label">Mobile (10 digits) <span class="form-field__required">*</span></label>
+        <input type="tel" class="form-input" name="mobile" [(ngModel)]="form.mobile" (blur)="normalizeMobile()"
+          placeholder="0501234567" dir="ltr" maxlength="14" />
       </div>
 
-      <!-- Email -->
       <div class="form-field">
-        <label class="form-field__label">Email</label>
-        <div class="form-input-wrap">
-          <span class="form-input__prefix-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          </span>
-          <input type="email" class="form-input form-input--with-icon" placeholder="email@example.com"
-            [(ngModel)]="form.email" autocomplete="email" />
-        </div>
+        <label class="form-field__label">Email <span class="form-field__required">*</span></label>
+        <input type="email" class="form-input" name="email" [(ngModel)]="form.email" placeholder="email@example.com" />
       </div>
 
-      <!-- National ID -->
-      <div class="form-field">
-        <label class="form-field__label">
-          National ID
-          <span class="form-field__required">*</span>
-        </label>
-        <div class="form-input-wrap">
-          <span class="form-input__prefix-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="5" width="20" height="14" rx="2" />
-              <line x1="2" y1="10" x2="22" y2="10" />
-            </svg>
-          </span>
-          <input type="text" class="form-input form-input--with-icon" placeholder="1XXXXXXXXX" maxlength="12"
-            inputmode="numeric" [(ngModel)]="form.nationalId" />
-        </div>
-      </div>
-
-      <!-- Nationality -->
       <div class="form-field">
         <label class="form-field__label">Nationality</label>
-        <div class="form-select-wrap">
-          <svg class="form-select__icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-            fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
-                       15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          <!-- <select class="form-select">
-              <option value="">Select nationality</option>
-              <option value="Saudi">Saudi</option>
-              <option value="Egyptian">Egyptian</option>
-              <option value="Yemeni">Yemeni</option>
-              <option value="Kuwaiti">Kuwaiti</option>
-              <option value="Qatari">Qatari</option>
-              <option value="Emirati">Emirati</option>
-              <option value="Omani">Omani</option>
-              <option value="Bahraini">Bahraini</option>
-              <option value="Jordanian">Jordanian</option>
-              <option value="Syrian">Syrian</option>
-              <option value="Lebanese">Lebanese</option>
-              <option value="Libyan">Libyan</option>
-              <option value="Algerian">Algerian</option>
-              <option value="Sudanese">Sudanese</option>
-            </select> -->
-          <select class="form-select" [(ngModel)]="form.nationality"></select>
-          <!-- ChevronDown -->
-          <svg class="form-select__chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-            viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </div>
+        <select class="form-select" name="nationality" [(ngModel)]="form.nationality">
+          <option value="">Select nationality</option>
+          @for (n of nationalities; track n) {
+          <option [value]="n">{{ n }}</option>
+          }
+        </select>
       </div>
 
-      <!-- Gender — full width row -->
+      @if (mode === 'add') {
+      <div class="form-field">
+        <label class="form-field__label">Password (optional, defaults to mobile)</label>
+        <input type="password" class="form-input" name="password" [(ngModel)]="form.password" dir="ltr" />
+      </div>
+      }
+
+      @if (mode === 'edit') {
       <div class="form-field form-field--full">
-        <label class="form-field__label">Gender</label>
-        <div class="gender-toggle">
-
-          <!-- Male -->
-          <!-- <button class="gender-btn gender-btn--active" type="button">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="10" cy="14" r="5" />
-                <line x1="19" y1="5" x2="14.14" y2="9.86" />
-                <polyline points="19 5 19 10 14 10" />
-              </svg>
-              Male
-            </button> -->
-          <button class="gender-btn" [class.gender-btn--active]="form.gender === 'male'" type="button"
-            (click)="form.gender = 'male'">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="10" cy="14" r="5" />
-              <line x1="19" y1="5" x2="14.14" y2="9.86" />
-              <polyline points="19 5 19 10 14 10" />
-            </svg>
-          </button>
-
-          <!-- Female -->
-          <!-- <button class="gender-btn" type="button">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="5" />
-                <line x1="12" y1="13" x2="12" y2="21" />
-                <line x1="9" y1="18" x2="15" y2="18" />
-              </svg>
-              Female
-            </button> -->
-
-          <button class="gender-btn" [class.gender-btn--active]="form.gender === 'female'" type="button"
-            (click)="form.gender = 'female'">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="8" r="5" />
-              <line x1="12" y1="13" x2="12" y2="21" />
-              <line x1="9" y1="18" x2="15" y2="18" />
-            </svg>
-          </button>
-        </div>
+        <label class="form-field__label">
+          <input type="checkbox" [(ngModel)]="form.active" name="active" /> Active
+        </label>
       </div>
-    </div><!-- /dialog-form -->
-  </div><!-- /dialog-body -->
-
-  <!-- ── Dialog Footer ──────────────────────────── -->
-  <div class="dialog-footer">
-
-    <!-- Cancel -->
-    <button class="dialog-btn dialog-btn--secondary" (click)="close()">
-      Cancel
-    </button>
-
-    <!-- Save (default state) -->
-    <button class="dialog-btn dialog-btn--primary">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-      </svg>
-      Save
-    </button>
-
-    <!-- Save (loading state) — swap with *ngIf or [class] -->
-    <!--
-      <button class="dialog-btn dialog-btn--primary dialog-btn--loading" disabled>
-        <span class="dialog-btn__spinner"></span>
-        Loading...
-      </button>
-      -->
-
-  </div><!-- /dialog-footer -->
-</div><!-- /dialog-panel -->
-
-}
-
-<!-- ══════════════════════════════════════════════════════════
-     USER DETAIL DIALOG  (View mode — separate *ngIf block)
-══════════════════════════════════════════════════════════ -->
-@if(data.mode === 'view'){
-<!-- <div class="dialog-overlay" [class.dialog-overlay--visible]="isViewOpen">
-  <div class="dialog-backdrop" (click)="closeView()"></div> -->
-
-<div class="dialog-panel dialog-panel--scrollable" [class.dialog-panel--rtl]="isRTL">
-  <!-- Header -->
-  <div class="dialog-header">
-    <div class="dialog-header__left">
-      <div class="dialog-header__icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-      </div>
-      <div>
-        <h2 class="dialog-header__title">User Details</h2>
-        <p class="dialog-header__subtitle">Full profile &amp; reservation history</p>
-      </div>
+      }
     </div>
-    <button class="dialog-header__close" (click)="closeView()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
-    </button>
   </div>
 
-  <!-- User Profile Section -->
-  <div class="dialog-body">
-    <!-- Profile Hero -->
-    <div class="user-profile">
-      <div class="user-profile__avatar" style="background: #2563EB; box-shadow: 0 4px 16px rgba(37,99,235,0.25);">
-        {{ form.fullNameEn .charAt(0) + form.fullNameEn.split(' ')[1]?.charAt(0) }}
-      </div>
-      <div class="user-profile__info">
-        <h3 class="user-profile__name">{{form.fullNameEn}}</h3>
-        <p class="user-profile__meta">Saudi · 1023456789</p>
-        <span class="user-profile__res-count">2 Reservations</span>
-      </div>
-      <button class="user-profile__edit-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-        </svg>
-        Edit
-      </button>
-    </div>
-
-    <!-- Contact Info Grid -->
-    <div class="contact-grid">
-
-      <div class="contact-card">
-        <div class="contact-card__header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07
-                       A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.36
-                       A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72
-                       c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91
-                       a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45
-                       c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-          </svg>
-          <span>Phone</span>
-        </div>
-        <p class="contact-card__value">{{form.phone}}</p>
-      </div>
-
-      <div class="contact-card">
-        <div class="contact-card__header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
-          <span>Email</span>
-        </div>
-        <p class="contact-card__value">{{form.email}}</p>
-      </div>
-
-      <div class="contact-card">
-        <div class="contact-card__header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
-                       15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          <span>Nationality</span>
-        </div>
-        <p class="contact-card__value">{{form.nationality}}</p>
-      </div>
-
-      <div class="contact-card">
-        <div class="contact-card__header">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <span>Gender</span>
-        </div>
-        <p class="contact-card__value">{{form.male}}</p>
-      </div>
-
-    </div>
-
-    <!-- Reservation History -->
-    <div class="res-history">
-      <h4 class="res-history__title">Reservation History</h4>
-
-      <!-- Reservation row — *ngFor -->
-      <div class="res-row">
-        <div class="res-row__left">
-          <div class="res-row__room-badge">101</div>
-          <div class="res-row__details">
-            <p class="res-row__building">Building A</p>
-            <div class="res-row__dates">
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
-                stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <span>2026-04-01 → 2026-05-01</span>
-            </div>
-          </div>
-        </div>
-        <div class="res-row__right">
-          <p class="res-row__amount">4,500 SAR</p>
-          <span class="res-row__status res-row__status--active">active</span>
-        </div>
-      </div>
-
-      <div class="res-row">
-        <div class="res-row__left">
-          <div class="res-row__room-badge">202</div>
-          <div class="res-row__details">
-            <p class="res-row__building">Building A</p>
-            <div class="res-row__dates">
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none"
-                stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <span>2026-03-01 → 2026-04-01</span>
-            </div>
-          </div>
-        </div>
-        <div class="res-row__right">
-          <p class="res-row__amount">3,200 SAR</p>
-          <span class="res-row__status res-row__status--completed">completed</span>
-        </div>
-      </div>
-
-      <!-- Empty state for reservations — *ngIf="noReservations" -->
-      <!--
-        <div class="res-history__empty">
-          <p>No reservation history</p>
-        </div>
-        -->
-
-    </div>
-
+  <div class="dialog-footer">
+    <button class="dialog-btn dialog-btn--secondary" type="button" (click)="close()" [disabled]="saving">Cancel</button>
+    <button class="dialog-btn dialog-btn--primary" type="button" (click)="save()" [disabled]="saving">
+      {{ saving ? 'Saving…' : 'Save' }}
+    </button>
   </div>
 </div>
-}

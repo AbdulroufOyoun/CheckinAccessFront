@@ -1,0 +1,273 @@
+<div class="dialog-shell" [class.rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="dialog-head">
+    <div>
+      <p class="eyebrow">{{ 'PROP_MODULE' | translate }}</p>
+      <h2>{{ titleKey | translate }}</h2>
+    </div>
+    <button type="button" class="icon-btn" (click)="close()" [disabled]="saving" [attr.aria-label]="'CLOSE' | translate">×</button>
+  </header>
+
+  <div class="dialog-body">
+    <section class="preview-card" aria-hidden="true">
+      <span class="preview-label">{{ 'PROP_PREVIEW' | translate }}</span>
+      <strong>{{ preview }}</strong>
+    </section>
+
+    <!-- Compound -->
+    @if (data.entity === 'compound') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_NUMBER' | translate }}</span>
+        <input [(ngModel)]="form['number']" name="number" required />
+      </label>
+    }
+
+    <!-- Building -->
+    @if (data.entity === 'building') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_NUMBER' | translate }}</span>
+        <input [(ngModel)]="form['number']" name="number" required />
+      </label>
+      @if (data.mode === 'add' && data.compounds?.length) {
+        <label class="field">
+          <span>{{ 'PROP_COMPOUND' | translate }}</span>
+          <select [(ngModel)]="form['compound_id']" name="compound_id">
+            <option [ngValue]="null">{{ 'PROP_NONE' | translate }}</option>
+            @for (c of data.compounds; track c.id) {
+              <option [ngValue]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="check-field">
+          <input type="checkbox" [(ngModel)]="form['createFloors']" name="createFloors" />
+          <span>{{ 'PROP_CREATE_FLOORS' | translate }}</span>
+        </label>
+        @if (form['createFloors']) {
+          <div class="row-2">
+            <label class="field">
+              <span>{{ 'PROP_START_FLOOR' | translate }}</span>
+              <input type="number" [(ngModel)]="form['numberFloor']" name="numberFloor" min="1" />
+            </label>
+            <label class="field">
+              <span>{{ 'PROP_FLOOR_COUNT' | translate }}</span>
+              <input type="number" [(ngModel)]="form['numberOfFloor']" name="numberOfFloor" min="1" />
+            </label>
+          </div>
+        }
+      }
+    }
+
+    <!-- Floor -->
+    @if (data.entity === 'floor') {
+      <label class="field">
+        <span>{{ 'PROP_FLOOR_NUMBER' | translate }}</span>
+        <input [(ngModel)]="form['number']" name="number" required />
+      </label>
+    }
+
+    <!-- Suite -->
+    @if (data.entity === 'suite') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_NUMBER' | translate }}</span>
+        <input [(ngModel)]="form['number']" name="number" required />
+      </label>
+    }
+
+    <!-- Room -->
+    @if (data.entity === 'room') {
+      <label class="field">
+        <span>{{ 'PROP_NUMBER' | translate }}</span>
+        <input [(ngModel)]="form['number']" name="number" required />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_CAPACITY' | translate }}</span>
+        <input type="number" [(ngModel)]="form['capacity']" name="capacity" min="1" />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_SUITE' | translate }}</span>
+        <select [(ngModel)]="form['suite_id']" name="suite_id">
+          <option [ngValue]="null">{{ 'PROP_SUITE_NONE' | translate }}</option>
+          @for (s of suites; track s.id) {
+            <option [ngValue]="s.id">{{ s.name || s.number || ('#' + s.id) }}</option>
+          }
+        </select>
+      </label>
+      <div class="field">
+        <div class="field-head">
+          <span>{{ 'PROP_ROOM_TYPE' | translate }}</span>
+          <button type="button" class="link-btn" (click)="showNewRoomType = !showNewRoomType" [disabled]="saving || creatingType">
+            {{ showNewRoomType ? ('CANCEL' | translate) : ('PROP_NEW_TYPE' | translate) }}
+          </button>
+        </div>
+        @if (roomTypes.length) {
+          <select [(ngModel)]="form['room_type_id']" name="room_type_id">
+            <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
+            @for (t of roomTypes; track t.id) {
+              <option [ngValue]="t.id">{{ t.name }}</option>
+            }
+          </select>
+        } @else if (!showNewRoomType) {
+          <p class="hint">{{ 'PROP_NO_ROOM_TYPES' | translate }}</p>
+        }
+        @if (showNewRoomType) {
+          <div class="inline-create">
+            <input [(ngModel)]="newRoomTypeName" name="newRoomTypeName"
+              [placeholder]="'PROP_NEW_ROOM_TYPE_PLACEHOLDER' | translate"
+              (keydown.enter)="$event.preventDefault(); createRoomTypeInline()" />
+            <button type="button" class="btn soft" (click)="createRoomTypeInline()"
+              [disabled]="creatingType || !newRoomTypeName.trim()">
+              {{ creatingType ? ('SAVING' | translate) : ('PROP_CREATE_TYPE' | translate) }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Facility -->
+    @if (data.entity === 'facility') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+      <div class="field">
+        <div class="field-head">
+          <span>{{ 'PROP_FACILITY_TYPE' | translate }}</span>
+          <button type="button" class="link-btn" (click)="showNewFacilityType = !showNewFacilityType" [disabled]="saving || creatingType">
+            {{ showNewFacilityType ? ('CANCEL' | translate) : ('PROP_NEW_TYPE' | translate) }}
+          </button>
+        </div>
+        @if (facilityTypes.length) {
+          <select [(ngModel)]="form['facilitie_type_id']" name="facilitie_type_id">
+            <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
+            @for (t of facilityTypes; track t.id) {
+              <option [ngValue]="t.id">{{ t.name }}</option>
+            }
+          </select>
+        } @else if (!showNewFacilityType) {
+          <p class="hint">{{ 'PROP_NO_FACILITY_TYPES' | translate }}</p>
+        }
+        @if (showNewFacilityType) {
+          <div class="inline-create">
+            <input [(ngModel)]="newFacilityTypeName" name="newFacilityTypeName"
+              [placeholder]="'PROP_NEW_FACILITY_TYPE_PLACEHOLDER' | translate"
+              (keydown.enter)="$event.preventDefault(); createFacilityTypeInline()" />
+            <button type="button" class="btn soft" (click)="createFacilityTypeInline()"
+              [disabled]="creatingType || !newFacilityTypeName.trim()">
+              {{ creatingType ? ('SAVING' | translate) : ('PROP_CREATE_TYPE' | translate) }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Gate -->
+    @if (data.entity === 'gate') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_DIRECTION' | translate }}</span>
+        <select [(ngModel)]="form['direction']" name="direction">
+          <option value="in">{{ 'PROP_DIR_IN' | translate }}</option>
+          <option value="out">{{ 'PROP_DIR_OUT' | translate }}</option>
+          <option value="both">{{ 'PROP_DIR_BOTH' | translate }}</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_COMPOUND' | translate }}</span>
+        <select [(ngModel)]="form['compound_id']" name="compound_id" required>
+          <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
+          @for (c of data.compounds; track c.id) {
+            <option [ngValue]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_BUILDING' | translate }}</span>
+        <select [(ngModel)]="form['building_id']" name="building_id" required>
+          <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
+          @for (b of data.buildings; track b.id) {
+            <option [ngValue]="b.id">{{ b.name }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    <!-- Parking -->
+    @if (data.entity === 'parking') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_LOCATION' | translate }}</span>
+        <input [(ngModel)]="form['location']" name="location" />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_CAPACITY' | translate }}</span>
+        <input type="number" [(ngModel)]="form['capacity']" name="capacity" min="0" />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_COMPOUND' | translate }}</span>
+        <select [(ngModel)]="form['compound_id']" name="compound_id">
+          <option [ngValue]="null">{{ 'PROP_NONE' | translate }}</option>
+          @for (c of data.compounds; track c.id) {
+            <option [ngValue]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_BUILDING' | translate }}</span>
+        <select [(ngModel)]="form['building_id']" name="building_id">
+          <option [ngValue]="null">{{ 'PROP_NONE' | translate }}</option>
+          @for (b of data.buildings; track b.id) {
+            <option [ngValue]="b.id">{{ b.name }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    <!-- Elevator -->
+    @if (data.entity === 'elevator') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+      <label class="field">
+        <span>{{ 'PROP_CAPACITY' | translate }}</span>
+        <input type="number" [(ngModel)]="form['capacity']" name="capacity" min="1" />
+      </label>
+    }
+
+    <!-- Types -->
+    @if (data.entity === 'room_type' || data.entity === 'facility_type') {
+      <label class="field">
+        <span>{{ 'PROP_NAME' | translate }}</span>
+        <input [(ngModel)]="form['name']" name="name" required />
+      </label>
+    }
+  </div>
+
+  <footer class="dialog-foot">
+    <button type="button" class="btn ghost" (click)="close()" [disabled]="saving">{{ 'CANCEL' | translate }}</button>
+    <button type="button" class="btn primary" (click)="save()" [disabled]="saving">
+      {{ saving ? ('SAVING' | translate) : ('SAVE' | translate) }}
+    </button>
+  </footer>
+</div>
