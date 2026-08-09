@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
+  AcademicTerm,
   EducationService,
   EduEnrollmentRow,
   EduSection,
@@ -42,6 +43,7 @@ export class EnrollmentsPage implements OnInit {
   rows: EduEnrollmentRow[] = [];
   filtered: EduEnrollmentRow[] = [];
   sections: EduSection[] = [];
+  terms: AcademicTerm[] = [];
   users: SimpleUser[] = [];
   loading = false;
   initialLoad = true;
@@ -124,9 +126,16 @@ export class EnrollmentsPage implements OnInit {
     }
   }
 
-  private applyBundle(bundle: { enrollments?: EduEnrollmentRow[]; sections?: EduSection[] }): void {
+  private applyBundle(bundle: {
+    enrollments?: EduEnrollmentRow[];
+    sections?: EduSection[];
+    terms?: AcademicTerm[];
+  }): void {
     this.rows = bundle.enrollments || [];
     this.sections = bundle.sections || [];
+    if (bundle.terms) {
+      this.terms = bundle.terms;
+    }
     this.applyFilter();
   }
 
@@ -150,16 +159,23 @@ export class EnrollmentsPage implements OnInit {
 
   async openCreate(): Promise<void> {
     const users = await this.loadUserOptions();
-    const sections = this.sections.length
-      ? this.sections
-      : (this.pageCache.peekScheduleBundle()?.sections.filter((s) => s.active !== false) ?? []);
+    let terms = this.terms;
+    if (!terms.length) {
+      try {
+        const res = await this.edu.getAcademicTerms('open');
+        terms = res.data || [];
+        this.terms = terms;
+      } catch {
+        terms = [];
+      }
+    }
 
     const ref = this.dialog.open(AddEnrollment, {
       panelClass: ['custom-dialog', 'subject-dialog'],
       backdropClass: 'custom-backdrop',
-      width: '560px',
+      width: '640px',
       maxWidth: '94vw',
-      data: { users, sections },
+      data: { users, terms },
     });
     ref.afterClosed().subscribe((saved) => {
       if (saved) void this.bootstrap(true);

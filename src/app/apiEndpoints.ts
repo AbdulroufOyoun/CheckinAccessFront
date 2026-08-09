@@ -460,6 +460,10 @@ export class Apiendpointd {
     return this.enrollmentArchives + '/archive-all';
   }
 
+  public static studentSchedule(userId: number | string): string {
+    return `${this.education}students/${userId}/schedule`;
+  }
+
   public static studentEnrollmentHistory(userId: number | string): string {
     return `${this.education}students/${userId}/enrollment-history`;
   }

@@ -157,7 +157,7 @@ export class SectionsPage implements OnInit {
     if (!hadData) this.loading = true;
     try {
       const [sectionsRes, subjectsRes, daysRes] = await Promise.all([
-        this.edu.getSections(this.filterSubjectId),
+        this.edu.getSections({ subject_id: this.filterSubjectId || undefined }),
         this.subjects.length && !force
           ? Promise.resolve({ data: this.subjects })
           : this.edu.getSubjects(),

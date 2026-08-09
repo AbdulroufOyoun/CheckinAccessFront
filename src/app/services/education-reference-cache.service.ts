@@ -30,6 +30,7 @@ export interface EnrollmentHistoryBundle {
 export interface EnrollmentsPageBundle {
   enrollments: EduEnrollmentRow[];
   sections: EduSection[];
+  terms?: AcademicTerm[];
 }
 
 /** Short-lived in-memory cache for education reference + list payloads. */

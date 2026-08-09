@@ -27,7 +27,8 @@
         <span class="as__label">{{ 'ENR_STUDENT' | translate }} <i>*</i></span>
         @if (users.length) {
         <div class="as__select-wrap">
-          <select class="as__input as__select" name="user_id" [(ngModel)]="form.user_id">
+          <select class="as__input as__select" name="user_id" [(ngModel)]="form.user_id"
+            (ngModelChange)="onStudentChange()">
             <option [ngValue]="''">{{ 'ENR_STUDENT_PLACEHOLDER' | translate }}</option>
             @for (u of users; track u.id) {
             <option [ngValue]="u.id">{{ userLabel(u) }}</option>
@@ -40,18 +41,19 @@
         </div>
         } @else {
         <input class="as__input" type="number" name="user_id" [(ngModel)]="form.user_id"
-          [placeholder]="'ENR_USER_ID_PLACEHOLDER' | translate" min="1" />
+          [placeholder]="'ENR_USER_ID_PLACEHOLDER' | translate" min="1"
+          (ngModelChange)="onStudentChange()" />
         }
       </label>
 
       <label class="as__field">
-        <span class="as__label">{{ 'ENR_SECTION' | translate }} <i>*</i></span>
-        @if (sections.length) {
+        <span class="as__label">{{ 'ENR_TERM' | translate }} <i>*</i></span>
         <div class="as__select-wrap">
-          <select class="as__input as__select" name="section_id" [(ngModel)]="form.section_id">
-            <option [ngValue]="''">{{ 'ENR_SECTION_PLACEHOLDER' | translate }}</option>
-            @for (s of sections; track s.id) {
-            <option [ngValue]="s.id">{{ sectionLabel(s) }}</option>
+          <select class="as__input as__select" name="academic_term_id" [(ngModel)]="form.academic_term_id"
+            (ngModelChange)="onTermChange()" [disabled]="!form.user_id">
+            <option [ngValue]="''">{{ 'ENR_TERM_PLACEHOLDER' | translate }}</option>
+            @for (t of terms; track t.id) {
+            <option [ngValue]="t.id">{{ termLabel(t) }}</option>
             }
           </select>
           <svg class="as__select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -59,11 +61,44 @@
             <path d="m6 9 6 6 6-6" />
           </svg>
         </div>
-        } @else {
-        <input class="as__input" type="number" name="section_id" [(ngModel)]="form.section_id"
-          [placeholder]="'ENR_SECTION_ID_PLACEHOLDER' | translate" min="1" />
-        }
       </label>
+
+      <div class="as__field">
+        <span class="as__label">{{ 'ENR_SECTIONS_MULTI' | translate }} <i>*</i></span>
+        <p class="enr-hint">{{ 'ENR_SECTIONS_HINT' | translate }}</p>
+
+        @if (!form.academic_term_id) {
+        <p class="enr-empty">{{ 'ENR_PICK_TERM_FIRST' | translate }}</p>
+        } @else if (loadingSections) {
+        <p class="enr-empty">{{ 'LOADING' | translate }}</p>
+        } @else if (!termSections.length) {
+        <p class="enr-empty">{{ 'ENR_NO_TERM_SECTIONS' | translate }}</p>
+        } @else {
+        <div class="enr-list" role="group" [attr.aria-label]="'ENR_SECTIONS_MULTI' | translate">
+          @for (s of termSections; track s.id) {
+          <label class="enr-item"
+            [class.enr-item--checked]="isChecked(s.id)"
+            [class.enr-item--blocked]="!!conflictReason(s.id) && !isChecked(s.id)">
+            <input type="checkbox"
+              [checked]="isChecked(s.id)"
+              [disabled]="!!conflictReason(s.id) && !isChecked(s.id)"
+              (change)="toggleSection(s)" />
+            <span class="enr-item__body">
+              <strong>{{ sectionLabel(s) }}</strong>
+              <small>{{ sectionTimesLabel(s) }}</small>
+              @if (conflictReason(s.id) && !isChecked(s.id)) {
+              <em class="enr-item__conflict">{{ conflictReason(s.id) }}</em>
+              }
+            </span>
+          </label>
+          }
+        </div>
+        }
+
+        @if (loadingSchedule) {
+        <p class="enr-hint">{{ 'ENR_LOADING_SCHEDULE' | translate }}</p>
+        }
+      </div>
 
       <label class="as__field">
         <span class="as__label">{{ 'ENR_STATUS' | translate }}</span>

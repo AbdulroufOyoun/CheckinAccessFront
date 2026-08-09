@@ -152,9 +152,17 @@ export class EducationService {
     return this.mutate(this.api.delete(Apiendpointd.subjectById(id)));
   }
 
-  getSections(subjectId?: number | null): Promise<ApiResponse<EduSection[]>> {
-    const qs = subjectId ? `?subject_id=${subjectId}` : '';
-    return this.api.get(`${Apiendpointd.sections}${qs}`);
+  getSections(params?: {
+    subject_id?: number | null;
+    academic_term_id?: number | null;
+    active?: boolean;
+  }): Promise<ApiResponse<EduSection[]>> {
+    const qs = new URLSearchParams();
+    if (params?.subject_id) qs.set('subject_id', String(params.subject_id));
+    if (params?.academic_term_id) qs.set('academic_term_id', String(params.academic_term_id));
+    if (params?.active !== undefined) qs.set('active', String(params.active));
+    const url = qs.toString() ? `${Apiendpointd.sections}?${qs}` : Apiendpointd.sections;
+    return this.api.get(url);
   }
 
   createSection(body: Record<string, unknown>): Promise<ApiResponse<EduSection>> {
@@ -207,8 +215,27 @@ export class EducationService {
     return this.api.get(url);
   }
 
-  enroll(body: { user_id: number; section_id: number; status?: string }): Promise<ApiResponse<unknown>> {
+  enroll(body: {
+    user_id: number;
+    academic_term_id: number;
+    section_id?: number;
+    section_ids?: number[];
+    status?: string;
+  }): Promise<ApiResponse<unknown>> {
     return this.mutate(this.api.post(Apiendpointd.enrollments, body));
+  }
+
+  getStudentSchedule(userId: number): Promise<ApiResponse<{
+    user?: { id: number; name?: string; email?: string } | null;
+    enrollments: EduEnrollmentRow['enrollment'][] | Array<{
+      id: number;
+      user_id: number;
+      section_id: number;
+      status: string;
+      section?: EduSection;
+    }>;
+  }>> {
+    return this.api.get(Apiendpointd.studentSchedule(userId));
   }
 
   updateEnrollmentStatus(id: number, status: string): Promise<ApiResponse<unknown>> {
