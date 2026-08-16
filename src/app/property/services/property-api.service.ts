@@ -15,7 +15,8 @@ export type PropNodeType =
   | 'parking'
   | 'elevator'
   | 'room_type'
-  | 'facility_type';
+  | 'facility_type'
+  | 'lock';
 
 export type LockableType = 'building' | 'floor' | 'suite' | 'room' | 'facility' | 'gate' | 'parking' | 'elevator';
 
@@ -117,6 +118,35 @@ export interface PropLock {
   lockId?: string | number;
   lockMac?: string;
   electricQuantity?: number;
+  electric_quantity_updated_at?: string | null;
+  noKeyPwd?: string;
+  featureValue?: string;
+  timezoneRawOffset?: number;
+  modelNum?: string;
+  hardwareRevision?: string;
+  firmwareRevision?: string;
+  autoLockTime?: number;
+  lockSound?: boolean;
+  soundVolume?: number;
+  hasGateway?: boolean;
+  privacyLock?: boolean;
+  tamperAlert?: boolean;
+  resetButton?: boolean;
+  openDirection?: number;
+  passageMode?: boolean;
+  passageModeAutoUnlock?: boolean;
+  date?: number;
+  linkedBuildings?: Array<{ id: number }>;
+  linkedRooms?: Array<{ id: number }>;
+  linkedFacilities?: Array<{ id: number }>;
+  buildings_count?: number;
+  floors_count?: number;
+  suites_count?: number;
+  rooms_count?: number;
+  facilities_count?: number;
+  gates_count?: number;
+  parkings_count?: number;
+  elevators_count?: number;
 }
 
 export interface PropTreeSnapshot {
@@ -367,36 +397,44 @@ export class PropertyApiService {
       return this.locksPromise;
     }
 
-    this.locksPromise = this.api
-      .get(Apiendpointd.locks)
-      .then((r) => {
+    this.locksPromise = (async () => {
+      try {
+        const r = await this.api.get(`${Apiendpointd.locks}?per_page=500`);
         const list = this.unwrapList<PropLock>(r);
         this.locksData = list;
         this.locksAt = Date.now();
-        this.locksPromise = null;
         return list;
-      })
-      .catch((err) => {
+      } finally {
         this.locksPromise = null;
-        throw err;
-      });
+      }
+    })();
 
     return this.locksPromise;
   }
 
   getLock(id: number): Promise<
     PropLock & {
-      rooms?: Array<{ id: number }>;
       buildings?: Array<{ id: number }>;
+      floors?: Array<{ id: number }>;
+      suites?: Array<{ id: number }>;
+      rooms?: Array<{ id: number }>;
       facilities?: Array<{ id: number }>;
+      gates?: Array<{ id: number }>;
+      parkings?: Array<{ id: number }>;
+      elevators?: Array<{ id: number }>;
     }
   > {
     return this.api.get(Apiendpointd.lockById(id)).then((r) => {
       const data = (r as { data?: unknown })?.data;
       return (data || {}) as PropLock & {
-        rooms?: Array<{ id: number }>;
         buildings?: Array<{ id: number }>;
+        floors?: Array<{ id: number }>;
+        suites?: Array<{ id: number }>;
+        rooms?: Array<{ id: number }>;
         facilities?: Array<{ id: number }>;
+        gates?: Array<{ id: number }>;
+        parkings?: Array<{ id: number }>;
+        elevators?: Array<{ id: number }>;
       };
     });
   }
@@ -405,16 +443,35 @@ export class PropertyApiService {
     return this.api.get(Apiendpointd.propertyLocks(type, id)).then((r) => this.unwrapList<PropLock>(r));
   }
   linkLocks(type: LockableType, id: number, lockIds: number[]) {
+    this.locksData = null;
     return this.api.post(Apiendpointd.propertyLocks(type, id), { lock_ids: lockIds });
   }
   unlinkLocks(type: LockableType, id: number, lockIds: number[]) {
+    this.locksData = null;
     return this.api.deleteWithBody(Apiendpointd.propertyLocks(type, id), { lock_ids: lockIds });
   }
   unlinkLock(type: LockableType, id: number, lockId: number) {
+    this.locksData = null;
     return this.api.delete(Apiendpointd.propertyLockById(type, id, lockId));
   }
   syncLocks(type: LockableType, id: number, lockIds: number[]) {
+    this.locksData = null;
     return this.api.put(Apiendpointd.propertyLocks(type, id), { lock_ids: lockIds });
+  }
+
+  createLock(body: Partial<PropLock> & { lockId: string | number }) {
+    this.locksData = null;
+    return this.mutate(this.api.post(Apiendpointd.locks, body));
+  }
+
+  updateLock(id: number, body: Partial<PropLock>) {
+    this.locksData = null;
+    return this.mutate(this.api.post(Apiendpointd.lockById(id), body));
+  }
+
+  deleteLock(id: number) {
+    this.locksData = null;
+    return this.mutate(this.api.delete(Apiendpointd.lockById(id)));
   }
 
   private qs(body: Record<string, unknown>): string {

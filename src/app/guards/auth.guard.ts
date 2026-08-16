@@ -50,7 +50,7 @@ export function moduleGuard(module: TenantModuleName): CanActivateFn {
   };
 }
 
-export function permissionGuard(permission: string): CanActivateFn {
+export function permissionGuard(...permissions: string[]): CanActivateFn {
   return () => {
     const router = inject(Router);
     if (!browserOnly()) {
@@ -60,7 +60,7 @@ export function permissionGuard(permission: string): CanActivateFn {
     if (!auth.isLoggedIn()) {
       return router.createUrlTree(['/Login']);
     }
-    if (auth.can(permission)) {
+    if (auth.canAny(...permissions)) {
       return true;
     }
     return router.createUrlTree([auth.homeRoute()]);

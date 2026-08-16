@@ -410,12 +410,17 @@
   position: relative;
 }
 
+.navbar__search-field {
+  position: relative;
+}
+
 .navbar__search-icon {
   position: absolute;
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  z-index: 1;
 }
 
 .shell--rtl .navbar__search-icon {
@@ -430,9 +435,14 @@
   border: 1.5px solid #E8EDF5;
   border-radius: 10px;
   outline: none;
-  width: 200px;
+  width: 220px;
   font-family: inherit;
-  transition: border-color 0.2s, background 0.2s;
+  color: #1F2937;
+  transition: border-color 0.2s, background 0.2s, width 0.2s, box-shadow 0.2s;
+}
+
+.navbar__search-input::-webkit-search-cancel-button {
+  appearance: none;
 }
 
 .shell--rtl .navbar__search-input {
@@ -443,6 +453,119 @@
 .navbar__search-input:focus {
   border-color: #3B82F6;
   background: white;
+  width: 280px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.navbar__dropdown--search {
+  width: 360px;
+  left: 0;
+  right: auto;
+  max-height: min(440px, calc(100vh - 88px));
+  overflow: auto;
+  padding: 6px 0 8px;
+}
+
+.shell--rtl .navbar__dropdown--search {
+  left: auto;
+  right: 0;
+}
+
+.navbar__search-group {
+  margin: 0;
+  padding: 10px 14px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9CA3AF;
+}
+
+.navbar__search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  color: #374151;
+}
+
+.navbar__search-item:hover,
+.navbar__search-item--active {
+  background: #EFF6FF;
+}
+
+.navbar__search-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #F1F5FB;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.navbar__search-item--active .navbar__search-item-icon,
+.navbar__search-item:hover .navbar__search-item-icon {
+  background: #DBEAFE;
+}
+
+.navbar__search-item-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563EB, #0D9488);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.navbar__search-item-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.navbar__search-item-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1F2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__search-item-hint {
+  font-size: 11px;
+  color: #9CA3AF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar__search-empty {
+  margin: 0;
+  padding: 20px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+.navbar__search-empty--inline {
+  padding: 8px 14px 12px;
+  text-align: start;
 }
 
 /* Language Toggle */
@@ -699,7 +822,9 @@
 /* ─── PAGE CONTENT ──────────────────────────────────────── */
 .page-content {
   flex: 1;
-  overflow-y: scroll;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 24px;
 }
 

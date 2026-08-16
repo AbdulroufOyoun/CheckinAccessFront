@@ -1,11 +1,26 @@
-import { ChangeDetectorRef, Component, DOCUMENT, OnInit, PLATFORM_ID, Inject, Renderer2, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  DOCUMENT,
+  ElementRef,
+  HostListener,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  Renderer2,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../model/User';
 import { ChangePassword } from '../../dialog/change-password/change-password';
+import { TenantUser, UsersService } from '../../services/users.service';
 
 type NavIcon =
   | 'dashboard'
@@ -21,7 +36,8 @@ type NavIcon =
   | 'edu-reports'
   | 'users'
   | 'admins'
-  | 'roles';
+  | 'roles'
+  | 'locks';
 
 interface NavItem {
   labelKey: string;
@@ -36,14 +52,27 @@ interface NavSection {
   items: NavItem[];
 }
 
+interface NavSearchHit {
+  kind: 'page' | 'user' | 'action';
+  key: string;
+  label: string;
+  hint?: string;
+  initials?: string;
+  route: (string | number)[];
+  queryParams?: Record<string, string>;
+}
+
 @Component({
   selector: 'app-app-shell',
-  imports: [RouterOutlet, CommonModule, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [RouterOutlet, CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.css',
 })
-export class AppShell implements OnInit {
+export class AppShell implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
+  private readonly usersApi = inject(UsersService);
+
+  @ViewChild('navSearchInput') navSearchInput?: ElementRef<HTMLInputElement>;
 
   sidebarOpen = true;
   userMenuOpen = false;
@@ -51,6 +80,17 @@ export class AppShell implements OnInit {
   currentLang: 'ar' | 'en' = 'en';
   activePage = '';
   user: User | null = null;
+
+  searchQuery = '';
+  searchOpen = false;
+  searchLoading = false;
+  searchActiveIndex = 0;
+  pageHits: NavSearchHit[] = [];
+  userHits: NavSearchHit[] = [];
+  actionHits: NavSearchHit[] = [];
+
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  private searchGen = 0;
 
   constructor(
     public router: Router,
@@ -84,31 +124,44 @@ export class AppShell implements OnInit {
             labelKey: 'RESERVATIONS',
             route: '/Reservations',
             icon: 'reservations',
-            visible: this.auth.hasModule('property'),
+            visible: this.canProperty('manage bookings'),
           },
           {
             labelKey: 'ROOM_STATUS_NAV',
             route: '/RoomStatus',
             icon: 'room-status',
-            visible: this.auth.hasModule('property'),
+            visible: this.canProperty('manage bookings', 'view buildings', 'manage buildings'),
           },
           {
             labelKey: 'HOL_NAV',
             route: '/Holidays',
             icon: 'holidays',
-            visible: this.auth.hasModule('property'),
+            visible: this.canProperty('manage bookings'),
           },
           {
             labelKey: 'PROP_NAV',
             route: '/Property',
             icon: 'facilities',
-            visible: this.auth.hasModule('property'),
+            visible: this.canProperty(
+              'manage buildings',
+              'view buildings',
+              'manage rooms',
+              'view rooms',
+              'manage compounds',
+              'view compounds',
+            ),
+          },
+          {
+            labelKey: 'LOCKS_NAV',
+            route: '/Locks',
+            icon: 'locks',
+            visible: this.canProperty('manage locks'),
           },
           {
             labelKey: 'REPORTS',
             route: '/Reports',
             icon: 'reports',
-            visible: this.auth.hasModule('property'),
+            visible: this.canProperty('view reports'),
           },
         ],
       },
@@ -198,6 +251,9 @@ export class AppShell implements OnInit {
     this.translate.onLangChange.subscribe(() => {
       this.activePage = this.translate.instant('DASHBOARD');
       this.document.title = `${this.activePage} - CheckinAccess`;
+      if (this.searchQuery.trim()) {
+        this.refreshPageHits(this.searchQuery);
+      }
     });
 
     this.user = this.auth.getUser();
@@ -205,11 +261,235 @@ export class AppShell implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       void this.auth.ensureMe().then((user) => {
         this.user = user;
-        this.cdr.markForCheck();
+        this.cdr.detectChanges();
       }).catch(() => {
         // Keep cached session user if /me fails briefly.
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+  }
+
+  get searchHits(): NavSearchHit[] {
+    return [...this.actionHits, ...this.pageHits, ...this.userHits];
+  }
+
+  get searchHasQuery(): boolean {
+    return this.searchQuery.trim().length > 0;
+  }
+
+  onSearchFocus(): void {
+    this.userMenuOpen = false;
+    if (this.searchHasQuery) {
+      this.searchOpen = true;
+    }
+  }
+
+  onSearchQueryChange(): void {
+    this.userMenuOpen = false;
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    const q = this.searchQuery.trim();
+    if (!q) {
+      this.searchGen += 1;
+      this.searchOpen = false;
+      this.searchLoading = false;
+      this.pageHits = [];
+      this.userHits = [];
+      this.actionHits = [];
+      this.searchActiveIndex = 0;
+      return;
+    }
+    this.searchOpen = true;
+    this.refreshPageHits(q);
+    this.searchTimer = setTimeout(() => void this.searchUsers(q), 280);
+  }
+
+  onSearchKeydown(event: KeyboardEvent): void {
+    const hits = this.searchHits;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeSearch(true);
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!hits.length) return;
+      this.searchOpen = true;
+      this.searchActiveIndex = (this.searchActiveIndex + 1) % hits.length;
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!hits.length) return;
+      this.searchOpen = true;
+      this.searchActiveIndex = (this.searchActiveIndex - 1 + hits.length) % hits.length;
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const hit = hits[this.searchActiveIndex] ?? hits[0];
+      if (hit) this.goToHit(hit);
+    }
+  }
+
+  isSearchHitActive(hit: NavSearchHit): boolean {
+    return this.searchHits[this.searchActiveIndex]?.key === hit.key;
+  }
+
+  goToHit(hit: NavSearchHit): void {
+    this.closeSearch(true);
+    this.searchQuery = '';
+    this.pageHits = [];
+    this.userHits = [];
+    this.actionHits = [];
+    void this.router.navigate(hit.route, hit.queryParams ? { queryParams: hit.queryParams } : undefined);
+  }
+
+  closeSearch(blur = false): void {
+    this.searchOpen = false;
+    this.searchLoading = false;
+    if (blur) {
+      this.navSearchInput?.nativeElement.blur();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.navbar__search')) {
+      this.closeSearch();
+    }
+    if (!target?.closest('.navbar__user-wrapper')) {
+      this.userMenuOpen = false;
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onGlobalKeydown(event: KeyboardEvent): void {
+    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return;
+    const tag = (event.target as HTMLElement | null)?.tagName;
+    if (tag === 'TEXTAREA') return;
+    event.preventDefault();
+    this.navSearchInput?.nativeElement.focus();
+    this.navSearchInput?.nativeElement.select();
+  }
+
+  private refreshPageHits(raw: string): void {
+    const needle = raw.trim().toLowerCase();
+    const pages: NavSearchHit[] = this.navSections.flatMap((section) =>
+      section.items.map((item) => ({
+        kind: 'page' as const,
+        key: `page:${item.route}`,
+        label: this.translate.instant(item.labelKey),
+        hint: this.translate.instant(section.labelKey),
+        route: [item.route],
+      })),
+    );
+    pages.push({
+      kind: 'page',
+      key: 'page:/Settings',
+      label: this.translate.instant('SETTINGS'),
+      hint: this.translate.instant('NAV_SECTION_ADMIN'),
+      route: ['/Settings'],
+    });
+
+    this.pageHits = pages
+      .filter((hit) => {
+        const label = hit.label.toLowerCase();
+        const route = String(hit.route[0] ?? '').toLowerCase();
+        const hint = (hit.hint ?? '').toLowerCase();
+        return label.includes(needle) || route.includes(needle) || hint.includes(needle);
+      })
+      .slice(0, 8);
+
+    this.actionHits = [];
+    if (needle.length >= 2 && this.auth.can('manage users')) {
+      this.actionHits.push({
+        kind: 'action',
+        key: `action:users:${needle}`,
+        label: this.translate.instant('NAV_SEARCH_USERS_FOR', { q: raw.trim() }),
+        hint: this.translate.instant('USERS'),
+        route: ['/Users'],
+        queryParams: { q: raw.trim() },
+      });
+    }
+    if (needle.length >= 2 && this.canProperty('manage bookings')) {
+      this.actionHits.push({
+        kind: 'action',
+        key: `action:bookings:${needle}`,
+        label: this.translate.instant('NAV_SEARCH_BOOKINGS_FOR', { q: raw.trim() }),
+        hint: this.translate.instant('RESERVATIONS'),
+        route: ['/Reservations'],
+        queryParams: { q: raw.trim() },
+      });
+    }
+    this.clampActiveIndex();
+  }
+
+  private async searchUsers(raw: string): Promise<void> {
+    const q = raw.trim();
+    if (q.length < 2 || !this.auth.can('manage users')) {
+      this.searchGen += 1;
+      this.userHits = [];
+      this.searchLoading = false;
+      this.clampActiveIndex();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const gen = ++this.searchGen;
+    this.searchLoading = true;
+    this.cdr.detectChanges();
+    try {
+      const page = await this.usersApi.searchByName(q, 8);
+      if (gen !== this.searchGen) return;
+      const rows = Array.isArray(page.data) ? page.data : [];
+      this.userHits = rows.slice(0, 6).map((user) => this.toUserHit(user));
+    } catch {
+      if (gen !== this.searchGen) return;
+      this.userHits = [];
+    } finally {
+      if (gen === this.searchGen) {
+        this.searchLoading = false;
+        this.clampActiveIndex();
+        this.cdr.detectChanges();
+      }
+    }
+  }
+
+  private toUserHit(user: TenantUser): NavSearchHit {
+    return {
+      kind: 'user',
+      key: `user:${user.id}`,
+      label: user.name || `#${user.id}`,
+      hint: user.email || user.mobile || '',
+      initials: this.initials(user.name),
+      route: ['/Users', user.id],
+    };
+  }
+
+  private initials(name: string): string {
+    const parts = (name || '?').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  private clampActiveIndex(): void {
+    const total = this.searchHits.length;
+    if (!total) {
+      this.searchActiveIndex = 0;
+      return;
+    }
+    if (this.searchActiveIndex >= total) {
+      this.searchActiveIndex = 0;
+    }
+  }
+
+  private canProperty(...permissions: string[]): boolean {
+    return this.auth.hasModule('property') && this.auth.canAny(...permissions);
   }
 
   getLang(): 'ar' | 'en' {
@@ -243,9 +523,11 @@ export class AppShell implements OnInit {
 
   closeDropdowns(): void {
     this.userMenuOpen = false;
+    this.closeSearch();
   }
 
   toggleUserMenu(): void {
+    this.closeSearch();
     this.userMenuOpen = !this.userMenuOpen;
   }
 

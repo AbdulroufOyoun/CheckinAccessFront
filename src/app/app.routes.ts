@@ -23,6 +23,7 @@ import { RolesPage } from './roles/roles-page';
 import { SettingsPage } from './settings/settings-page';
 import { AcademicTermsPage } from './education/academic-terms/academic-terms-page';
 import { EnrollmentHistoryPage } from './education/enrollment-history/enrollment-history-page';
+import { LocksPage } from './property/locks-page/locks-page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'Login', pathMatch: 'full' },
@@ -41,30 +42,36 @@ export const routes: Routes = [
       {
         path: 'Reservations',
         component: ReservationsPageComponent,
-        canActivate: [moduleGuard('property')],
+        canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
       },
 
       {
         path: 'Reservations/New',
         component: BookingCreatePage,
-        canActivate: [moduleGuard('property')],
+        canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
       },
 
       {
         path: 'RoomStatus',
         component: RoomStatusPage,
-        canActivate: [moduleGuard('property')],
+        canActivate: [
+          moduleGuard('property'),
+          permissionGuard('manage bookings', 'view buildings', 'manage buildings'),
+        ],
       },
       {
         path: 'RoomStatus/:id',
         component: RoomDetailPage,
-        canActivate: [moduleGuard('property')],
+        canActivate: [
+          moduleGuard('property'),
+          permissionGuard('manage bookings', 'view buildings', 'manage buildings'),
+        ],
       },
 
       {
         path: 'Holidays',
         component: HolidaysPage,
-        canActivate: [moduleGuard('property')],
+        canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
       },
 
       {
@@ -93,13 +100,21 @@ export const routes: Routes = [
       {
         path: 'Reports',
         component: Reports,
-        canActivate: [moduleGuard('property')],
+        canActivate: [moduleGuard('property'), permissionGuard('view reports')],
       },
 
       {
         path: 'Property',
         component: PropertyConsole,
-        canActivate: [moduleGuard('property')],
+        canActivate: [
+          moduleGuard('property'),
+          permissionGuard('manage buildings', 'view buildings', 'manage rooms', 'view rooms', 'manage compounds', 'view compounds'),
+        ],
+      },
+      {
+        path: 'Locks',
+        component: LocksPage,
+        canActivate: [moduleGuard('property'), permissionGuard('manage locks')],
       },
       {
         path: 'FacilitiesManagement',

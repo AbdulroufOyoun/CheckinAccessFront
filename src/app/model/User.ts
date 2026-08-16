@@ -24,7 +24,14 @@ export class User {
   }
 
   can(permission: string): boolean {
+    if (this.roles.includes('Super Admin')) {
+      return true;
+    }
     return this.permissions.includes(permission);
+  }
+
+  canAny(permissions: string[]): boolean {
+    return permissions.some((permission) => this.can(permission));
   }
 
   get initials(): string {

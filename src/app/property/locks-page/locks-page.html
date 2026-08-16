@@ -1,0 +1,266 @@
+<div class="prop" [class.prop--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="prop__hero">
+    <div class="prop__hero-text">
+      <p class="prop__eyebrow">{{ 'PROP_MODULE' | translate }}</p>
+      <h1>{{ 'LOCKS_PAGE_TITLE' | translate }}</h1>
+      <p class="prop__subtitle">
+        @if (loading && !locks.length) {
+          <span class="prop-skel-line" aria-hidden="true"></span>
+        } @else {
+          {{ 'LOCKS_PAGE_SUBTITLE' | translate }}
+        }
+      </p>
+    </div>
+
+    <div class="prop__hero-side">
+      <div class="prop-seg" role="tablist">
+        <button type="button" role="tab" [class.is-active]="view === 'list'" (click)="showList()">
+          {{ 'LOCKS_ALL_LOCKS' | translate }}
+        </button>
+        <button type="button" role="tab" [class.is-active]="view === 'linked'" (click)="showLinked()">
+          {{ 'LOCKS_LINKED' | translate }}
+        </button>
+      </div>
+      <button type="button" class="prop-btn prop-btn--primary" (click)="openAddLock()">
+        <span aria-hidden="true">+</span>
+        {{ 'LOCKS_ADD_LOCK' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (locks.length) {
+    <section class="prop__stats" aria-label="summary">
+      <div class="prop-stat">
+        <span>{{ 'LOCKS_TOTAL' | translate }}</span>
+        <strong>{{ stats.total }}</strong>
+      </div>
+      <div class="prop-stat">
+        <span>{{ 'LOCKS_LOW_BATTERY' | translate }}</span>
+        <strong class="is-warning">{{ stats.lowBattery }}</strong>
+      </div>
+      <div class="prop-stat">
+        <span>{{ 'LOCKS_WITH_GATEWAY' | translate }}</span>
+        <strong>{{ stats.withGateway }}</strong>
+      </div>
+      <div class="prop-stat">
+        <span>{{ 'LOCKS_LINKED_COUNT' | translate }}</span>
+        <strong>{{ stats.linkedCount }}</strong>
+      </div>
+    </section>
+  }
+
+  <div class="prop__toolbar">
+    <label class="prop-search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input type="text" [(ngModel)]="search" (ngModelChange)="applyFilter()"
+        [placeholder]="'LOCKS_SEARCH_PLACEHOLDER' | translate" />
+    </label>
+  </div>
+
+  <div class="prop__layout reveal">
+    <aside class="prop-tree">
+      <div class="prop-panel__head">
+        <div>
+          <h2>{{ 'LOCKS_LIST_TITLE' | translate }}</h2>
+          <p>{{ 'LOCKS_LIST_HINT' | translate }}</p>
+        </div>
+      </div>
+
+      @if (loading) {
+        <p class="muted" style="padding: 16px;">{{ 'LOADING' | translate }}</p>
+      } @else if (!filteredLocks.length) {
+        <div class="prop-empty prop-empty--sm">
+          <div class="prop-empty__icon" aria-hidden="true">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <p>{{ 'LOCKS_EMPTY' | translate }}</p>
+          <button type="button" class="prop-btn prop-btn--primary" (click)="openAddLock()">
+            {{ 'LOCKS_ADD_LOCK' | translate }}
+          </button>
+        </div>
+      } @else {
+        <ul class="prop-tree__list">
+          @for (lock of filteredLocks; track trackLock($index, lock)) {
+            <li class="prop-tree__item" [style.--d]="0">
+              <div class="prop-tree__row"
+                [class.is-selected]="selected?.id === lock.id"
+                (click)="select(lock)">
+                <span class="prop-tree__spacer"></span>
+                <span class="prop-type-pill prop-type-pill--lock prop-type-pill--sm">
+                  {{ 'LOCKS_LOCK' | translate }}
+                </span>
+                <span class="prop-tree__label">
+                  {{ lock.lockName || lock.lockAlias || ('#' + lock.id) }}
+                </span>
+                @if (lock.electricQuantity != null) {
+                  <span class="lock-batt lock-batt--{{ batteryTone(lock.electricQuantity) }}">
+                    {{ lock.electricQuantity }}%
+                  </span>
+                }
+                @if (lockIsLinked(lock)) {
+                  <span class="lock-link-dot" [attr.title]="'LOCKS_LINKED' | translate" aria-hidden="true"></span>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </aside>
+
+    <section class="prop-detail">
+      @if (!selected) {
+        <div class="prop-empty">
+          <div class="prop-empty__icon" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h3>{{ 'LOCKS_SELECT_TITLE' | translate }}</h3>
+          <p>{{ 'LOCKS_SELECT_HINT' | translate }}</p>
+        </div>
+      } @else {
+        <div class="prop-detail__head">
+          <div class="prop-detail__identity">
+            <span class="prop-type-pill prop-type-pill--lock">
+              {{ 'LOCKS_LOCK' | translate }}
+            </span>
+            <h2>{{ selected.lockName || selected.lockAlias || ('#' + selected.id) }}</h2>
+            @if (selected.lockId || selected.lockMac) {
+              <p class="prop-meta">
+                {{ selected.lockId ? ('ID: ' + selected.lockId) : '' }}
+                {{ selected.lockMac ? (' MAC: ' + selected.lockMac) : '' }}
+              </p>
+            }
+            @if (selected.electricQuantity != null) {
+              <span class="prop-badge"
+                [class.is-off]="selected.electricQuantity < 20"
+                [style.background]="selected.electricQuantity < 20 ? '#fef2f2' : selected.electricQuantity < 50 ? '#fff7ed' : '#ecfdf5'"
+                [style.color]="selected.electricQuantity < 20 ? '#dc2626' : selected.electricQuantity < 50 ? '#c2410c' : '#047857'">
+                ⚡ {{ selected.electricQuantity }}%
+              </span>
+            }
+          </div>
+          <div class="prop-detail__actions">
+            <button type="button" class="prop-btn prop-btn--ghost" (click)="openEditLock()">
+              {{ 'EDIT' | translate }}
+            </button>
+            <button type="button" class="prop-btn prop-btn--danger" (click)="deleteLock()">
+              {{ 'DELETE' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <nav class="prop-tabs">
+          <button type="button" [class.is-active]="selectedDetailTab === 'overview'"
+            (click)="setDetailTab('overview')">
+            {{ 'PROP_TAB_OVERVIEW' | translate }}
+          </button>
+          <button type="button" [class.is-active]="selectedDetailTab === 'linked'"
+            (click)="setDetailTab('linked')">
+            {{ 'LOCKS_LINKED_ENTITIES' | translate }} ({{ linkedTabCount }})
+          </button>
+        </nav>
+
+        @if (selectedDetailTab === 'overview') {
+          <div class="prop-overview">
+            <dl class="prop-fields">
+              <div class="prop-field-card">
+                <dt>{{ 'LOCKS_COL_NAME' | translate }}</dt>
+                <dd>{{ selected.lockName || '—' }}</dd>
+              </div>
+              <div class="prop-field-card">
+                <dt>{{ 'LOCKS_COL_ALIAS' | translate }}</dt>
+                <dd>{{ selected.lockAlias || '—' }}</dd>
+              </div>
+              <div class="prop-field-card">
+                <dt>{{ 'LOCKS_COL_LOCKID' | translate }}</dt>
+                <dd>{{ selected.lockId ?? '—' }}</dd>
+              </div>
+              <div class="prop-field-card">
+                <dt>{{ 'LOCKS_COL_MAC' | translate }}</dt>
+                <dd>{{ selected.lockMac || '—' }}</dd>
+              </div>
+              <div class="prop-field-card">
+                <dt>{{ 'LOCKS_COL_BATTERY' | translate }}</dt>
+                <dd>
+                  @if (selected.electricQuantity != null) {
+                    {{ selected.electricQuantity }}%
+                  } @else {
+                    —
+                  }
+                </dd>
+              </div>
+              @if (selected.modelNum != null && selected.modelNum !== '') {
+                <div class="prop-field-card">
+                  <dt>{{ 'LOCKS_MODEL' | translate }}</dt>
+                  <dd>{{ selected.modelNum }}</dd>
+                </div>
+              }
+              <div class="prop-field-card">
+                <dt>{{ 'LOCKS_HAS_GATEWAY' | translate }}</dt>
+                <dd>{{ selected.hasGateway ? ('YES' | translate) : ('NO' | translate) }}</dd>
+              </div>
+              <div class="prop-field-card">
+                <dt>{{ 'LOCKS_PASSAGE_MODE' | translate }}</dt>
+                <dd>{{ selected.passageMode ? ('YES' | translate) : ('NO' | translate) }}</dd>
+              </div>
+            </dl>
+          </div>
+        }
+
+        @if (selectedDetailTab === 'linked') {
+          <div class="prop-locks">
+            <div class="prop-locks__head">
+              <div>
+                <h3>{{ 'LOCKS_LINKED_ENTITIES' | translate }}</h3>
+                <p class="prop-meta">
+                  {{ linkedEntities.length }} {{ 'LOCKS_ENTITIES_COUNT' | translate }}
+                </p>
+              </div>
+              <button type="button" class="prop-btn prop-btn--primary" (click)="openLinkEntities()">
+                {{ 'LOCKS_LINK_ENTITY' | translate }}
+              </button>
+            </div>
+            @if (linkedLoading) {
+              <p class="muted">{{ 'LOADING' | translate }}</p>
+            } @else if (!linkedEntities.length) {
+              <div class="prop-empty prop-empty--sm">
+                <p>{{ 'LOCKS_NO_LINKED' | translate }}</p>
+                <button type="button" class="prop-btn prop-btn--soft" (click)="openLinkEntities()">
+                  {{ 'LOCKS_LINK_ENTITY' | translate }}
+                </button>
+              </div>
+            } @else {
+              <ul class="prop-lock-list">
+                @for (entity of linkedEntities; track entity.type + entity.id) {
+                  <li>
+                    <div>
+                      <span class="prop-type-pill prop-type-pill--{{ typeTone(entity.type) }} prop-type-pill--sm">
+                        {{ typeLabel(entity.type) }}
+                      </span>
+                      <strong style="margin-inline-start: 8px;">{{ entity.label }}</strong>
+                      <small style="display:block; margin-top: 2px;">
+                        {{ typeLabel(entity.type) }} #{{ entity.id }}
+                      </small>
+                    </div>
+                    <button type="button" class="prop-btn prop-btn--danger prop-btn--sm"
+                      (click)="unlinkEntity(entity)">
+                      {{ 'PROP_UNLINK' | translate }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      }
+    </section>
+  </div>
+</div>

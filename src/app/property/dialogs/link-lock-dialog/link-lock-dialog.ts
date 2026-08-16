@@ -32,14 +32,15 @@ export class LinkLockDialog implements OnInit {
   saving = false;
   selectedIds: number[] = [];
   search = '';
+  private linkedIdsSet = new Set<number>();
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: LinkLockDialogData) {}
 
   ngOnInit(): void {
     this.isRTL = this.document.documentElement.getAttribute('dir') === 'rtl'
       || this.translate.getCurrentLang() === 'ar';
-    const linkedIds = new Set(this.data.linked.map((l) => l.id));
-    this.selectedIds = this.data.available.filter((l) => linkedIds.has(l.id)).map((l) => l.id);
+    this.linkedIdsSet = new Set(this.data.linked.map((l) => l.id));
+    this.selectedIds = this.data.available.filter((l) => this.linkedIdsSet.has(l.id)).map((l) => l.id);
   }
 
   get filtered(): PropLock[] {
@@ -48,6 +49,10 @@ export class LinkLockDialog implements OnInit {
     return this.data.available.filter((l) =>
       String(l.lockName || l.lockAlias || l.lockId || l.id).toLowerCase().includes(q)
     );
+  }
+
+  isLinkedHere(lockId: number): boolean {
+    return this.linkedIdsSet.has(lockId);
   }
 
   toggle(id: number): void {

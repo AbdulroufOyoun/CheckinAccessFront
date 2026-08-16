@@ -22,6 +22,7 @@ export class RoomGrid {
   @Input() rooms: RoomStatusItem[] = [];
   @Input() summary: RoomStatusSummary | null = null;
   @Input() loading = false;
+  @Input() canOpenRooms = true;
 
   get floors(): FloorGroup[] {
     const map = new Map<string, FloorGroup>();

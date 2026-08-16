@@ -1,3 +1,4 @@
+@if (hasActions) {
 <div class="quick-actions dash-card-bg">
   <div class="quick-actions__header">
     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -8,6 +9,7 @@
   </div>
 
   <div class="quick-actions__list">
+    @if (canBook) {
     <a class="qa-btn qa-btn--blue" routerLink="/Reservations/New">
       <div class="qa-btn__icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -20,7 +22,9 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
            fill="none" stroke="#2563EB" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </a>
+    }
 
+    @if (canUsers) {
     <a class="qa-btn qa-btn--purple" routerLink="/Users">
       <div class="qa-btn__icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -33,7 +37,9 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
            fill="none" stroke="#7C3AED" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </a>
+    }
 
+    @if (canReports) {
     <a class="qa-btn qa-btn--teal" routerLink="/Reports">
       <div class="qa-btn__icon-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -46,5 +52,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
            fill="none" stroke="#0D9488" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </a>
+    }
   </div>
 </div>
+}

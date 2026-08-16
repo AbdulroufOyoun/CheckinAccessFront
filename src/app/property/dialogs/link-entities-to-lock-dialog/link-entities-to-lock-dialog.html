@@ -1,0 +1,111 @@
+<div class="dialog-shell" [class.rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="dialog-head">
+    <div>
+      <p class="eyebrow">{{ 'PROP_MODULE' | translate }}</p>
+      <h2>{{ 'LOCKS_LINK_ENTITY' | translate }}</h2>
+    </div>
+    <button type="button" class="icon-btn" (click)="close()" [disabled]="saving">×</button>
+  </header>
+
+  <div class="dialog-body">
+    <p class="hint-warn">
+      <strong>⚠</strong>
+      {{ 'LOCKS_ONE_ENTITY_HINT' | translate  }}
+    </p>
+
+    <nav class="tabs">
+      <button type="button" [class.is-active]="selectedTab === 'buildings'" (click)="setTab('buildings')">
+        {{ 'PROP_BUILDING' | translate }}
+        @if (selected?.type === 'building') { <span class="dot"></span> }
+      </button>
+      <button type="button" [class.is-active]="selectedTab === 'rooms'" (click)="setTab('rooms')">
+        {{ 'PROP_ROOM' | translate }}
+        @if (selected?.type === 'room') { <span class="dot"></span> }
+      </button>
+      <button type="button" [class.is-active]="selectedTab === 'facilities'" (click)="setTab('facilities')">
+        {{ 'PROP_FACILITY' | translate }}
+        @if (selected?.type === 'facility') { <span class="dot"></span> }
+      </button>
+    </nav>
+
+    <label class="field">
+      <span>{{ 'SEARCH' | translate }}</span>
+      <input [(ngModel)]="search" name="search" [placeholder]="'LOCKS_SEARCH_ENTITY' | translate" />
+    </label>
+
+    @if (selected) {
+      <div class="sel-chip">
+        <span>{{ 'LOCKS_SELECTED' | translate  }}:</span>
+        <strong>{{ selected.type | uppercase }} #{{ selected.id }}</strong>
+        <button type="button" class="chip-remove" (click)="selected = null" [disabled]="saving">×</button>
+      </div>
+    }
+
+    @if (selectedTab === 'buildings') {
+      <ul class="entity-list">
+        @for (e of filteredBuildings; track e.id) {
+          <li [class.is-active]="isSelected(e.type, e.id)" (click)="select(e.type, e.id)">
+            <label class="entity-row" (click)="$event.stopPropagation()">
+              <input type="radio" name="entity-sel" [checked]="isSelected(e.type, e.id)"
+                (change)="select(e.type, e.id)" />
+              <span class="entity-meta">
+                <strong>{{ e.label }}</strong>
+                @if (e.sublabel) { <small>{{ e.sublabel }}</small> }
+              </span>
+              <span class="pill pill--building">{{ 'PROP_BUILDING' | translate }}</span>
+            </label>
+          </li>
+        } @empty {
+          <li class="empty">{{ 'LOCKS_NO_BUILDINGS' | translate }}</li>
+        }
+      </ul>
+    }
+
+    @if (selectedTab === 'rooms') {
+      <ul class="entity-list">
+        @for (e of filteredRooms; track e.id) {
+          <li [class.is-active]="isSelected(e.type, e.id)" (click)="select(e.type, e.id)">
+            <label class="entity-row" (click)="$event.stopPropagation()">
+              <input type="radio" name="entity-sel" [checked]="isSelected(e.type, e.id)"
+                (change)="select(e.type, e.id)" />
+              <span class="entity-meta">
+                <strong>{{ e.label }}</strong>
+                @if (e.sublabel) { <small>{{ e.sublabel }}</small> }
+              </span>
+              <span class="pill pill--room">{{ 'PROP_ROOM' | translate }}</span>
+            </label>
+          </li>
+        } @empty {
+          <li class="empty">{{ 'LOCKS_NO_ROOMS' | translate }}</li>
+        }
+      </ul>
+    }
+
+    @if (selectedTab === 'facilities') {
+      <ul class="entity-list">
+        @for (e of filteredFacilities; track e.id) {
+          <li [class.is-active]="isSelected(e.type, e.id)" (click)="select(e.type, e.id)">
+            <label class="entity-row" (click)="$event.stopPropagation()">
+              <input type="radio" name="entity-sel" [checked]="isSelected(e.type, e.id)"
+                (change)="select(e.type, e.id)" />
+              <span class="entity-meta">
+                <strong>{{ e.label }}</strong>
+                @if (e.sublabel) { <small>{{ e.sublabel }}</small> }
+              </span>
+              <span class="pill pill--facility">{{ 'PROP_FACILITY' | translate }}</span>
+            </label>
+          </li>
+        } @empty {
+          <li class="empty">{{ 'LOCKS_NO_FACILITIES' | translate }}</li>
+        }
+      </ul>
+    }
+  </div>
+
+  <footer class="dialog-foot">
+    <button type="button" class="btn ghost" (click)="close()" [disabled]="saving">{{ 'CANCEL' | translate }}</button>
+    <button type="button" class="btn primary" (click)="save()" [disabled]="saving">
+      {{ saving ? ('SAVING' | translate) : ('SAVE' | translate) }}
+    </button>
+  </footer>
+</div>

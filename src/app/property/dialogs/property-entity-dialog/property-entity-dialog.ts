@@ -169,6 +169,10 @@ export class PropertyEntityDialog implements OnInit {
   async save(): Promise<void> {
     if (this.saving || this.creatingType) return;
 
+    if (this.data.entity === 'lock' && !this.form['lockId']) {
+      this.snackbar.show(this.translate.instant('LOCKS_LOCKID_REQUIRED'), 'error');
+      return;
+    }
     if (this.data.entity === 'room' && !this.form['room_type_id']) {
       this.snackbar.show(this.translate.instant('PROP_ROOM_TYPE_REQUIRED'), 'error');
       this.showNewRoomType = true;
@@ -335,6 +339,28 @@ export class PropertyEntityDialog implements OnInit {
         if (edit) await this.api.updateFacilityType(id, { name: String(this.form['name']) });
         else await this.api.createFacilityType({ name: String(this.form['name']) });
         break;
+      case 'lock': {
+        const body: Record<string, unknown> = {};
+        const fields = [
+          'lockId', 'lockName', 'lockAlias', 'lockMac', 'noKeyPwd', 'electricQuantity',
+          'electric_quantity_updated_at',
+          'featureValue', 'timezoneRawOffset', 'modelNum',
+          'autoLockTime', 'lockSound', 'soundVolume',
+          'hasGateway', 'privacyLock', 'tamperAlert', 'resetButton',
+          'openDirection', 'passageMode', 'passageModeAutoUnlock', 'date'
+        ];
+        for (const f of fields) {
+          if (this.form[f] !== undefined && this.form[f] !== null && this.form[f] !== '') {
+            body[f] = this.form[f];
+          }
+        }
+        if (edit) {
+          await this.api.updateLock(id, body);
+        } else {
+          await this.api.createLock(body as { lockId: string | number });
+        }
+        break;
+      }
     }
   }
 }

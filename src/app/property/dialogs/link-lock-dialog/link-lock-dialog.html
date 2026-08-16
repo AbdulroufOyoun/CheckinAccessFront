@@ -8,6 +8,11 @@
   </header>
 
   <div class="dialog-body">
+    <p class="hint-warn">
+      <strong>⚠</strong>
+      {{ 'LOCKS_MOVE_HINT' | translate  }}
+    </p>
+
     <label class="field">
       <span>{{ 'SEARCH' | translate }}</span>
       <input [(ngModel)]="search" name="search" [placeholder]="'PROP_SEARCH_LOCKS' | translate" />
@@ -22,6 +27,11 @@
               <strong>{{ lock.lockName || lock.lockAlias || ('#' + lock.id) }}</strong>
               <small>{{ lock.lockId || lock.lockMac || '' }}</small>
             </span>
+            @if (isLinkedHere(lock.id)) {
+              <span class="status status--here" title="{{ 'LOCKS_ALREADY_HERE' | translate  }}">
+                ✓ {{ 'LOCKS_STATUS_LINKED_HERE' | translate  }}
+              </span>
+            }
           </label>
         </li>
       } @empty {

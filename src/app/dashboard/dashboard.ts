@@ -80,6 +80,40 @@ export class Dashboard implements OnInit {
     return name.split(/\s+/)[0];
   }
 
+  get canBookings(): boolean {
+    return this.hasProperty && this.auth.can('manage bookings');
+  }
+
+  get canManageEducation(): boolean {
+    return this.hasEducation && this.auth.can('manage education');
+  }
+
+  get canManageEnrollments(): boolean {
+    return this.hasEducation && this.auth.can('manage enrollments');
+  }
+
+  get canViewEduReports(): boolean {
+    return this.hasEducation && this.auth.can('view education reports');
+  }
+
+  get canRoomStatus(): boolean {
+    return this.hasProperty && this.auth.canAny('manage bookings', 'view buildings', 'manage buildings');
+  }
+
+  get hasQuickActions(): boolean {
+    return this.canBookings || this.auth.can('manage users') || (this.hasProperty && this.auth.can('view reports'));
+  }
+
+  get showMixedModuleCards(): boolean {
+    return this.hasProperty && this.hasEducation
+      && (this.canBookings || this.canManageEducation || this.canManageEnrollments);
+  }
+
+  get showEduOnlyCards(): boolean {
+    return this.hasEducation && !this.hasProperty
+      && (this.canManageEducation || this.canManageEnrollments || this.canViewEduReports);
+  }
+
   ngOnInit(): void {
     this.hasProperty = this.auth.hasModule('property');
     this.hasEducation = this.auth.hasModule('education');

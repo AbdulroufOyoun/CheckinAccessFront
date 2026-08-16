@@ -62,6 +62,10 @@ export class AuthService {
     return this.getUser()?.can(permission) ?? false;
   }
 
+  canAny(...permissions: string[]): boolean {
+    return this.getUser()?.canAny(permissions) ?? false;
+  }
+
   private mePromise: Promise<User> | null = null;
   private meCachedAt = 0;
   private meUser: User | null = null;
