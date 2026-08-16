@@ -255,6 +255,46 @@
       </label>
     }
 
+    <!-- Lock -->
+    @if (data.entity === 'lock') {
+      <label class="field">
+        <span>{{ 'LOCKS_COL_LOCKID' | translate }} *</span>
+        <input [(ngModel)]="form['lockId']" name="lockId" required />
+      </label>
+      <label class="field">
+        <span>{{ 'LOCKS_COL_NAME' | translate }}</span>
+        <input [(ngModel)]="form['lockName']" name="lockName" />
+      </label>
+      <label class="field">
+        <span>{{ 'LOCKS_COL_ALIAS' | translate }}</span>
+        <input [(ngModel)]="form['lockAlias']" name="lockAlias" />
+      </label>
+      <label class="field">
+        <span>{{ 'LOCKS_COL_MAC' | translate }}</span>
+        <input [(ngModel)]="form['lockMac']" name="lockMac" />
+      </label>
+      <div class="row-2">
+        <label class="field">
+          <span>{{ 'LOCKS_COL_BATTERY' | translate }}</span>
+          <input type="number" [(ngModel)]="form['electricQuantity']" name="electricQuantity" min="0" max="100" />
+        </label>
+              <label class="field">
+          <span>{{ 'LOCKS_MODEL' | translate }}</span>
+          <input [(ngModel)]="form['modelNum']" name="modelNum" />
+        </label>
+        <!-- <label class="field">
+          <span>{{ 'LOCKS_AUTO_LOCK' | translate }} (s)</span>
+          <input type="number" [(ngModel)]="form['autoLockTime']" name="autoLockTime" min="0" />
+        </label> -->
+      </div>
+      @if (data.mode === 'edit' && form['electric_quantity_updated_at']) {
+        <label class="field is-readonly">
+          <span>{{ 'LOCKS_BATTERY_UPDATED_AT' | translate }}</span>
+          <input [value]="form['electric_quantity_updated_at']" name="electric_quantity_updated_at" readonly />
+        </label>
+      }
+    }
+
     <!-- Types -->
     @if (data.entity === 'room_type' || data.entity === 'facility_type') {
       <label class="field">

@@ -96,18 +96,21 @@
   </div>
   }
 
-  @if (hasProperty && hasEducation) {
+  @if (showMixedModuleCards) {
   <div class="module-cards">
+    @if (canBookings) {
     <a class="module-card module-card--property" routerLink="/Reservations">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
         </svg>
       </div>
-      <span class="module-card__label">{{ 'NAV_SECTION_PROPERTY' | translate }}</span>
+      <span class="module-card__label">{{ 'RESERVATIONS' | translate }}</span>
       <strong class="module-card__value">{{ summary?.total ?? '—' }}</strong>
       <span class="module-card__hint">{{ 'RESERVATIONS' | translate }}</span>
     </a>
+    }
+    @if (canManageEducation) {
     <a class="module-card module-card--edu" routerLink="/Education/Subjects">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -118,6 +121,8 @@
       <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.subjects_count ?? '—') }}</strong>
       <span class="module-card__hint">{{ 'EDU_SUBJECTS' | translate }}</span>
     </a>
+    }
+    @if (canManageEnrollments) {
     <a class="module-card module-card--edu" routerLink="/Education/Enrollments">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -128,6 +133,8 @@
       <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.enrollments_total ?? '—') }}</strong>
       <span class="module-card__hint">{{ 'EDU_ENROLLMENTS' | translate }}</span>
     </a>
+    }
+    @if (canManageEducation) {
     <a class="module-card module-card--edu" routerLink="/Education/Sections">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -138,11 +145,13 @@
       <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.sections_count ?? '—') }}</strong>
       <span class="module-card__hint">{{ 'EDU_SECTIONS' | translate }}</span>
     </a>
+    }
   </div>
   }
 
-  @if (hasEducation && !hasProperty) {
+  @if (showEduOnlyCards) {
   <div class="module-cards">
+    @if (canManageEducation) {
     <a class="module-card module-card--edu" routerLink="/Education/Subjects">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -153,6 +162,8 @@
       <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.subjects_count ?? '—') }}</strong>
       <span class="module-card__hint">{{ 'EDU_SUBJECTS' | translate }}</span>
     </a>
+    }
+    @if (canManageEducation) {
     <a class="module-card module-card--edu" routerLink="/Education/Schedule">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,6 +174,8 @@
       <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.sections_count ?? '—') }}</strong>
       <span class="module-card__hint">{{ 'EDU_SCHEDULE' | translate }}</span>
     </a>
+    }
+    @if (canManageEnrollments) {
     <a class="module-card module-card--edu" routerLink="/Education/Enrollments">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -173,6 +186,8 @@
       <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.students_enrolled ?? '—') }}</strong>
       <span class="module-card__hint">{{ 'EDU_ENROLLMENTS' | translate }}</span>
     </a>
+    }
+    @if (canViewEduReports) {
     <a class="module-card module-card--edu" routerLink="/Education/Reports">
       <div class="module-card__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -183,6 +198,7 @@
       <strong class="module-card__value">{{ loadingEdu ? '—' : (eduReports?.enrollments_total ?? '—') }}</strong>
       <span class="module-card__hint">{{ 'EDU_REPORTS' | translate }}</span>
     </a>
+    }
   </div>
   }
 
@@ -191,7 +207,7 @@
 
   <div class="dashboard__grid-2col">
     <div class="dashboard__col-wide">
-      <app-room-grid [rooms]="rooms" [summary]="summary" [loading]="loadingProperty"></app-room-grid>
+      <app-room-grid [rooms]="rooms" [summary]="summary" [loading]="loadingProperty" [canOpenRooms]="canRoomStatus"></app-room-grid>
     </div>
     <div class="dashboard__col-narrow">
       <app-occupancy-chart [summary]="summary"></app-occupancy-chart>
@@ -199,7 +215,9 @@
   </div>
 
   <div class="dashboard__grid-3col">
+    @if (hasQuickActions) {
     <app-quick-actions></app-quick-actions>
+    }
     <app-activity-panel [items]="activity" [loading]="loadingProperty"></app-activity-panel>
     <app-smart-alerts [alerts]="alerts" [loading]="loadingProperty"></app-smart-alerts>
   </div>

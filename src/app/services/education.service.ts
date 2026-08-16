@@ -92,6 +92,14 @@ export interface EduEnrollmentRow {
   user?: { id: number; name?: string; email?: string } | null;
 }
 
+export interface EduFacilityOption {
+  id: number;
+  name: string;
+  floor_id?: number | null;
+  locks_count?: number;
+  linked?: boolean;
+}
+
 export interface EduEnrollmentArchiveRow {
   archive: {
     id: number;
@@ -221,8 +229,29 @@ export class EducationService {
     section_id?: number;
     section_ids?: number[];
     status?: string;
+    facility_ids?: number[];
   }): Promise<ApiResponse<unknown>> {
     return this.mutate(this.api.post(Apiendpointd.enrollments, body));
+  }
+
+  getEducationFacilities(): Promise<ApiResponse<{ facilities: EduFacilityOption[] }>> {
+    return this.api.get(Apiendpointd.educationFacilities);
+  }
+
+  getStudentFacilityAccess(userId: number): Promise<ApiResponse<{
+    facilities: EduFacilityOption[];
+    linked_facility_ids: number[];
+  }>> {
+    return this.api.get(Apiendpointd.studentFacilityAccess(userId));
+  }
+
+  syncStudentFacilityAccess(userId: number, facilityIds: number[]): Promise<ApiResponse<{
+    facilities: EduFacilityOption[];
+    linked_facility_ids: number[];
+  }>> {
+    return this.mutate(this.api.put(Apiendpointd.studentFacilityAccess(userId), {
+      facility_ids: facilityIds,
+    }));
   }
 
   getStudentSchedule(userId: number): Promise<ApiResponse<{

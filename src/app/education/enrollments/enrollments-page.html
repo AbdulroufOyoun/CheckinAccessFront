@@ -3,7 +3,7 @@
     <div>
       <h1 class="edu-ui__title">{{ 'ENR_PAGE_TITLE' | translate }}</h1>
       <p class="edu-ui__subtitle">
-        {{ 'ENR_PAGE_COUNT' | translate: { filtered: filtered.length, total: rows.length } }}
+        {{ 'ENR_PAGE_COUNT' | translate: { filtered: filtered.length, total: groups.length } }}
       </p>
     </div>
     <button class="edu-ui__add" type="button" (click)="openCreate()">
@@ -39,7 +39,7 @@
   </div>
 
   @if (showSkeleton) {
-  <app-page-skeleton variant="table" [rows]="7" [cols]="5" />
+  <app-page-skeleton variant="table" [rows]="7" [cols]="3" />
   } @else if (!filtered.length) {
   <div class="edu-ui__empty reveal">
     <div class="edu-ui__empty-icon">
@@ -60,57 +60,40 @@
     <table class="edu-ui__table">
       <colgroup>
         <col class="enr-col-student" />
-        <col class="enr-col-section" />
-        <col class="enr-col-subject" />
-        <col class="enr-col-status" />
+        <col class="enr-col-courses" />
         <col class="enr-col-actions" />
       </colgroup>
       <thead>
         <tr>
           <th>{{ 'ENR_COL_STUDENT' | translate }}</th>
-          <th>{{ 'ENR_COL_SECTION' | translate }}</th>
-          <th>{{ 'ENR_COL_SUBJECT' | translate }}</th>
-          <th>{{ 'ENR_COL_STATUS' | translate }}</th>
+          <th>{{ 'ENR_COL_COURSES' | translate }}</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        @for (row of filtered; track row.enrollment.id; let i = $index) {
+        @for (group of filtered; track group.userId; let i = $index) {
         <tr class="reveal-item" [style.--reveal-i]="i < 12 ? i : 12">
           <td>
             <div class="edu-ui__name-cell">
-              <span class="edu-ui__text">{{ studentLabel(row) }}</span>
-              @if (row.user?.email && row.user?.name) {
-              <span class="edu-ui__text-secondary">{{ row.user?.email }}</span>
+              <span class="edu-ui__text">{{ studentLabel(group) }}</span>
+              @if (group.user?.email && group.user?.name) {
+              <span class="edu-ui__text-secondary">{{ group.user?.email }}</span>
               }
             </div>
           </td>
           <td>
             <span class="edu-ui__code">
-              {{ row.enrollment.section?.number || row.enrollment.section_id }}
-            </span>
-          </td>
-          <td>
-            <span class="edu-ui__text"
-              [title]="subjectLabel(row.enrollment.section?.subject)">
-              {{ subjectLabel(row.enrollment.section?.subject) || '—' }}
-            </span>
-          </td>
-          <td>
-            <span class="edu-ui__badge" [ngClass]="statusClass(row.enrollment.status)">
-              {{ statusKey(row.enrollment.status) | translate }}
+              {{ 'ENR_COURSES_COUNT' | translate: { n: group.rows.length } }}
             </span>
           </td>
           <td class="edu-ui__actions">
-            <select class="edu-ui__status-select"
-              [ngModel]="row.enrollment.status"
-              (ngModelChange)="setStatus(row.enrollment.id, $event)">
-              <option value="enrolled">{{ 'ENR_STATUS_ENROLLED' | translate }}</option>
-              <option value="completed">{{ 'ENR_STATUS_COMPLETED' | translate }}</option>
-              <option value="dropped">{{ 'ENR_STATUS_DROPPED' | translate }}</option>
-            </select>
-            <button type="button" class="edu-ui__btn edu-ui__btn--danger" (click)="remove(row)">
-              {{ 'DELETE' | translate }}
+            <button type="button" class="edu-ui__btn edu-ui__btn--details" (click)="openDetails(group)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {{ 'ENR_DETAILS' | translate }}
             </button>
           </td>
         </tr>

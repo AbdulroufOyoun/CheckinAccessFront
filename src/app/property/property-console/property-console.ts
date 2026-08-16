@@ -562,6 +562,7 @@ export class PropertyConsole implements OnInit {
       elevator: 'PROP_ELEVATOR',
       room_type: 'PROP_ROOM_TYPE',
       facility_type: 'PROP_FACILITY_TYPE',
+      lock: 'LOCKS_LOCK',
     };
     return this.t(map[type] || type);
   }

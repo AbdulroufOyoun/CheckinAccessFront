@@ -1,9 +1,19 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
 .dashboard {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  animation: fadeInUp 0.4s ease-out;
+  width: 100%;
   max-width: 1440px;
+  margin-inline: auto;
+  min-width: 0;
+  box-sizing: border-box;
+  animation: fadeInUp 0.4s ease-out;
 }
 
 /* ── Hero header ─────────────────────────────────────── */
@@ -267,36 +277,28 @@
 /* Grid layouts */
 .dashboard__grid-2col {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 20px;
   align-items: stretch;
+  min-width: 0;
+}
+
+.dashboard__col-wide,
+.dashboard__col-narrow {
+  min-width: 0;
 }
 
 .dashboard__grid-3col {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 20px;
   align-items: start;
+  min-width: 0;
 }
 
 @media (max-width: 1200px) {
-  .dashboard__grid-3col {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .dashboard__grid-3col > :last-child {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 900px) {
-  .dashboard__grid-2col,
-  .dashboard__grid-3col {
+  .dashboard__grid-2col {
     grid-template-columns: 1fr;
-  }
-
-  .dashboard__grid-3col > :last-child {
-    grid-column: auto;
   }
 }
 
@@ -318,8 +320,9 @@
 /* Module cards */
 .module-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   gap: 14px;
+  min-width: 0;
 }
 
 .module-card {

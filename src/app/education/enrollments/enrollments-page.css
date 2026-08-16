@@ -127,17 +127,15 @@
 
 .edu-ui__table {
   width: 100%;
-  min-width: 860px;
+  min-width: 560px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 0.875rem;
 }
 
-.enr-col-student { width: 24%; }
-.enr-col-section { width: 12%; }
-.enr-col-subject { width: 24%; }
-.enr-col-status { width: 14%; }
-.enr-col-actions { width: 26%; }
+.enr-col-student { width: 52%; }
+.enr-col-courses { width: 24%; }
+.enr-col-actions { width: 24%; }
 
 .edu-ui__table th,
 .edu-ui__table td {
@@ -272,6 +270,19 @@
   color: var(--red-600, #DC2626);
   border-color: var(--red-200, #FECACA);
   background: var(--red-50, #FFF1F2);
+}
+
+.edu-ui__btn--details {
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  color: var(--blue-700, #1D4ED8);
+  border-color: var(--blue-200, #BFDBFE);
+  background: var(--blue-50, #EFF6FF);
+}
+
+.edu-ui__btn--details:hover {
+  background: var(--blue-100, #DBEAFE);
 }
 
 .edu-ui__empty {

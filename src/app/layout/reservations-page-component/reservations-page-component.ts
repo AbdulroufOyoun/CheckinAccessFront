@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -49,6 +49,7 @@ interface ReservationRow {
 })
 export class ReservationsPageComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly bookingsApi = inject(BookingsService);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
@@ -77,6 +78,15 @@ export class ReservationsPageComponent implements OnInit {
     this.translate.onLangChange.subscribe((e) => {
       this.isRTL = e.lang === 'ar';
       this.cdr.detectChanges();
+    });
+    this.search = this.route.snapshot.queryParamMap.get('q') ?? '';
+    this.route.queryParamMap.subscribe((params) => {
+      const q = params.get('q') ?? '';
+      if (q !== this.search) {
+        this.search = q;
+        this.filterReservations();
+        this.cdr.detectChanges();
+      }
     });
     void this.load();
   }

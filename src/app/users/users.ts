@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddUser } from '../dialog/add-user/add-user';
@@ -37,6 +37,7 @@ const AVATAR_PALETTE = [
 export class Users implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly usersApi = inject(UsersService);
   private readonly snackbar = inject(SnackbarService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -58,7 +59,13 @@ export class Users implements OnInit {
       this.isRTL = e.lang === 'ar';
       this.cdr.detectChanges();
     });
-    void this.loadUsers();
+    this.searchQuery = this.route.snapshot.queryParamMap.get('q') ?? '';
+    this.route.queryParamMap.subscribe((params) => {
+      const q = params.get('q') ?? '';
+      if (q === this.searchQuery && this.users.length) return;
+      this.searchQuery = q;
+      void this.loadUsers();
+    });
   }
 
   async loadUsers(): Promise<void> {

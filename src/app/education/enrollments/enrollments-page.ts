@@ -15,12 +15,19 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { ApiService } from '../../services/api.service';
 import { Apiendpointd } from '../../apiEndpoints';
 import { AddEnrollment } from '../../dialog/add-enrollment/add-enrollment';
+import { EnrollmentDetail } from '../../dialog/enrollment-detail/enrollment-detail';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 
 interface SimpleUser {
   id: number;
   name?: string;
   email?: string;
+}
+
+interface StudentEnrollmentGroup {
+  userId: number;
+  user?: { id: number; name?: string; email?: string } | null;
+  rows: EduEnrollmentRow[];
 }
 
 @Component({
@@ -41,7 +48,8 @@ export class EnrollmentsPage implements OnInit {
   private readonly document = inject(DOCUMENT);
 
   rows: EduEnrollmentRow[] = [];
-  filtered: EduEnrollmentRow[] = [];
+  groups: StudentEnrollmentGroup[] = [];
+  filtered: StudentEnrollmentGroup[] = [];
   sections: EduSection[] = [];
   terms: AcademicTerm[] = [];
   users: SimpleUser[] = [];
@@ -81,29 +89,12 @@ export class EnrollmentsPage implements OnInit {
     return s.name || s.name_ar || '';
   }
 
-  sectionLabel(sec?: EduSection | null): string {
-    if (!sec) return '';
-    const subj = this.subjectLabel(sec.subject);
-    return subj ? `${subj} — ${sec.number}` : String(sec.number);
-  }
-
-  studentLabel(row: EduEnrollmentRow): string {
-    return row.user?.name || row.user?.email || `#${row.enrollment.user_id}`;
+  studentLabel(group: StudentEnrollmentGroup): string {
+    return group.user?.name || group.user?.email || `#${group.userId}`;
   }
 
   statusKey(status: string): string {
     return 'ENR_STATUS_' + (status || '').toUpperCase();
-  }
-
-  statusClass(status: string): string {
-    switch (status) {
-      case 'completed':
-        return 'edu-ui__badge--on';
-      case 'dropped':
-        return 'edu-ui__badge--off';
-      default:
-        return 'edu-ui__badge--lab';
-    }
   }
 
   async bootstrap(force = false): Promise<void> {
@@ -136,20 +127,48 @@ export class EnrollmentsPage implements OnInit {
     if (bundle.terms) {
       this.terms = bundle.terms;
     }
+    this.rebuildGroups();
     this.applyFilter();
+  }
+
+  private rebuildGroups(): void {
+    const map = new Map<number, StudentEnrollmentGroup>();
+    for (const row of this.rows) {
+      const userId = row.enrollment.user_id;
+      const existing = map.get(userId);
+      if (existing) {
+        existing.rows.push(row);
+        continue;
+      }
+      map.set(userId, {
+        userId,
+        user: row.user,
+        rows: [row],
+      });
+    }
+    this.groups = Array.from(map.values()).sort((a, b) =>
+      this.studentLabel(a).localeCompare(this.studentLabel(b), this.isRTL ? 'ar' : 'en'),
+    );
   }
 
   applyFilter(): void {
     const q = this.search.trim().toLowerCase();
-    this.filtered = this.rows.filter((row) => {
-      const matchStatus = !this.statusFilter || row.enrollment.status === this.statusFilter;
-      if (!matchStatus) return false;
-      if (!q) return true;
-      const student = this.studentLabel(row).toLowerCase();
+    this.filtered = this.groups.filter((group) => {
+      if (this.statusFilter && !group.rows.some((row) => row.enrollment.status === this.statusFilter)) {
+        return false;
+      }
+      return this.groupMatchesSearch(group, q);
+    });
+  }
+
+  private groupMatchesSearch(group: StudentEnrollmentGroup, q: string): boolean {
+    if (!q) return true;
+    if (this.studentLabel(group).toLowerCase().includes(q)) return true;
+    return group.rows.some((row) => {
       const section = String(row.enrollment.section?.number || row.enrollment.section_id).toLowerCase();
       const subject = this.subjectLabel(row.enrollment.section?.subject).toLowerCase();
       const status = (row.enrollment.status || '').toLowerCase();
-      return student.includes(q) || section.includes(q) || subject.includes(q) || status.includes(q);
+      return section.includes(q) || subject.includes(q) || status.includes(q);
     });
   }
 
@@ -182,37 +201,21 @@ export class EnrollmentsPage implements OnInit {
     });
   }
 
-  async setStatus(id: number, status: string): Promise<void> {
-    try {
-      await this.edu.updateEnrollmentStatus(id, status);
-      this.snackbar.show(this.translate.instant('ENR_STATUS_UPDATED'), 'success');
-      const row = this.rows.find((r) => r.enrollment.id === id);
-      if (row) {
-        row.enrollment.status = status;
-        this.applyFilter();
-        this.cdr.detectChanges();
-      } else {
-        await this.bootstrap(true);
-      }
-    } catch (e: unknown) {
-      this.snackbar.show(this.err(e), 'error');
-    }
-  }
-
-  async remove(row: EduEnrollmentRow): Promise<void> {
-    const ok = confirm(
-      this.translate.instant('ENR_DELETE_CONFIRM', { name: this.studentLabel(row) }),
-    );
-    if (!ok) return;
-    try {
-      await this.edu.removeEnrollment(row.enrollment.id);
-      this.snackbar.show(this.translate.instant('ENR_DELETED'), 'success');
-      this.rows = this.rows.filter((r) => r.enrollment.id !== row.enrollment.id);
-      this.applyFilter();
-      this.cdr.detectChanges();
-    } catch (e: unknown) {
-      this.snackbar.show(this.err(e), 'error');
-    }
+  openDetails(group: StudentEnrollmentGroup): void {
+    const ref = this.dialog.open(EnrollmentDetail, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      backdropClass: 'custom-backdrop',
+      width: '640px',
+      maxWidth: '94vw',
+      data: {
+        userId: group.userId,
+        user: group.user,
+        rows: group.rows,
+      },
+    });
+    ref.afterClosed().subscribe((changed) => {
+      if (changed) void this.bootstrap(true);
+    });
   }
 
   private async loadUserOptions(): Promise<SimpleUser[]> {

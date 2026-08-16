@@ -21,7 +21,9 @@
           <span>{{ 'DASH_KPI_AVAILABLE' | translate }} ({{ summary?.available ?? 0 }})</span>
         </div>
       </div>
+      @if (canOpenRooms) {
       <a class="room-grid__link" routerLink="/RoomStatus">{{ 'DASH_VIEW_ROOMS' | translate }}</a>
+      }
     </div>
   </div>
 
@@ -39,7 +41,9 @@
       </svg>
     </div>
     <p>{{ 'DASH_ROOMS_EMPTY' | translate }}</p>
+    @if (canOpenRooms) {
     <a class="room-grid__link" routerLink="/RoomStatus">{{ 'DASH_VIEW_ROOMS' | translate }}</a>
+    }
   </div>
   } @else {
   <div class="room-grid__floors">
@@ -52,7 +56,8 @@
       </div>
       <div class="room-grid__rooms">
         @for (room of floor.rooms; track room.id) {
-        <a class="room-card" [class]="'room-card--' + statusClass(room.status)" [routerLink]="['/RoomStatus', room.id]">
+        <a class="room-card" [class]="'room-card--' + statusClass(room.status)"
+          [routerLink]="canOpenRooms ? ['/RoomStatus', room.id] : null">
           <div class="room-card__status-dot" [class]="'room-card__status-dot--' + statusClass(room.status)"></div>
           <p class="room-card__number">{{ room.number || room.name || room.id }}</p>
           <p class="room-card__building">{{ room.building?.name || '—' }}</p>

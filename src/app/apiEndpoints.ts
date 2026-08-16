@@ -464,6 +464,14 @@ export class Apiendpointd {
     return `${this.education}students/${userId}/schedule`;
   }
 
+  public static get educationFacilities(): string {
+    return this.education + 'facilities';
+  }
+
+  public static studentFacilityAccess(userId: number | string): string {
+    return `${this.education}students/${userId}/facility-access`;
+  }
+
   public static studentEnrollmentHistory(userId: number | string): string {
     return `${this.education}students/${userId}/enrollment-history`;
   }

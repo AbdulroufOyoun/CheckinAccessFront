@@ -1,0 +1,89 @@
+<div class="as" role="dialog" aria-modal="true" [class.as--rtl]="isRTL">
+  <div class="as__hero">
+    <div class="as__hero-bg" aria-hidden="true"></div>
+    <button class="as__close" type="button" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+    <p class="as__eyebrow">{{ 'ENR_DETAIL_EYEBROW' | translate }}</p>
+    <h2 class="as__title">{{ studentName }}</h2>
+    <div class="as__preview">
+      <div class="as__preview-code">STU</div>
+      <div class="as__preview-body">
+        <strong>{{ studentName }}</strong>
+        <span>{{ 'ENR_DETAIL_META' | translate: { n: rows.length } }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="as__body">
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'ENR_DETAIL_SUBJECTS' | translate }}</h3>
+      @if (!rows.length) {
+        <p class="enr-empty">{{ 'ENR_DETAIL_NO_SUBJECTS' | translate }}</p>
+      } @else {
+        <ul class="enr-detail-list">
+          @for (row of rows; track row.enrollment.id) {
+            <li class="enr-detail-row">
+              <div class="enr-item__body">
+                <strong>{{ enrollmentLabel(row) }}</strong>
+                <small>{{ statusKey(row.enrollment.status) | translate }}</small>
+              </div>
+              <div class="enr-detail-row__actions">
+                <select class="as__input as__select enr-status"
+                  [ngModel]="row.enrollment.status"
+                  (ngModelChange)="setStatus(row, $event)">
+                  <option value="enrolled">{{ 'ENR_STATUS_ENROLLED' | translate }}</option>
+                  <option value="completed">{{ 'ENR_STATUS_COMPLETED' | translate }}</option>
+                  <option value="dropped">{{ 'ENR_STATUS_DROPPED' | translate }}</option>
+                </select>
+                <button type="button" class="as__btn as__btn--ghost enr-mini-danger" (click)="remove(row)">
+                  {{ 'DELETE' | translate }}
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="as__section">
+      <h3 class="as__section-title">{{ 'ENR_FACILITIES' | translate }}</h3>
+      <p class="enr-hint">{{ 'ENR_FACILITIES_HINT' | translate }}</p>
+      @if (loadingFacilities) {
+        <p class="enr-empty">{{ 'LOADING' | translate }}</p>
+      } @else if (!facilities.length) {
+        <p class="enr-empty">{{ 'ENR_NO_FACILITIES' | translate }}</p>
+      } @else {
+        <div class="enr-list" role="group">
+          @for (f of facilities; track f.id) {
+            <label class="enr-item" [class.enr-item--checked]="isFacilityChecked(f.id)">
+              <input type="checkbox"
+                [checked]="isFacilityChecked(f.id)"
+                (change)="toggleFacility(f.id)" />
+              <span class="enr-item__body">
+                <strong>{{ f.name }}</strong>
+                <small>{{ 'ENR_FACILITY_LOCKS' | translate: { n: f.locks_count || 0 } }}</small>
+              </span>
+            </label>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+  <div class="as__footer">
+    <button class="as__btn as__btn--ghost" type="button" (click)="close()" [disabled]="saving">
+      {{ 'CLOSE' | translate }}
+    </button>
+    <button class="as__btn as__btn--primary" type="button" (click)="saveFacilities()"
+      [disabled]="saving || loadingFacilities">
+      @if (saving) {
+        <span class="as__spinner"></span> {{ 'SAVING' | translate }}
+      } @else {
+        {{ 'ENR_SAVE_FACILITIES' | translate }}
+      }
+    </button>
+  </div>
+</div>

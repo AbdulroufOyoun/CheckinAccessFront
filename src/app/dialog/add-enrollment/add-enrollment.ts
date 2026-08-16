@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   AcademicTerm,
   EducationService,
+  EduFacilityOption,
   EduSection,
   EduSectionTime,
   EduSubject,
@@ -21,6 +22,7 @@ export interface EnrollUserOption {
 export interface AddEnrollmentDialogData {
   users: EnrollUserOption[];
   terms?: AcademicTerm[];
+  facilities?: EduFacilityOption[];
 }
 
 @Component({
@@ -46,8 +48,11 @@ export class AddEnrollment implements OnInit {
   terms: AcademicTerm[] = [];
   termSections: EduSection[] = [];
   selectedSectionIds = new Set<number>();
+  selectedFacilityIds = new Set<number>();
   conflictBySectionId = new Map<number, string>();
   enrolledSections: EduSection[] = [];
+  facilities: EduFacilityOption[] = [];
+  loadingFacilities = false;
 
   form = {
     user_id: '' as number | '',
@@ -60,6 +65,7 @@ export class AddEnrollment implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: AddEnrollmentDialogData) {
     this.users = data?.users || [];
     this.terms = data?.terms || [];
+    this.facilities = data?.facilities || [];
   }
 
   ngOnInit(): void {
@@ -67,6 +73,9 @@ export class AddEnrollment implements OnInit {
       || this.translate.getCurrentLang() === 'ar';
     if (!this.terms.length) {
       void this.loadTerms();
+    }
+    if (!this.facilities.length) {
+      void this.loadFacilities();
     }
   }
 
@@ -192,6 +201,19 @@ export class AddEnrollment implements OnInit {
     this.dialogRef.close(saved);
   }
 
+  isFacilityChecked(id: number): boolean {
+    return this.selectedFacilityIds.has(id);
+  }
+
+  toggleFacility(id: number): void {
+    if (this.selectedFacilityIds.has(id)) {
+      this.selectedFacilityIds.delete(id);
+    } else {
+      this.selectedFacilityIds.add(id);
+    }
+    this.cdr.detectChanges();
+  }
+
   async save(): Promise<void> {
     if (!this.canSave) {
       this.snackbar.show(this.translate.instant('ENR_REQUIRED'), 'error');
@@ -214,6 +236,7 @@ export class AddEnrollment implements OnInit {
         academic_term_id: Number(this.form.academic_term_id),
         section_ids: Array.from(this.selectedSectionIds),
         status: this.form.status,
+        facility_ids: Array.from(this.selectedFacilityIds),
       });
       this.snackbar.show(this.translate.instant('ENR_CREATED'), 'success');
       this.close(true);
@@ -236,6 +259,20 @@ export class AddEnrollment implements OnInit {
     } catch {
       this.terms = [];
     } finally {
+      this.cdr.detectChanges();
+    }
+  }
+
+  private async loadFacilities(): Promise<void> {
+    this.loadingFacilities = true;
+    this.cdr.detectChanges();
+    try {
+      const res = await this.edu.getEducationFacilities();
+      this.facilities = res.data?.facilities || [];
+    } catch {
+      this.facilities = [];
+    } finally {
+      this.loadingFacilities = false;
       this.cdr.detectChanges();
     }
   }

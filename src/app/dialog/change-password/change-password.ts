@@ -72,6 +72,7 @@ export class ChangePassword implements OnInit {
   }
 
   async save(): Promise<void> {
+    if (this.saving) return;
     if (!this.canSave) {
       if (this.form.password !== this.form.password_confirmation) {
         this.snackbar.show(this.translate.instant('PWD_MISMATCH'), 'error');
