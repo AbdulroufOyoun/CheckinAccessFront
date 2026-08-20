@@ -1,5 +1,7 @@
 import {
+  APP_INITIALIZER,
   ApplicationConfig,
+  inject,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
@@ -8,17 +10,11 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { importProvidersFrom } from '@angular/core';
-
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
+import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { apiErrorInterceptor } from './interceptors/api-error.interceptor';
-
-export function HttpLoaderFactory(): TranslateHttpLoader {
-  return new TranslateHttpLoader();
-}
+import { StaticTranslateLoader } from './i18n/static-translate.loader';
+import { LocaleService } from './services/locale.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,22 +23,18 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([authInterceptor, apiErrorInterceptor])),
-    importProvidersFrom(
-      TranslateModule.forRoot({
-        fallbackLang: 'en',
-        loader: {
-          provide: TranslateLoader,
-          useFactory: HttpLoaderFactory
-        }
-      })
-    ),
-
+    provideTranslateService({
+      loader: provideTranslateLoader(StaticTranslateLoader),
+      fallbackLang: 'en',
+      lang: 'en',
+    }),
     {
-      provide: TRANSLATE_HTTP_LOADER_CONFIG,
-      useValue: {
-        prefix: './assets/i18n/',
-        suffix: '.json'
-      }
+      provide: APP_INITIALIZER,
+      multi: true,
+      useFactory: () => {
+        const locale = inject(LocaleService);
+        return () => locale.init();
+      },
     },
-  ]
+  ],
 };
