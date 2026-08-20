@@ -10,6 +10,7 @@ import {
 } from '../../services/property-api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
 import { ApiResponse } from '../../../interfaces/api-response';
+import { incrementRoomNumber, RoomDraft } from './room-number';
 
 export interface PropertyEntityDialogData {
   entity: PropNodeType;
@@ -55,8 +56,15 @@ export class PropertyEntityDialog implements OnInit {
   showNewFacilityType = false;
   newRoomTypeName = '';
   newFacilityTypeName = '';
+  roomDrafts: RoomDraft[] = [];
+  roomCount = 1;
+  readonly maxRoomCount = 40;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: PropertyEntityDialogData) {}
+
+  get addingRooms(): boolean {
+    return this.data.entity === 'room' && this.data.mode !== 'edit';
+  }
 
   ngOnInit(): void {
     this.isRTL = this.document.documentElement.getAttribute('dir') === 'rtl'
@@ -79,8 +87,14 @@ export class PropertyEntityDialog implements OnInit {
     if (this.data.entity === 'gate' && this.data.mode === 'add' && !this.form['direction']) {
       this.form['direction'] = 'both';
     }
-    if (this.data.entity === 'room' && this.data.mode === 'add' && this.form['capacity'] == null) {
+    if (this.addingRooms && this.form['capacity'] == null) {
       this.form['capacity'] = 1;
+    }
+    if (this.addingRooms) {
+      this.roomCount = 1;
+      this.form['roomCount'] = 1;
+      this.rebuildRoomDrafts('count');
+      this.dialogRef.updateSize('640px');
     }
     if (this.data.entity === 'room' && !this.roomTypes.length) {
       this.showNewRoomType = true;
@@ -91,11 +105,27 @@ export class PropertyEntityDialog implements OnInit {
   }
 
   get titleKey(): string {
+    if (this.isAddRoom) {
+      return 'PROP_ADD_ROOMS';
+    }
     const e = this.data.entity.toUpperCase();
     return this.data.mode === 'edit' ? `PROP_EDIT_${e}` : `PROP_ADD_${e}`;
   }
 
+  get isAddRoom(): boolean {
+    return this.data.entity === 'room' && this.data.mode !== 'edit';
+  }
+
   get preview(): string {
+    if (this.isAddRoom && this.roomDrafts.length) {
+      const nums = this.roomDrafts.map((d) => d.number.trim()).filter(Boolean);
+      if (nums.length >= 2) {
+        return `${nums[0]} – ${nums[nums.length - 1]}`;
+      }
+      if (nums.length === 1) {
+        return nums[0];
+      }
+    }
     const name = String(this.form['name'] || this.form['number'] || this.form['lockName'] || '—');
     return name;
   }
@@ -103,6 +133,80 @@ export class PropertyEntityDialog implements OnInit {
   close(saved = false): void {
     if (this.saving || this.creatingType) return;
     this.dialogRef.close(saved);
+  }
+
+  bumpRoomCount(delta: number): void {
+    this.setRoomCount(this.roomCount + delta);
+  }
+
+  setRoomCount(value: number | string): void {
+    const next = Math.min(this.maxRoomCount, Math.max(1, Math.floor(Number(value) || 1)));
+    this.roomCount = next;
+    this.form['roomCount'] = next;
+    this.rebuildRoomDrafts('count');
+  }
+
+  rebuildRoomDrafts(kind: 'count' | 'start' | 'type' | 'capacity' | 'suite'): void {
+    if (!this.isAddRoom) return;
+    const count = Math.min(this.maxRoomCount, Math.max(1, Math.floor(Number(this.roomCount) || 1)));
+    this.roomCount = count;
+    this.form['roomCount'] = count;
+
+    const start = String(this.form['number'] ?? '');
+    const typeId = this.form['room_type_id'] ? Number(this.form['room_type_id']) : null;
+    const cap = Number(this.form['capacity']) || 1;
+    const suite = this.form['suite_id'] ? Number(this.form['suite_id']) : null;
+    const prev = this.roomDrafts;
+
+    this.roomDrafts = Array.from({ length: count }, (_, i) => {
+      const existing = prev[i];
+      return {
+        key: existing?.key ?? i,
+        number: incrementRoomNumber(start, i),
+        name: existing?.name ?? '',
+        capacity: kind === 'capacity' ? cap : (existing?.capacity ?? cap),
+        suite_id: kind === 'suite' ? suite : (existing?.suite_id ?? suite),
+        room_type_id: kind === 'type' ? typeId : (existing?.room_type_id ?? typeId),
+      };
+    });
+    this.syncDialogSize();
+  }
+
+  private syncDialogSize(): void {
+    if (!this.isAddRoom) return;
+    this.dialogRef.updateSize('640px');
+  }
+
+  private validateRoomDrafts(): boolean {
+    if (!this.roomDrafts.length) {
+      this.snackbar.show(this.translate.instant('PROP_ROOM_COUNT'), 'error');
+      return false;
+    }
+    const missingType = this.roomDrafts.some((d) => !d.room_type_id);
+    if (missingType) {
+      this.snackbar.show(this.translate.instant('PROP_ROOM_TYPE_REQUIRED'), 'error');
+      this.showNewRoomType = true;
+      return false;
+    }
+    const missingNumber = this.roomDrafts.some((d) => !d.number.trim());
+    if (missingNumber) {
+      this.snackbar.show(this.translate.instant('PROP_ROOM_NUMBER_REQUIRED'), 'error');
+      return false;
+    }
+    const seen = new Set<string>();
+    for (const d of this.roomDrafts) {
+      const n = d.number.trim();
+      if (seen.has(n)) {
+        this.snackbar.show(this.translate.instant('PROP_DUPLICATE_ROOM_NUMBERS'), 'error');
+        return false;
+      }
+      seen.add(n);
+    }
+    if (!this.form['floor_id']) {
+      this.snackbar.show(this.translate.instant('REQUEST_FAILED'), 'error');
+      return false;
+    }
+    return true;
   }
 
   async createRoomTypeInline(): Promise<void> {
@@ -117,6 +221,9 @@ export class PropertyEntityDialog implements OnInit {
         this.form['room_type_id'] = created.id;
         this.newRoomTypeName = '';
         this.showNewRoomType = false;
+        if (this.isAddRoom) {
+          this.rebuildRoomDrafts('type');
+        }
         this.snackbar.show(this.translate.instant('PROP_TYPE_CREATED'), 'success');
       }
     } catch (e: unknown) {
@@ -173,7 +280,11 @@ export class PropertyEntityDialog implements OnInit {
       this.snackbar.show(this.translate.instant('LOCKS_LOCKID_REQUIRED'), 'error');
       return;
     }
-    if (this.data.entity === 'room' && !this.form['room_type_id']) {
+    if (this.isAddRoom) {
+      if (!this.validateRoomDrafts()) {
+        return;
+      }
+    } else if (this.data.entity === 'room' && !this.form['room_type_id']) {
       this.snackbar.show(this.translate.instant('PROP_ROOM_TYPE_REQUIRED'), 'error');
       this.showNewRoomType = true;
       return;
@@ -188,7 +299,13 @@ export class PropertyEntityDialog implements OnInit {
     this.dialogRef.disableClose = true;
     try {
       await this.persist();
-      this.snackbar.show(this.translate.instant('PROP_SAVED'), 'success');
+      const n = this.isAddRoom ? this.roomDrafts.length : 1;
+      this.snackbar.show(
+        n > 1
+          ? this.translate.instant('PROP_ROOMS_SAVED', { n })
+          : this.translate.instant('PROP_SAVED'),
+        'success',
+      );
       this.dialogRef.close(true);
     } catch (e: unknown) {
       this.snackbar.show(this.err(e), 'error');
@@ -252,6 +369,21 @@ export class PropertyEntityDialog implements OnInit {
         }
         break;
       case 'room': {
+        if (this.isAddRoom) {
+          const floorId = Number(this.form['floor_id']);
+          await this.api.createRooms({
+            floor_id: floorId,
+            building_id: this.form['building_id'] ? Number(this.form['building_id']) : null,
+            rooms: this.roomDrafts.map((d) => ({
+              number: d.number.trim(),
+              name: d.name.trim() || null,
+              capacity: Number(d.capacity) || 1,
+              room_type_id: Number(d.room_type_id),
+              suite_id: d.suite_id ? Number(d.suite_id) : null,
+            })),
+          });
+          break;
+        }
         const body: Record<string, unknown> = {
           number: this.form['number'],
           name: this.form['name'] || null,

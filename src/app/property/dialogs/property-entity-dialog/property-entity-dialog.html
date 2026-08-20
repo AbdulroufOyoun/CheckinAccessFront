@@ -1,17 +1,42 @@
-<div class="dialog-shell" [class.rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+<div class="dialog-shell" [class.rtl]="isRTL" [class.is-bulk]="addingRooms" [dir]="isRTL ? 'rtl' : 'ltr'">
   <header class="dialog-head">
-    <div>
-      <p class="eyebrow">{{ 'PROP_MODULE' | translate }}</p>
-      <h2>{{ titleKey | translate }}</h2>
+    <div class="dialog-head__top">
+      <div>
+        <p class="eyebrow">{{ 'PROP_MODULE' | translate }}</p>
+        <h2>{{ titleKey | translate }}</h2>
+      </div>
+      <button type="button" class="icon-btn" (click)="close()" [disabled]="saving" [attr.aria-label]="'CLOSE' | translate">×</button>
     </div>
-    <button type="button" class="icon-btn" (click)="close()" [disabled]="saving" [attr.aria-label]="'CLOSE' | translate">×</button>
   </header>
 
-  <div class="dialog-body">
-    <section class="preview-card" aria-hidden="true">
-      <span class="preview-label">{{ 'PROP_PREVIEW' | translate }}</span>
-      <strong>{{ preview }}</strong>
+  @if (addingRooms) {
+    <section class="count-sticky" [attr.aria-label]="'PROP_HOW_MANY_ROOMS' | translate">
+      <label class="count-sticky__field" for="roomCountInput">
+        <strong>{{ 'PROP_HOW_MANY_ROOMS' | translate }}</strong>
+        <span>{{ 'PROP_ROOM_COUNT' | translate }}</span>
+      </label>
+      <div class="count-stepper">
+        <button type="button" class="count-btn" (click)="bumpRoomCount(-1)"
+          [disabled]="saving || roomCount <= 1"
+          [attr.aria-label]="'PROP_ROOM_COUNT_DEC' | translate">−</button>
+        <input id="roomCountInput" type="number" class="count-input"
+          [(ngModel)]="roomCount" name="roomCountInput"
+          min="1" [max]="maxRoomCount"
+          (ngModelChange)="setRoomCount($event)" />
+        <button type="button" class="count-btn" (click)="bumpRoomCount(1)"
+          [disabled]="saving || roomCount >= maxRoomCount"
+          [attr.aria-label]="'PROP_ROOM_COUNT_INC' | translate">+</button>
+      </div>
     </section>
+  }
+
+  <div class="dialog-body">
+    @if (!addingRooms) {
+      <section class="preview-card" aria-hidden="true">
+        <span class="preview-label">{{ 'PROP_PREVIEW' | translate }}</span>
+        <strong>{{ preview }}</strong>
+      </section>
+    }
 
     <!-- Compound -->
     @if (data.entity === 'compound') {
@@ -85,57 +110,166 @@
     }
 
     <!-- Room -->
-    @if (data.entity === 'room') {
-      <label class="field">
-        <span>{{ 'PROP_NUMBER' | translate }}</span>
-        <input [(ngModel)]="form['number']" name="number" required />
-      </label>
-      <label class="field">
-        <span>{{ 'PROP_NAME' | translate }}</span>
-        <input [(ngModel)]="form['name']" name="name" />
-      </label>
-      <label class="field">
-        <span>{{ 'PROP_CAPACITY' | translate }}</span>
-        <input type="number" [(ngModel)]="form['capacity']" name="capacity" min="1" />
-      </label>
-      <label class="field">
-        <span>{{ 'PROP_SUITE' | translate }}</span>
-        <select [(ngModel)]="form['suite_id']" name="suite_id">
-          <option [ngValue]="null">{{ 'PROP_SUITE_NONE' | translate }}</option>
-          @for (s of suites; track s.id) {
-            <option [ngValue]="s.id">{{ s.name || s.number || ('#' + s.id) }}</option>
-          }
-        </select>
-      </label>
-      <div class="field">
-        <div class="field-head">
-          <span>{{ 'PROP_ROOM_TYPE' | translate }}</span>
-          <button type="button" class="link-btn" (click)="showNewRoomType = !showNewRoomType" [disabled]="saving || creatingType">
-            {{ showNewRoomType ? ('CANCEL' | translate) : ('PROP_NEW_TYPE' | translate) }}
-          </button>
+    @if (addingRooms) {
+      <div class="seed-card">
+        <label class="field count-field">
+          <span>{{ 'PROP_ROOM_COUNT' | translate }}</span>
+          <input type="number" [(ngModel)]="roomCount" name="roomCountBody"
+            min="1" [max]="maxRoomCount"
+            (ngModelChange)="setRoomCount($event)" />
+        </label>
+        <p class="seed-hint">{{ 'PROP_ROOM_SEED_HINT' | translate }}</p>
+        <div class="row-2">
+          <label class="field">
+            <span>{{ 'PROP_FIRST_ROOM_NUMBER' | translate }}</span>
+            <input [(ngModel)]="form['number']" name="firstRoomNumber" required
+              (ngModelChange)="rebuildRoomDrafts('start')" />
+          </label>
+          <label class="field">
+            <span>{{ 'PROP_CAPACITY' | translate }}</span>
+            <input type="number" [(ngModel)]="form['capacity']" name="seedCapacity" min="1"
+              (ngModelChange)="rebuildRoomDrafts('capacity')" />
+          </label>
         </div>
-        @if (roomTypes.length) {
-          <select [(ngModel)]="form['room_type_id']" name="room_type_id">
-            <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
-            @for (t of roomTypes; track t.id) {
-              <option [ngValue]="t.id">{{ t.name }}</option>
+        <label class="field">
+          <span>{{ 'PROP_SUITE' | translate }}</span>
+          <select [(ngModel)]="form['suite_id']" name="seedSuite"
+            (ngModelChange)="rebuildRoomDrafts('suite')">
+            <option [ngValue]="null">{{ 'PROP_SUITE_NONE' | translate }}</option>
+            @for (s of suites; track s.id) {
+              <option [ngValue]="s.id">{{ s.name || s.number || ('#' + s.id) }}</option>
             }
           </select>
-        } @else if (!showNewRoomType) {
-          <p class="hint">{{ 'PROP_NO_ROOM_TYPES' | translate }}</p>
-        }
-        @if (showNewRoomType) {
-          <div class="inline-create">
-            <input [(ngModel)]="newRoomTypeName" name="newRoomTypeName"
-              [placeholder]="'PROP_NEW_ROOM_TYPE_PLACEHOLDER' | translate"
-              (keydown.enter)="$event.preventDefault(); createRoomTypeInline()" />
-            <button type="button" class="btn soft" (click)="createRoomTypeInline()"
-              [disabled]="creatingType || !newRoomTypeName.trim()">
-              {{ creatingType ? ('SAVING' | translate) : ('PROP_CREATE_TYPE' | translate) }}
+        </label>
+        <div class="field">
+          <div class="field-head">
+            <span>{{ 'PROP_ROOM_TYPE' | translate }}</span>
+            <button type="button" class="link-btn" (click)="showNewRoomType = !showNewRoomType" [disabled]="saving || creatingType">
+              {{ showNewRoomType ? ('CANCEL' | translate) : ('PROP_NEW_TYPE' | translate) }}
             </button>
           </div>
+          @if (roomTypes.length) {
+            <select [(ngModel)]="form['room_type_id']" name="seedRoomType"
+              (ngModelChange)="rebuildRoomDrafts('type')">
+              <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
+              @for (t of roomTypes; track t.id) {
+                <option [ngValue]="t.id">{{ t.name }}</option>
+              }
+            </select>
+          } @else if (!showNewRoomType) {
+            <p class="hint">{{ 'PROP_NO_ROOM_TYPES' | translate }}</p>
+          }
+          @if (showNewRoomType) {
+            <div class="inline-create">
+              <input [(ngModel)]="newRoomTypeName" name="newRoomTypeName"
+                [placeholder]="'PROP_NEW_ROOM_TYPE_PLACEHOLDER' | translate"
+                (keydown.enter)="$event.preventDefault(); createRoomTypeInline()" />
+              <button type="button" class="btn soft" (click)="createRoomTypeInline()"
+                [disabled]="creatingType || !newRoomTypeName.trim()">
+                {{ creatingType ? ('SAVING' | translate) : ('PROP_CREATE_TYPE' | translate) }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <p class="drafts-label">{{ 'PROP_ROOM_DRAFTS_HINT' | translate:{ n: roomDrafts.length } }}</p>
+      <div class="room-drafts">
+        @for (d of roomDrafts; track d.key; let i = $index) {
+          <article class="room-draft">
+            <header class="room-draft-head">
+              <strong>{{ 'PROP_ROOM_N' | translate:{ n: i + 1 } }}</strong>
+            </header>
+            <div class="row-2">
+              <label class="field">
+                <span>{{ 'PROP_NUMBER' | translate }}</span>
+                <input [(ngModel)]="d.number" [name]="'draftNumber' + d.key" required />
+              </label>
+              <label class="field">
+                <span>{{ 'PROP_ROOM_TYPE' | translate }}</span>
+                <select [(ngModel)]="d.room_type_id" [name]="'draftType' + d.key">
+                  <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
+                  @for (t of roomTypes; track t.id) {
+                    <option [ngValue]="t.id">{{ t.name }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+            <div class="row-2">
+              <label class="field">
+                <span>{{ 'PROP_NAME' | translate }}</span>
+                <input [(ngModel)]="d.name" [name]="'draftName' + d.key" />
+              </label>
+              <label class="field">
+                <span>{{ 'PROP_CAPACITY' | translate }}</span>
+                <input type="number" [(ngModel)]="d.capacity" [name]="'draftCap' + d.key" min="1" />
+              </label>
+            </div>
+            <label class="field">
+              <span>{{ 'PROP_SUITE' | translate }}</span>
+              <select [(ngModel)]="d.suite_id" [name]="'draftSuite' + d.key">
+                <option [ngValue]="null">{{ 'PROP_SUITE_NONE' | translate }}</option>
+                @for (s of suites; track s.id) {
+                  <option [ngValue]="s.id">{{ s.name || s.number || ('#' + s.id) }}</option>
+                }
+              </select>
+            </label>
+          </article>
         }
       </div>
+    }
+
+    @if (data.entity === 'room' && !addingRooms) {
+        <label class="field">
+          <span>{{ 'PROP_NUMBER' | translate }}</span>
+          <input [(ngModel)]="form['number']" name="number" required />
+        </label>
+        <label class="field">
+          <span>{{ 'PROP_NAME' | translate }}</span>
+          <input [(ngModel)]="form['name']" name="name" />
+        </label>
+        <label class="field">
+          <span>{{ 'PROP_CAPACITY' | translate }}</span>
+          <input type="number" [(ngModel)]="form['capacity']" name="capacity" min="1" />
+        </label>
+        <label class="field">
+          <span>{{ 'PROP_SUITE' | translate }}</span>
+          <select [(ngModel)]="form['suite_id']" name="suite_id">
+            <option [ngValue]="null">{{ 'PROP_SUITE_NONE' | translate }}</option>
+            @for (s of suites; track s.id) {
+              <option [ngValue]="s.id">{{ s.name || s.number || ('#' + s.id) }}</option>
+            }
+          </select>
+        </label>
+        <div class="field">
+          <div class="field-head">
+            <span>{{ 'PROP_ROOM_TYPE' | translate }}</span>
+            <button type="button" class="link-btn" (click)="showNewRoomType = !showNewRoomType" [disabled]="saving || creatingType">
+              {{ showNewRoomType ? ('CANCEL' | translate) : ('PROP_NEW_TYPE' | translate) }}
+            </button>
+          </div>
+          @if (roomTypes.length) {
+            <select [(ngModel)]="form['room_type_id']" name="room_type_id">
+              <option [ngValue]="null">{{ 'PROP_SELECT' | translate }}</option>
+              @for (t of roomTypes; track t.id) {
+                <option [ngValue]="t.id">{{ t.name }}</option>
+              }
+            </select>
+          } @else if (!showNewRoomType) {
+            <p class="hint">{{ 'PROP_NO_ROOM_TYPES' | translate }}</p>
+          }
+          @if (showNewRoomType) {
+            <div class="inline-create">
+              <input [(ngModel)]="newRoomTypeName" name="newRoomTypeName"
+                [placeholder]="'PROP_NEW_ROOM_TYPE_PLACEHOLDER' | translate"
+                (keydown.enter)="$event.preventDefault(); createRoomTypeInline()" />
+              <button type="button" class="btn soft" (click)="createRoomTypeInline()"
+                [disabled]="creatingType || !newRoomTypeName.trim()">
+                {{ creatingType ? ('SAVING' | translate) : ('PROP_CREATE_TYPE' | translate) }}
+              </button>
+            </div>
+          }
+        </div>
     }
 
     <!-- Facility -->

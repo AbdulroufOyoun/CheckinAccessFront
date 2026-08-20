@@ -10,6 +10,7 @@ import {
   EduSectionTime,
 } from '../../services/education.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { DurationPreset, DurationsService } from '../../services/durations.service';
 
 export interface SectionTimesDialogData {
   section: EduSection;
@@ -37,6 +38,7 @@ export class SectionTimesDialog implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly document = inject(DOCUMENT);
+  private readonly durationsApi = inject(DurationsService);
 
   isRTL = false;
   loading = true;
@@ -45,6 +47,7 @@ export class SectionTimesDialog implements OnInit {
   times: EduSectionTime[] = [];
   days: EduDay[] = [];
   section!: EduSection;
+  timePresets: DurationPreset[] = [];
 
   timeForm = {
     day_id: '' as number | '',
@@ -83,6 +86,7 @@ export class SectionTimesDialog implements OnInit {
       this.document.documentElement.getAttribute('dir') === 'rtl' ||
       this.translate.getCurrentLang() === 'ar';
     void this.loadTimes();
+    void this.loadPresets();
   }
 
   get subjectName(): string {
@@ -162,6 +166,17 @@ export class SectionTimesDialog implements OnInit {
     this.timeForm.end = end;
   }
 
+  applyDurationPreset(preset: DurationPreset): void {
+    if (!preset.start_time || !preset.end_time) return;
+    this.setPreset(this.formatHm(preset.start_time), this.formatHm(preset.end_time));
+    this.cdr.detectChanges();
+  }
+
+  presetLabel(preset: DurationPreset): string {
+    if (preset.name?.trim()) return preset.name;
+    return `${this.formatHm(preset.start_time || '')}–${this.formatHm(preset.end_time || '')}`;
+  }
+
   close(): void {
     this.dialogRef.close({
       sectionId: this.section.id,
@@ -206,6 +221,25 @@ export class SectionTimesDialog implements OnInit {
       this.saving = false;
       this.cdr.detectChanges();
     }
+  }
+
+  private async loadPresets(): Promise<void> {
+    try {
+      const res = await this.durationsApi.list({
+        scope: 'education',
+        kind: 'time',
+        activeOnly: true,
+      });
+      this.timePresets = res.data || [];
+    } catch {
+      this.timePresets = [];
+    }
+    this.cdr.detectChanges();
+  }
+
+  private formatHm(value: string): string {
+    const m = String(value).match(/^(\d{1,2}):(\d{2})/);
+    return m ? `${m[1].padStart(2, '0')}:${m[2]}` : value;
   }
 
   private async loadTimes(force = false): Promise<void> {

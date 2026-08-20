@@ -58,11 +58,19 @@
       }
 
       <div class="st-dlg__presets">
+        @if (timePresets.length) {
+          @for (preset of timePresets; track preset.id) {
+          <button type="button" class="as__chip" (click)="applyDurationPreset(preset)">
+            {{ presetLabel(preset) }}
+          </button>
+          }
+        } @else {
         <button type="button" class="as__chip" (click)="setPreset('08:00', '10:00')">08:00–10:00</button>
         <button type="button" class="as__chip" (click)="setPreset('09:00', '11:00')">09:00–11:00</button>
         <button type="button" class="as__chip" (click)="setPreset('10:00', '12:00')">10:00–12:00</button>
         <button type="button" class="as__chip" (click)="setPreset('13:00', '15:00')">13:00–15:00</button>
         <button type="button" class="as__chip" (click)="setPreset('16:00', '18:00')">16:00–18:00</button>
+        }
       </div>
 
       <button type="button" class="as__btn as__btn--primary st-dlg__add" (click)="addTime()"

@@ -173,6 +173,12 @@ body {
   max-height: 90vh !important;
 }
 
+.rooms-bulk-dialog .mdc-dialog__surface,
+.rooms-bulk-dialog .mat-mdc-dialog-surface {
+  overflow: auto !important;
+  max-height: 92vh !important;
+}
+
 @keyframes dialogPop {
   from {
     opacity: 0;

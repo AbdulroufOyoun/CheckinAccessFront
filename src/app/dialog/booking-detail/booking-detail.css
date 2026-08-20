@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   max-height: min(88vh, 720px);
-  min-width: min(520px, 94vw);
+  min-width: min(560px, 94vw);
   color: var(--bd-ink);
   font-family: var(--font-en, Inter, sans-serif);
 }
@@ -313,4 +313,140 @@
 
 .bd__btn:hover {
   background: #1e293b;
+}
+
+.bd__section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bd__count {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--bd-accent);
+}
+
+.bd__roster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bd__roster-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--bd-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.bd__roster-item.is-out {
+  opacity: 0.72;
+}
+
+.bd__roster-item p {
+  margin: 4px 0 0;
+  color: var(--bd-muted);
+  font-size: 0.78rem;
+}
+
+.bd__ghost {
+  border: 1px solid var(--bd-line);
+  background: #fff;
+  color: var(--bd-ink);
+  border-radius: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.bd__ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bd__add {
+  margin-top: 12px;
+}
+
+.bd__add label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--bd-muted);
+  margin-bottom: 6px;
+}
+
+.bd__add input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--bd-line);
+  border-radius: 10px;
+  padding: 0 10px;
+  font: inherit;
+}
+
+.bd__hits {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid var(--bd-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bd__hits button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 0;
+  background: #fff;
+  text-align: start;
+  cursor: pointer;
+  font: inherit;
+}
+
+.bd__hits button:hover {
+  background: #eff6ff;
+}
+
+.bd__hits small {
+  color: var(--bd-muted);
+}
+
+.bd__timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bd__timeline li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid #bfdbfe;
+}
+
+.bd__timeline time,
+.bd__timeline span {
+  color: var(--bd-muted);
+  font-size: 0.8rem;
 }

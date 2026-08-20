@@ -1,10 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   Booking,
+  BookingOccupant,
+  BookingOccupantEvent,
   BookingPeriod,
   BookingUnit,
   BookingsService,
@@ -13,6 +16,7 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { ApiService } from '../../services/api.service';
 import { Apiendpointd } from '../../apiEndpoints';
 import { ApiResponse } from '../../interfaces/api-response';
+import { TenantUser, UsersService } from '../../services/users.service';
 
 export interface BookingDetailDialogData {
   bookingId: number;
@@ -22,7 +26,7 @@ export interface BookingDetailDialogData {
 @Component({
   selector: 'app-booking-detail',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, TranslateModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, TranslateModule],
   templateUrl: './booking-detail.html',
   styleUrl: './booking-detail.css',
 })
@@ -36,11 +40,15 @@ export class BookingDetailDialog implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
   private readonly api = inject(ApiService);
+  private readonly usersApi = inject(UsersService);
 
   loading = true;
   navigating = false;
+  occupantBusy = false;
   isRTL = false;
   booking: Booking | null = null;
+  users: TenantUser[] = [];
+  occupantQuery = '';
 
   private readonly weekdayKeys = [
     'BOOK_DETAIL_WD_SUN',
@@ -59,6 +67,7 @@ export class BookingDetailDialog implements OnInit {
     this.booking = this.data.preview ?? null;
     this.loading = !this.booking;
     void this.load();
+    void this.loadUsers();
   }
 
   get status(): 'active' | 'paused' | 'cancelled' {
@@ -66,6 +75,39 @@ export class BookingDetailDialog implements OnInit {
     if (this.booking.cancelled) return 'cancelled';
     if (this.booking.on_hold) return 'paused';
     return 'active';
+  }
+
+  get occupants(): BookingOccupant[] {
+    return this.booking?.occupants || [];
+  }
+
+  get occupantEvents(): BookingOccupantEvent[] {
+    return this.booking?.occupant_events || this.booking?.occupantEvents || [];
+  }
+
+  get roomCapacity(): number {
+    return Math.max(1, Number(this.booking?.room_capacity) || 1);
+  }
+
+  get activeOccupants(): BookingOccupant[] {
+    return this.occupants.filter((o) => o.status === 'active');
+  }
+
+  get canEditOccupants(): boolean {
+    return this.status === 'active';
+  }
+
+  get occupantHits(): TenantUser[] {
+    const q = this.occupantQuery.trim().toLowerCase();
+    const taken = new Set(this.activeOccupants.map((o) => o.user_id));
+    return this.users
+      .filter((u) => !taken.has(u.id))
+      .filter((u) => {
+        if (!q) return true;
+        const hay = [u.name, u.email, u.mobile].filter(Boolean).join(' ').toLowerCase();
+        return hay.includes(q);
+      })
+      .slice(0, 6);
   }
 
   get periods(): BookingPeriod[] {
@@ -91,6 +133,19 @@ export class BookingDetailDialog implements OnInit {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
+    });
+  }
+
+  formatDateTime(value?: string | null): string {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleString(this.isRTL ? 'ar-SA' : 'en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 
@@ -127,18 +182,6 @@ export class BookingDetailDialog implements OnInit {
 
   periodTimes(period: BookingPeriod): Array<{ start_time: string; end_time: string }> {
     return period.period_times || period.periodTimes || [];
-  }
-
-  periodGuests(
-    period: BookingPeriod,
-  ): Array<{ id: number; name?: string; email?: string; mobile?: string }> {
-    return (
-      (
-        period as BookingPeriod & {
-          users?: Array<{ id: number; name?: string; email?: string; mobile?: string }>;
-        }
-      ).users || []
-    );
   }
 
   excludedWeekdays(period: BookingPeriod): string {
@@ -212,6 +255,65 @@ export class BookingDetailDialog implements OnInit {
     await this.navigateAway(['/Property'], { lock: lock.id, tab: 'locks' });
   }
 
+  occupantName(row: { user?: { name?: string } | null; user_id: number }): string {
+    return row.user?.name || `#${row.user_id}`;
+  }
+
+  eventLabel(event: string): string {
+    const map: Record<string, string> = {
+      added: 'BOOK_DETAIL_EVENT_ADDED',
+      withdrawn: 'BOOK_DETAIL_EVENT_WITHDRAWN',
+      reinstated: 'BOOK_DETAIL_EVENT_REINSTATED',
+    };
+    return this.translate.instant(map[event] || event);
+  }
+
+  roomLabelFromMeta(meta?: Record<string, unknown> | null): string {
+    const label = meta?.['label'];
+    return typeof label === 'string' && label ? label : '';
+  }
+
+  async addPerson(user: TenantUser): Promise<void> {
+    if (!this.canEditOccupants || this.occupantBusy) return;
+    this.occupantBusy = true;
+    try {
+      const res = await this.bookings.addOccupant(this.data.bookingId, user.id);
+      this.booking = res.data || this.booking;
+      this.occupantQuery = '';
+      this.snackbar.show(this.translate.instant('BOOK_OCCUPANT_ADDED'), 'success');
+    } catch (e: unknown) {
+      this.snackbar.show(this.err(e), 'error');
+    } finally {
+      this.occupantBusy = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async withdrawPerson(occupant: BookingOccupant): Promise<void> {
+    if (!this.canEditOccupants || this.occupantBusy || occupant.status !== 'active') return;
+    this.occupantBusy = true;
+    try {
+      const res = await this.bookings.withdrawOccupant(this.data.bookingId, occupant.user_id);
+      this.booking = res.data || this.booking;
+      this.snackbar.show(this.translate.instant('BOOK_OCCUPANT_WITHDRAWN'), 'success');
+    } catch (e: unknown) {
+      this.snackbar.show(this.err(e), 'error');
+    } finally {
+      this.occupantBusy = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async reinstatePerson(occupant: BookingOccupant): Promise<void> {
+    if (!this.canEditOccupants || this.occupantBusy) return;
+    await this.addPerson({
+      id: occupant.user_id,
+      name: occupant.user?.name || `#${occupant.user_id}`,
+      email: occupant.user?.email || '',
+      mobile: occupant.user?.mobile || '',
+    });
+  }
+
   close(): void {
     this.dialogRef.close();
   }
@@ -249,6 +351,15 @@ export class BookingDetailDialog implements OnInit {
     } finally {
       this.loading = false;
       this.cdr.detectChanges();
+    }
+  }
+
+  private async loadUsers(): Promise<void> {
+    try {
+      const page = await this.usersApi.list(200);
+      this.users = page.data || [];
+    } catch {
+      this.users = [];
     }
   }
 

@@ -1,0 +1,132 @@
+<div class="dur" [class.dur--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="dur__header">
+    <div>
+      <p class="dur__eyebrow">{{ 'DUR_EYEBROW' | translate }}</p>
+      <h1 class="dur__title">{{ 'DUR_TITLE' | translate }}</h1>
+      <p class="dur__subtitle">{{ 'DUR_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="dur__actions">
+      <button type="button" class="dur-btn dur-btn--ghost" (click)="reload()" [disabled]="loading">
+        {{ loading ? ('LOADING' | translate) : ('DUR_REFRESH' | translate) }}
+      </button>
+    </div>
+  </header>
+
+  @if (showSkeleton) {
+  <app-page-skeleton variant="table" [rows]="5" [cols]="4" />
+  } @else {
+  <section class="dur-panel reveal">
+    <div class="dur-panel__head">
+      <div>
+        <h2>{{ 'DUR_ADD_TITLE' | translate }}</h2>
+        <p>{{ 'DUR_ADD_HINT' | translate }}</p>
+      </div>
+    </div>
+
+    @if (canManage) {
+    <form class="dur-form" (ngSubmit)="addDuration()">
+      <div class="dur-form__grid">
+        <label>
+          <span>{{ 'DUR_NAME' | translate }}</span>
+          <input type="text" [(ngModel)]="draft.name" name="durName" [placeholder]="'DUR_NAME_PLACEHOLDER' | translate" />
+        </label>
+
+        <label>
+          <span>{{ 'DUR_KIND' | translate }}</span>
+          <select [(ngModel)]="draft.kind" name="durKind">
+            <option [ngValue]="'time'">{{ 'DUR_KIND_TIME' | translate }}</option>
+            @if (showStayKinds) {
+            <option [ngValue]="'days'">{{ 'DUR_KIND_DAYS' | translate }}</option>
+            <option [ngValue]="'date_range'">{{ 'DUR_KIND_DATE_RANGE' | translate }}</option>
+            }
+          </select>
+        </label>
+
+        @if (showScopeSelector) {
+        <label>
+          <span>{{ 'DUR_SCOPE' | translate }}</span>
+          <select [(ngModel)]="draft.scope" name="durScope">
+            <option [ngValue]="'property'">{{ 'DUR_SCOPE_PROPERTY' | translate }}</option>
+            <option [ngValue]="'education'">{{ 'DUR_SCOPE_EDUCATION' | translate }}</option>
+            <option [ngValue]="'both'">{{ 'DUR_SCOPE_BOTH' | translate }}</option>
+          </select>
+        </label>
+        }
+      </div>
+
+      <div class="dur-form__values"
+        [class.dur-form__values--single]="draft.kind === 'days'"
+        [class.dur-form__values--range]="draft.kind === 'date_range'">
+        @if (draft.kind === 'time') {
+        <label>
+          <span>{{ 'DUR_START' | translate }}</span>
+          <input type="time" [(ngModel)]="draft.start_time" name="durStart" />
+        </label>
+        <label>
+          <span>{{ 'DUR_END' | translate }}</span>
+          <input type="time" [(ngModel)]="draft.end_time" name="durEnd" />
+        </label>
+        } @else if (draft.kind === 'days') {
+        <label class="dur-form__days">
+          <span>{{ 'DUR_DAYS_COUNT' | translate }}</span>
+          <input type="number" min="1" max="365" [(ngModel)]="draft.days" name="durDays" />
+        </label>
+        } @else {
+        <label>
+          <span>{{ 'DUR_START_DATE' | translate }}</span>
+          <input type="date" [(ngModel)]="draft.start_date" name="durStartDate" [min]="today" />
+        </label>
+        <label>
+          <span>{{ 'DUR_END_DATE' | translate }}</span>
+          <input type="date" [(ngModel)]="draft.end_date" name="durEndDate" [min]="draft.start_date || today" />
+        </label>
+        }
+      </div>
+
+      <div class="dur-form__actions">
+        <button type="submit" class="dur-btn dur-btn--primary" [disabled]="saving">
+          {{ saving ? ('SAVING' | translate) : ('DUR_ADD' | translate) }}
+        </button>
+      </div>
+    </form>
+    }
+
+    @if (!items.length) {
+    <div class="dur-empty">
+      <strong>{{ 'DUR_EMPTY' | translate }}</strong>
+      <p>{{ 'DUR_EMPTY_HINT' | translate }}</p>
+    </div>
+    } @else {
+    <ul class="dur-list">
+      @for (row of items; track row.id) {
+      <li class="dur-row" [class.is-off]="!row.active">
+        <div class="dur-row__main">
+          <div class="dur-row__badges">
+            <span class="dur-chip">{{ kindLabel(row.kind) }}</span>
+            <span class="dur-chip dur-chip--scope">{{ scopeLabel(row.scope) }}</span>
+            @if (!row.active) {
+            <span class="dur-chip dur-chip--off">{{ 'INACTIVE' | translate }}</span>
+            }
+          </div>
+          <div>
+            <strong>{{ row.name }}</strong>
+            <small dir="ltr">{{ valueLabel(row) }}</small>
+          </div>
+        </div>
+        @if (canManage) {
+        <div class="dur-row__actions">
+          <button type="button" class="dur-btn dur-btn--ghost" (click)="toggleActive(row)">
+            {{ row.active ? ('DEACTIVATE' | translate) : ('ACTIVATE' | translate) }}
+          </button>
+          <button type="button" class="dur-btn dur-btn--danger" (click)="remove(row)">
+            {{ 'DELETE' | translate }}
+          </button>
+        </div>
+        }
+      </li>
+      }
+    </ul>
+    }
+  </section>
+  }
+</div>

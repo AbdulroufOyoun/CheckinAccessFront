@@ -142,11 +142,29 @@ export class LinkEntitiesToLockDialog implements OnInit {
   }
 
   select(type: LockableType, id: number): void {
+    const existing = this.existingLink;
+    if (existing && (existing.type !== type || existing.id !== id)) {
+      this.snackbar.show(this.translate.instant('LOCKS_UNLINK_BEFORE_RELINK'), 'error');
+      return;
+    }
     if (this.selected && this.selected.type === type && this.selected.id === id) {
       this.selected = null;
       return;
     }
     this.selected = { type, id };
+  }
+
+  private get existingLink(): SingleSelection | null {
+    if (this.data.linkedBuildings?.length) {
+      return { type: 'building', id: this.data.linkedBuildings[0] };
+    }
+    if (this.data.linkedRooms?.length) {
+      return { type: 'room', id: this.data.linkedRooms[0] };
+    }
+    if (this.data.linkedFacilities?.length) {
+      return { type: 'facility', id: this.data.linkedFacilities[0] };
+    }
+    return null;
   }
 
   isSelected(type: LockableType, id: number): boolean {
@@ -176,6 +194,15 @@ export class LinkEntitiesToLockDialog implements OnInit {
       (this.data.linkedBuildings || []).forEach((id) => prev.push({ type: 'building', id }));
       (this.data.linkedRooms || []).forEach((id) => prev.push({ type: 'room', id }));
       (this.data.linkedFacilities || []).forEach((id) => prev.push({ type: 'facility', id }));
+
+      if (
+        prev.length &&
+        this.selected &&
+        !prev.some((p) => p.type === this.selected!.type && p.id === this.selected!.id)
+      ) {
+        this.snackbar.show(this.translate.instant('LOCKS_UNLINK_BEFORE_RELINK'), 'error');
+        return;
+      }
 
       for (const { type, id } of prev) {
         if (!this.selected || !(this.selected.type === type && this.selected.id === id)) {

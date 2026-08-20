@@ -33,16 +33,17 @@ export class SettingsPage implements OnInit {
   toggleLang(): void {
     this.currentLang = this.currentLang === 'en' ? 'ar' : 'en';
     localStorage.setItem('lang', this.currentLang);
-    this.translate.use(this.currentLang);
-    const html = this.document.documentElement;
-    if (this.currentLang === 'ar') {
-      html.setAttribute('dir', 'rtl');
-      html.setAttribute('lang', 'ar');
-    } else {
-      html.setAttribute('dir', 'ltr');
-      html.setAttribute('lang', 'en');
-    }
-    this.cdr.detectChanges();
+    this.translate.use(this.currentLang).subscribe(() => {
+      const html = this.document.documentElement;
+      if (this.currentLang === 'ar') {
+        html.setAttribute('dir', 'rtl');
+        html.setAttribute('lang', 'ar');
+      } else {
+        html.setAttribute('dir', 'ltr');
+        html.setAttribute('lang', 'en');
+      }
+      this.cdr.detectChanges();
+    });
   }
 
   openChangePassword(): void {

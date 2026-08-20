@@ -901,6 +901,12 @@
   color: #9a3412;
 }
 
+.bc-confirm__alert--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
 .bc-confirm__alert svg {
   flex-shrink: 0;
   margin-top: 1px;
@@ -1234,4 +1240,223 @@
   .bc-skel__bone--btn-primary {
     width: 100%;
   }
+}
+
+.bc-help--top {
+  margin: 0 0 14px;
+}
+
+.bc-period {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--bc-line);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: #fff;
+}
+
+.bc-period .bc-grid {
+  margin-block: 8px;
+}
+
+.bc-period__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.bc-period__head h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.bc-period__remove {
+  border: 0;
+  background: transparent;
+  color: var(--bc-bad);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.bc-add-period {
+  width: 100%;
+  min-height: 44px;
+  border: 1.5px dashed color-mix(in srgb, var(--bc-accent) 40%, var(--bc-line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bc-accent) 6%, white);
+  color: var(--bc-accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bc-add-period:hover {
+  background: color-mix(in srgb, var(--bc-accent) 12%, white);
+}
+
+.bc-occupants {
+  border: 1px solid var(--bc-line);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #f8fafc;
+}
+
+.bc-occupants__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.bc-occupants__head h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.bc-occupants__head p {
+  margin: 0;
+  color: var(--bc-muted);
+  font-size: 0.86rem;
+}
+
+.bc-occupants__count {
+  font-weight: 750;
+  color: var(--bc-accent);
+  white-space: nowrap;
+}
+
+.bc-occupants__count.is-full {
+  color: var(--bc-ok);
+}
+
+.bc-occ-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.bc-occ-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--bc-line);
+  font-size: 0.84rem;
+}
+
+.bc-occ-chip em {
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--bc-accent);
+}
+
+.bc-occ-chip button {
+  border: 0;
+  background: transparent;
+  color: var(--bc-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.bc-occ-hits {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid var(--bc-line);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.bc-occ-hits button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+  font: inherit;
+}
+
+.bc-occ-hits button:hover {
+  background: #eff6ff;
+}
+
+.bc-occ-hits small {
+  color: var(--bc-muted);
+}
+
+.bc-confirm__period {
+  border: 1px solid var(--bc-line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+
+.bc-confirm__period header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.bc-confirm__period header span,
+.bc-confirm__period p {
+  margin: 0 0 8px;
+  color: var(--bc-muted);
+  font-size: 0.88rem;
+}
+
+.bc-dur-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.bc-dur-presets__label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--bc-ink, #0f172a);
+}
+
+.bc-dur-presets__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bc-dur-presets__chip {
+  border: 1px solid var(--bc-line, #e2e8f0);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bc-dur-presets__chip:hover {
+  border-color: var(--bc-accent, #1d4ed8);
+  color: var(--bc-accent, #1d4ed8);
 }

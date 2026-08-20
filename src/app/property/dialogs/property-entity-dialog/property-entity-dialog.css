@@ -1,6 +1,12 @@
+:host {
+  display: block;
+}
+
 .dialog-shell {
   min-width: min(420px, 92vw);
-  max-width: 480px;
+  max-width: 100%;
+  width: 100%;
+  max-height: 85vh;
   background: var(--surface, #fff);
   color: var(--text, #1a1a1a);
   border-radius: 16px;
@@ -9,13 +15,98 @@
   flex-direction: column;
 }
 
+.dialog-shell.is-bulk {
+  min-width: min(560px, 92vw);
+}
+
 .dialog-head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border, #e5e5e5) 80%, transparent);
+  flex-shrink: 0;
+}
+
+.count-sticky {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  padding: 14px 20px;
+  background: #1d4ed8;
+  color: #fff;
+  z-index: 3;
+}
+
+.count-sticky__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.count-sticky__field strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.count-sticky__field span {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.count-sticky .count-btn {
+  background: #fff;
+  color: #1d4ed8;
+  border-color: #fff;
+}
+
+.count-sticky .count-input {
+  background: #fff;
+  color: #111;
+}
+
+.dialog-head__top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 20px 20px 12px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border, #e5e5e5) 80%, transparent);
+}
+
+
+.count-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background: color-mix(in srgb, var(--primary, #2563eb) 10%, #fff);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary, #2563eb) 22%, transparent);
+}
+
+.count-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+  flex: 1;
+}
+
+.count-bar__text strong {
+  font-size: 0.95rem;
+}
+
+.count-bar__text span {
+  font-size: 0.78rem;
+  color: #6b7280;
+  line-height: 1.35;
 }
 
 .eyebrow {
@@ -49,8 +140,118 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: min(60vh, 520px);
   overflow: auto;
+}
+
+.is-bulk .dialog-body {
+  max-height: min(72vh, 680px);
+}
+
+.seed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border, #e5e5e5) 90%, transparent);
+  background: color-mix(in srgb, var(--surface, #fff) 92%, #f8fafc);
+}
+
+.count-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary, #2563eb) 8%, #fff);
+  border: 1px solid color-mix(in srgb, var(--primary, #2563eb) 22%, transparent);
+}
+
+.count-label {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.count-stepper {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.count-btn {
+  width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--border, #d4d4d4);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.count-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.count-input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  border: 1px solid var(--border, #d4d4d4);
+  border-radius: 10px;
+  padding: 10px 8px;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  -moz-appearance: textfield;
+}
+
+.count-input::-webkit-outer-spin-button,
+.count-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.seed-hint,
+.drafts-label {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.room-drafts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-draft {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e5e5e5);
+  background: var(--surface, #fff);
+}
+
+.room-draft-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.room-draft-head strong {
+  font-size: 0.85rem;
+  font-weight: 650;
 }
 
 .preview-card {
@@ -149,6 +350,14 @@
   gap: 8px;
   padding: 12px 20px 20px;
   border-top: 1px solid color-mix(in srgb, var(--border, #e5e5e5) 80%, transparent);
+  flex-shrink: 0;
+}
+
+.count-field input {
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  max-width: 160px;
 }
 
 .btn {

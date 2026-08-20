@@ -34,6 +34,10 @@ export const guestGuard: CanActivateFn = () => {
 };
 
 export function moduleGuard(module: TenantModuleName): CanActivateFn {
+  return moduleGuardAny(module);
+}
+
+export function moduleGuardAny(...modules: TenantModuleName[]): CanActivateFn {
   return () => {
     const router = inject(Router);
     if (!browserOnly()) {
@@ -43,7 +47,7 @@ export function moduleGuard(module: TenantModuleName): CanActivateFn {
     if (!auth.isLoggedIn()) {
       return router.createUrlTree(['/Login']);
     }
-    if (auth.hasModule(module)) {
+    if (modules.some((module) => auth.hasModule(module))) {
       return true;
     }
     return router.createUrlTree([auth.homeRoute()]);

@@ -160,19 +160,58 @@ export interface PropTreeSnapshot {
   facilities: PropFacility[];
 }
 
+/** Sum of pivot counts so the UI can tell a lock is already attached somewhere. */
+export function lockLinkTotal(lock: {
+  buildings_count?: number;
+  floors_count?: number;
+  suites_count?: number;
+  rooms_count?: number;
+  facilities_count?: number;
+  gates_count?: number;
+  parkings_count?: number;
+  elevators_count?: number;
+}): number {
+  return (
+    (lock.buildings_count ?? 0) +
+    (lock.floors_count ?? 0) +
+    (lock.suites_count ?? 0) +
+    (lock.rooms_count ?? 0) +
+    (lock.facilities_count ?? 0) +
+    (lock.gates_count ?? 0) +
+    (lock.parkings_count ?? 0) +
+    (lock.elevators_count ?? 0)
+  );
+}
+export function unwrapEntityList<T>(raw: unknown): T[] {
+  if (Array.isArray(raw)) {
+    return raw as T[];
+  }
+  if (!raw || typeof raw !== 'object') {
+    return [];
+  }
+  const data = (raw as { data?: unknown }).data;
+  if (Array.isArray(data)) {
+    return data as T[];
+  }
+  if (data && typeof data === 'object') {
+    const inner = data as { data?: unknown; locks?: unknown };
+    if (Array.isArray(inner.locks)) {
+      return inner.locks as T[];
+    }
+    if (Array.isArray(inner.data)) {
+      return inner.data as T[];
+    }
+  }
+  return [];
+}
+
 @Injectable({ providedIn: 'root' })
 export class PropertyApiService {
   private readonly api = inject(ApiService);
   private readonly treeCache = inject(PropertyTreeCache);
 
   private unwrapList<T>(raw: unknown): T[] {
-    if (Array.isArray(raw)) return raw as T[];
-    const r = raw as { data?: T[] | { data?: T[] } };
-    if (Array.isArray(r?.data)) return r.data;
-    if (r?.data && Array.isArray((r.data as { data?: T[] }).data)) {
-      return (r.data as { data: T[] }).data;
-    }
-    return [];
+    return unwrapEntityList<T>(raw);
   }
 
   private data<T>(raw: unknown): T {
@@ -296,6 +335,20 @@ export class PropertyApiService {
   // —— Rooms ——
   createRoom(body: Record<string, unknown>) {
     return this.mutate(this.api.post(Apiendpointd.rooms, body));
+  }
+  createRooms(body: {
+    floor_id: number;
+    building_id?: number | null;
+    compound_id?: number | null;
+    rooms: Array<{
+      number: string;
+      name?: string | null;
+      capacity: number;
+      room_type_id: number;
+      suite_id?: number | null;
+    }>;
+  }) {
+    return this.mutate(this.api.post(Apiendpointd.roomsBatch, body));
   }
   updateRoom(id: number, body: Record<string, unknown>) {
     return this.mutate(this.api.post(Apiendpointd.roomUpdate(id), body));
