@@ -37,22 +37,23 @@ export class LinkLockDialog implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: LinkLockDialogData) {}
 
   ngOnInit(): void {
-    this.isRTL = this.document.documentElement.getAttribute('dir') === 'rtl'
-      || this.translate.getCurrentLang() === 'ar';
+    this.isRTL =
+      this.document.documentElement.getAttribute('dir') === 'rtl' ||
+      this.translate.getCurrentLang() === 'ar';
     this.linkedIdsSet = new Set(this.data.linked.map((l) => l.id));
-    this.selectedIds = this.data.available.filter((l) => this.linkedIdsSet.has(l.id)).map((l) => l.id);
+  }
+
+  /** Locks not already attached to this property — pick additional links only. */
+  get pickable(): PropLock[] {
+    return this.data.available.filter((lock) => !this.linkedIdsSet.has(lock.id));
   }
 
   get filtered(): PropLock[] {
     const q = this.search.trim().toLowerCase();
-    if (!q) return this.data.available;
-    return this.data.available.filter((l) =>
-      String(l.lockName || l.lockAlias || l.lockId || l.id).toLowerCase().includes(q)
+    if (!q) return this.pickable;
+    return this.pickable.filter((l) =>
+      String(l.lockName || l.lockAlias || l.lockId || l.id).toLowerCase().includes(q),
     );
-  }
-
-  isLinkedHere(lockId: number): boolean {
-    return this.linkedIdsSet.has(lockId);
   }
 
   toggle(id: number): void {
@@ -75,7 +76,8 @@ export class LinkLockDialog implements OnInit {
     this.saving = true;
     this.dialogRef.disableClose = true;
     try {
-      await this.api.syncLocks(this.data.propertyType, this.data.propertyId, this.selectedIds);
+      const lockIds = [...new Set([...this.linkedIdsSet, ...this.selectedIds])];
+      await this.api.syncLocks(this.data.propertyType, this.data.propertyId, lockIds);
       this.snackbar.show(this.translate.instant('PROP_LOCKS_UPDATED'), 'success');
       this.dialogRef.close(true);
     } catch (e: unknown) {

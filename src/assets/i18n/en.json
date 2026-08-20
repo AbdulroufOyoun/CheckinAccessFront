@@ -985,7 +985,9 @@
   "LOCKS_NO_ROOMS": "No rooms available",
   "LOCKS_NO_FACILITIES": "No facilities available",
   "LOCKS_LINKS_UPDATED": "Links updated successfully",
-  "LOCKS_ONE_ENTITY_HINT": "Each lock can be linked to one property entity at a time. Saving will replace the current link.",
+  "LOCKS_ONE_ENTITY_HINT": "Each lock can be linked to multiple property entities.",
+  "LOCKS_LINK_PICK_HINT": "Locks already linked here are hidden. The same lock may also be linked to other rooms.",
+  "LOCKS_NONE_TO_ADD": "No additional locks to link.",
   "LOCKS_SELECTED": "Selected",
   "LOCKS_NAV": "Locks"
 }
