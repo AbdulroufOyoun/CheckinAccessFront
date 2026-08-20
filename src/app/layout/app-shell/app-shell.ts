@@ -21,6 +21,14 @@ import { AuthService } from '../../services/auth.service';
 import { User } from '../../model/User';
 import { ChangePassword } from '../../dialog/change-password/change-password';
 import { TenantUser, UsersService } from '../../services/users.service';
+import { RealtimeService } from '../../services/realtime.service';
+import {
+  NAV_SEARCH_PAGE_META,
+  classifyNavQuery,
+  isNavIntentQuery,
+  pageMatchesNavQuery,
+  type NavSearchPage,
+} from './nav-search';
 
 type NavIcon =
   | 'dashboard'
@@ -71,8 +79,10 @@ interface NavSearchHit {
 export class AppShell implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly usersApi = inject(UsersService);
+  private readonly realtime = inject(RealtimeService);
 
   @ViewChild('navSearchInput') navSearchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('navSearchResults') navSearchResults?: ElementRef<HTMLElement>;
 
   sidebarOpen = true;
   userMenuOpen = false;
@@ -206,6 +216,12 @@ export class AppShell implements OnInit, OnDestroy {
             visible: this.auth.hasModule('education') && this.auth.can('manage enrollments'),
           },
           {
+            labelKey: 'EDU_COMPOUND_ACCESS',
+            route: '/Education/CompoundAccess',
+            icon: 'locks',
+            visible: this.auth.hasModule('education') && this.auth.can('manage education'),
+          },
+          {
             labelKey: 'EDU_REPORTS',
             route: '/Education/Reports',
             icon: 'edu-reports',
@@ -261,15 +277,33 @@ export class AppShell implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       void this.auth.ensureMe().then((user) => {
         this.user = user;
+        this.connectRealtime(user);
         this.cdr.detectChanges();
       }).catch(() => {
         // Keep cached session user if /me fails briefly.
+        this.connectRealtime(this.user);
       });
     }
   }
 
+  private connectRealtime(user: User | null): void {
+    const tenantId = user?.tenant_id != null ? String(user.tenant_id) : '';
+    if (tenantId) {
+      this.realtime.connect(tenantId);
+      return;
+    }
+    void this.auth.refreshMe(true).then((fresh) => {
+      this.user = fresh;
+      if (fresh.tenant_id != null) {
+        this.realtime.connect(String(fresh.tenant_id));
+      }
+      this.cdr.detectChanges();
+    }).catch(() => undefined);
+  }
+
   ngOnDestroy(): void {
     if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.realtime.disconnect();
   }
 
   get searchHits(): NavSearchHit[] {
@@ -318,6 +352,7 @@ export class AppShell implements OnInit, OnDestroy {
       if (!hits.length) return;
       this.searchOpen = true;
       this.searchActiveIndex = (this.searchActiveIndex + 1) % hits.length;
+      this.scrollActiveSearchHitIntoView();
       return;
     }
     if (event.key === 'ArrowUp') {
@@ -325,6 +360,7 @@ export class AppShell implements OnInit, OnDestroy {
       if (!hits.length) return;
       this.searchOpen = true;
       this.searchActiveIndex = (this.searchActiveIndex - 1 + hits.length) % hits.length;
+      this.scrollActiveSearchHitIntoView();
       return;
     }
     if (event.key === 'Enter') {
@@ -336,6 +372,14 @@ export class AppShell implements OnInit, OnDestroy {
 
   isSearchHitActive(hit: NavSearchHit): boolean {
     return this.searchHits[this.searchActiveIndex]?.key === hit.key;
+  }
+
+  private scrollActiveSearchHitIntoView(): void {
+    this.cdr.detectChanges();
+    const active = this.navSearchResults?.nativeElement.querySelector(
+      '.navbar__search-item--active',
+    );
+    active?.scrollIntoView({ block: 'nearest' });
   }
 
   goToHit(hit: NavSearchHit): void {
@@ -377,60 +421,74 @@ export class AppShell implements OnInit, OnDestroy {
   }
 
   private refreshPageHits(raw: string): void {
-    const needle = raw.trim().toLowerCase();
-    const pages: NavSearchHit[] = this.navSections.flatMap((section) =>
+    const pages: NavSearchPage[] = this.navSections.flatMap((section) =>
       section.items.map((item) => ({
-        kind: 'page' as const,
-        key: `page:${item.route}`,
+        route: item.route,
         label: this.translate.instant(item.labelKey),
         hint: this.translate.instant(section.labelKey),
-        route: [item.route],
+        meta: NAV_SEARCH_PAGE_META[item.route] ?? { aliases: [], capabilities: [] },
       })),
     );
     pages.push({
-      kind: 'page',
-      key: 'page:/Settings',
+      route: '/Settings',
       label: this.translate.instant('SETTINGS'),
       hint: this.translate.instant('NAV_SECTION_ADMIN'),
-      route: ['/Settings'],
+      meta: NAV_SEARCH_PAGE_META['/Settings'],
     });
 
-    this.pageHits = pages
-      .filter((hit) => {
-        const label = hit.label.toLowerCase();
-        const route = String(hit.route[0] ?? '').toLowerCase();
-        const hint = (hit.hint ?? '').toLowerCase();
-        return label.includes(needle) || route.includes(needle) || hint.includes(needle);
-      })
-      .slice(0, 8);
+    const matched = pages.filter((page) => pageMatchesNavQuery(page, raw));
+    this.pageHits = matched.map((page) => ({
+      kind: 'page' as const,
+      key: `page:${page.route}`,
+      label: page.label,
+      hint: page.hint,
+      route: [page.route],
+    }));
 
     this.actionHits = [];
-    if (needle.length >= 2 && this.auth.can('manage users')) {
-      this.actionHits.push({
-        kind: 'action',
-        key: `action:users:${needle}`,
-        label: this.translate.instant('NAV_SEARCH_USERS_FOR', { q: raw.trim() }),
-        hint: this.translate.instant('USERS'),
-        route: ['/Users'],
-        queryParams: { q: raw.trim() },
-      });
-    }
-    if (needle.length >= 2 && this.canProperty('manage bookings')) {
-      this.actionHits.push({
-        kind: 'action',
-        key: `action:bookings:${needle}`,
-        label: this.translate.instant('NAV_SEARCH_BOOKINGS_FOR', { q: raw.trim() }),
-        hint: this.translate.instant('RESERVATIONS'),
-        route: ['/Reservations'],
-        queryParams: { q: raw.trim() },
-      });
+    const intent = classifyNavQuery(raw);
+    if (intent.add) {
+      for (const page of matched) {
+        const addRoute = page.meta.addRoute;
+        if (!page.meta.capabilities.includes('add') || !addRoute || addRoute === page.route) {
+          continue;
+        }
+        this.actionHits.push({
+          kind: 'action',
+          key: `action:add:${page.route}`,
+          label: this.translate.instant('NAV_SEARCH_ADD_ON', { page: page.label }),
+          hint: page.label,
+          route: [addRoute],
+        });
+      }
+    } else if (raw.trim().length >= 2 && !matched.length && !intent.edit) {
+      if (this.auth.can('manage users')) {
+        this.actionHits.push({
+          kind: 'action',
+          key: `action:users:${raw.trim().toLowerCase()}`,
+          label: this.translate.instant('NAV_SEARCH_USERS_FOR', { q: raw.trim() }),
+          hint: this.translate.instant('USERS'),
+          route: ['/Users'],
+          queryParams: { q: raw.trim() },
+        });
+      }
+      if (this.canProperty('manage bookings')) {
+        this.actionHits.push({
+          kind: 'action',
+          key: `action:bookings:${raw.trim().toLowerCase()}`,
+          label: this.translate.instant('NAV_SEARCH_BOOKINGS_FOR', { q: raw.trim() }),
+          hint: this.translate.instant('RESERVATIONS'),
+          route: ['/Reservations'],
+          queryParams: { q: raw.trim() },
+        });
+      }
     }
     this.clampActiveIndex();
   }
 
   private async searchUsers(raw: string): Promise<void> {
     const q = raw.trim();
-    if (q.length < 2 || !this.auth.can('manage users')) {
+    if (q.length < 2 || !this.auth.can('manage users') || isNavIntentQuery(q) || this.pageHits.length) {
       this.searchGen += 1;
       this.userHits = [];
       this.searchLoading = false;
@@ -550,6 +608,7 @@ export class AppShell implements OnInit, OnDestroy {
   }
 
   logOut(): void {
+    this.realtime.disconnect();
     this.auth.logout();
   }
 }

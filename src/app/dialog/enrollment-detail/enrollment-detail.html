@@ -12,6 +12,7 @@
       <div class="as__preview-code">STU</div>
       <div class="as__preview-body">
         <strong>{{ studentName }}</strong>
+        <span>{{ 'ENR_DETAIL_TERM' | translate: { term: enrolledTermsLabel } }}</span>
         <span>{{ 'ENR_DETAIL_META' | translate: { n: rows.length } }}</span>
       </div>
     </div>
@@ -28,7 +29,7 @@
             <li class="enr-detail-row">
               <div class="enr-item__body">
                 <strong>{{ enrollmentLabel(row) }}</strong>
-                <small>{{ statusKey(row.enrollment.status) | translate }}</small>
+                <small>{{ termLabel(termOf(row)) || ('ENR_NO_TERM' | translate) }} · {{ statusKey(row.enrollment.status) | translate }}</small>
               </div>
               <div class="enr-detail-row__actions">
                 <select class="as__input as__select enr-status"
@@ -76,6 +77,9 @@
   <div class="as__footer">
     <button class="as__btn as__btn--ghost" type="button" (click)="close()" [disabled]="saving">
       {{ 'CLOSE' | translate }}
+    </button>
+    <button class="as__btn as__btn--ghost" type="button" (click)="editEnrollment()" [disabled]="saving">
+      {{ 'ENR_EDIT' | translate }}
     </button>
     <button class="as__btn as__btn--primary" type="button" (click)="saveFacilities()"
       [disabled]="saving || loadingFacilities">

@@ -11,6 +11,7 @@ export class User {
   roles: string[] = [];
   permissions: string[] = [];
   modules: TenantModuleName[] = [];
+  tenant_id?: string | number | null;
 
   constructor(init?: Partial<User>) {
     Object.assign(this, init);

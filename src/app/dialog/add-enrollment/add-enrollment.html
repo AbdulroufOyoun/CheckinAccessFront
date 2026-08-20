@@ -7,8 +7,8 @@
       </svg>
     </button>
 
-    <p class="as__eyebrow">{{ 'ENR_DIALOG_EYEBROW' | translate }}</p>
-    <h2 class="as__title">{{ 'ENR_DIALOG_TITLE' | translate }}</h2>
+    <p class="as__eyebrow">{{ (editing ? 'ENR_DIALOG_EYEBROW_EDIT' : 'ENR_DIALOG_EYEBROW') | translate }}</p>
+    <h2 class="as__title">{{ dialogTitleKey | translate }}</h2>
 
     <div class="as__preview">
       <div class="as__preview-code">ENR</div>
@@ -61,6 +61,9 @@
             <path d="m6 9 6 6 6-6" />
           </svg>
         </div>
+        @if (editing) {
+        <p class="enr-hint enr-hint--edit">{{ 'ENR_EDIT_HINT' | translate }}</p>
+        }
       </label>
 
       <div class="as__field">
@@ -153,7 +156,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
         <path d="M12 5v14M5 12h14" />
       </svg>
-      {{ 'ENR_CREATE' | translate }}
+      {{ saveLabelKey | translate }}
       }
     </button>
   </div>

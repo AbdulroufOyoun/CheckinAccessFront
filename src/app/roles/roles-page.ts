@@ -70,7 +70,10 @@ export class RolesPage implements OnInit {
   get permissionGroups(): PermissionGroup[] {
     const q = this.permSearch.trim().toLowerCase();
     const list = q
-      ? this.permissions.filter((p) => p.name.toLowerCase().includes(q))
+      ? this.permissions.filter((p) => {
+          const label = this.permLabel(p.name).toLowerCase();
+          return p.name.toLowerCase().includes(q) || label.includes(q);
+        })
       : this.permissions;
 
     const buckets = new Map<string, SpatiePermission[]>();
@@ -91,7 +94,27 @@ export class RolesPage implements OnInit {
   }
 
   get selectedCount(): number {
+    if (this.isSuperAdmin) {
+      return this.permissions.length;
+    }
     return this.draftPermissions.size;
+  }
+
+  permLabelKey(name: string): string {
+    return 'ROLE_PERM_' + name.trim().replace(/\s+/g, '_').toUpperCase();
+  }
+
+  permLabel(name: string): string {
+    const key = this.permLabelKey(name);
+    const translated = this.translate.instant(key);
+    return translated === key ? name : translated;
+  }
+
+  permCount(role: SpatieRole): number {
+    if (role.name === 'Super Admin') {
+      return this.permissions.length;
+    }
+    return role.permissions?.length || 0;
   }
 
   private groupKey(name: string): string {
@@ -155,6 +178,7 @@ export class RolesPage implements OnInit {
   }
 
   hasPermission(name: string): boolean {
+    if (this.isSuperAdmin) return true;
     return this.draftPermissions.has(name);
   }
 

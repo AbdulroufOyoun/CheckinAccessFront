@@ -28,6 +28,20 @@ export interface RoomStatusSchedule {
   is_practical?: boolean;
 }
 
+export interface RoomClassSlot extends RoomStatusSchedule {
+  day_id: number;
+  day_name?: string | null;
+  day_sort?: number;
+  is_today?: boolean;
+  covers_now?: boolean;
+}
+
+export interface RoomClassesPayload {
+  date: string;
+  room_id: number;
+  classes: RoomClassSlot[];
+}
+
 export interface RoomStatusItem {
   id: number;
   number: string;
@@ -41,6 +55,7 @@ export interface RoomStatusItem {
   suite?: { id: number; number?: string | null; name?: string | null } | null;
   booking?: RoomStatusBooking | null;
   schedule?: RoomStatusSchedule | null;
+  blocked_by?: 'booking' | 'schedule' | null;
 }
 
 export interface RoomStatusSummary {
@@ -152,6 +167,20 @@ export class RoomStatusService {
   getRoomDetail(id: number): Promise<ApiResponse<RoomDetail>> {
     const qs = new URLSearchParams({ id: String(id), model: 'room' });
     return this.api.get(`${Apiendpointd.dataById}?${qs}`);
+  }
+
+  async getRoomClasses(
+    id: number,
+    query?: { date?: string; time?: string },
+  ): Promise<RoomClassesPayload> {
+    const params = new URLSearchParams();
+    if (query?.date) params.set('date', query.date);
+    if (query?.time) params.set('time', query.time);
+    const qs = params.toString();
+    const res = await this.api.get<ApiResponse<RoomClassesPayload>>(
+      qs ? `${Apiendpointd.roomClasses(id)}?${qs}` : Apiendpointd.roomClasses(id),
+    );
+    return res.data ?? { date: query?.date || '', room_id: id, classes: [] };
   }
 }
 

@@ -176,7 +176,7 @@ export class EnrollmentsPage implements OnInit {
     this.applyFilter();
   }
 
-  async openCreate(): Promise<void> {
+  async openCreate(userId?: number): Promise<void> {
     const users = await this.loadUserOptions();
     let terms = this.terms;
     if (!terms.length) {
@@ -194,7 +194,7 @@ export class EnrollmentsPage implements OnInit {
       backdropClass: 'custom-backdrop',
       width: '640px',
       maxWidth: '94vw',
-      data: { users, terms },
+      data: { users, terms, userId },
     });
     ref.afterClosed().subscribe((saved) => {
       if (saved) void this.bootstrap(true);
@@ -213,8 +213,12 @@ export class EnrollmentsPage implements OnInit {
         rows: group.rows,
       },
     });
-    ref.afterClosed().subscribe((changed) => {
-      if (changed) void this.bootstrap(true);
+    ref.afterClosed().subscribe((result) => {
+      if (result && typeof result === 'object' && 'edit' in result) {
+        void this.openCreate(result.userId);
+        return;
+      }
+      if (result) void this.bootstrap(true);
     });
   }
 

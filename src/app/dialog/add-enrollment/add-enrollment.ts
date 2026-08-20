@@ -23,6 +23,7 @@ export interface AddEnrollmentDialogData {
   users: EnrollUserOption[];
   terms?: AcademicTerm[];
   facilities?: EduFacilityOption[];
+  userId?: number;
 }
 
 @Component({
@@ -44,6 +45,8 @@ export class AddEnrollment implements OnInit {
   loadingSections = false;
   loadingSchedule = false;
   isRTL = false;
+  editing = false;
+  private applyingStudentTerm = false;
   users: EnrollUserOption[] = [];
   terms: AcademicTerm[] = [];
   termSections: EduSection[] = [];
@@ -68,14 +71,18 @@ export class AddEnrollment implements OnInit {
     this.facilities = data?.facilities || [];
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.isRTL = this.document.documentElement.getAttribute('dir') === 'rtl'
       || this.translate.getCurrentLang() === 'ar';
     if (!this.terms.length) {
-      void this.loadTerms();
+      await this.loadTerms();
     }
     if (!this.facilities.length) {
       void this.loadFacilities();
+    }
+    if (this.data?.userId) {
+      this.form.user_id = this.data.userId;
+      await this.onStudentChange();
     }
   }
 
@@ -143,6 +150,14 @@ export class AddEnrollment implements OnInit {
     return !!this.form.user_id && !!this.form.academic_term_id && this.selectedCount > 0;
   }
 
+  get dialogTitleKey(): string {
+    return this.editing ? 'ENR_DIALOG_TITLE_EDIT' : 'ENR_DIALOG_TITLE';
+  }
+
+  get saveLabelKey(): string {
+    return this.editing ? 'ENR_SAVE' : 'ENR_CREATE';
+  }
+
   isChecked(id: number): boolean {
     return this.selectedSectionIds.has(id);
   }
@@ -153,27 +168,55 @@ export class AddEnrollment implements OnInit {
 
   async onStudentChange(): Promise<void> {
     this.selectedSectionIds.clear();
+    this.selectedFacilityIds.clear();
     this.conflictBySectionId.clear();
     this.enrolledSections = [];
+    this.editing = false;
+    this.termSections = [];
+    this.applyingStudentTerm = true;
+    this.form.academic_term_id = '';
+    this.applyingStudentTerm = false;
     if (!this.form.user_id) {
       this.recomputeConflicts();
       this.cdr.detectChanges();
       return;
     }
-    await this.loadStudentSchedule(Number(this.form.user_id));
+    await Promise.all([
+      this.loadStudentSchedule(Number(this.form.user_id)),
+      this.loadStudentFacilities(Number(this.form.user_id)),
+    ]);
+    const termId = this.inferEnrolledTermId();
+    if (termId) {
+      this.applyingStudentTerm = true;
+      this.form.academic_term_id = termId;
+      this.applyingStudentTerm = false;
+      this.editing = true;
+      await this.loadTermSections(termId);
+      this.preselectEnrolledSections(termId);
+    }
     this.recomputeConflicts();
     this.cdr.detectChanges();
   }
 
   async onTermChange(): Promise<void> {
+    if (this.applyingStudentTerm) {
+      return;
+    }
     this.selectedSectionIds.clear();
     this.conflictBySectionId.clear();
     this.termSections = [];
+    this.editing = false;
     if (!this.form.academic_term_id) {
       this.cdr.detectChanges();
       return;
     }
-    await this.loadTermSections(Number(this.form.academic_term_id));
+    const termId = Number(this.form.academic_term_id);
+    await this.loadTermSections(termId);
+    const enrolledHere = this.enrolledInTerm(termId);
+    this.editing = enrolledHere.length > 0;
+    if (this.editing) {
+      this.preselectEnrolledSections(termId);
+    }
     this.recomputeConflicts();
     this.cdr.detectChanges();
   }
@@ -238,7 +281,10 @@ export class AddEnrollment implements OnInit {
         status: this.form.status,
         facility_ids: Array.from(this.selectedFacilityIds),
       });
-      this.snackbar.show(this.translate.instant('ENR_CREATED'), 'success');
+      this.snackbar.show(
+        this.translate.instant(this.editing ? 'ENR_UPDATED' : 'ENR_CREATED'),
+        'success',
+      );
       this.close(true);
     } catch (e: unknown) {
       const m = (e as { error?: { message?: string } })?.error?.message;
@@ -317,6 +363,45 @@ export class AddEnrollment implements OnInit {
     }
   }
 
+  private async loadStudentFacilities(userId: number): Promise<void> {
+    this.loadingFacilities = true;
+    try {
+      const res = await this.edu.getStudentFacilityAccess(userId);
+      if (res.data?.facilities?.length) {
+        this.facilities = res.data.facilities;
+      }
+      this.selectedFacilityIds = new Set(res.data?.linked_facility_ids || []);
+    } catch {
+      this.selectedFacilityIds.clear();
+    } finally {
+      this.loadingFacilities = false;
+    }
+  }
+
+  private sectionTermId(section: EduSection): number {
+    return Number(section.academic_term_id ?? section.academic_term?.id) || 0;
+  }
+
+  private enrolledInTerm(termId: number): EduSection[] {
+    return this.enrolledSections.filter((s) => this.sectionTermId(s) === termId);
+  }
+
+  private inferEnrolledTermId(): number | '' {
+    const openIds = new Set(this.terms.map((t) => t.id));
+    const counts = new Map<number, number>();
+    for (const section of this.enrolledSections) {
+      const termId = this.sectionTermId(section);
+      if (!termId || !openIds.has(termId)) continue;
+      counts.set(termId, (counts.get(termId) || 0) + 1);
+    }
+    if (!counts.size) return '';
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  }
+
+  private preselectEnrolledSections(termId: number): void {
+    this.selectedSectionIds = new Set(this.enrolledInTerm(termId).map((s) => s.id));
+  }
+
   private recomputeConflicts(): void {
     this.conflictBySectionId.clear();
     for (const sec of this.termSections) {
@@ -331,9 +416,10 @@ export class AddEnrollment implements OnInit {
   }
 
   private conflictReasonForCandidate(candidate: EduSection, selectedIds: Set<number>): string | undefined {
+    const termId = Number(this.form.academic_term_id);
     const peers: EduSection[] = [
       ...this.termSections.filter((s) => selectedIds.has(s.id)),
-      ...this.enrolledSections,
+      ...this.enrolledSections.filter((s) => this.sectionTermId(s) !== termId),
     ];
 
     for (const peer of peers) {

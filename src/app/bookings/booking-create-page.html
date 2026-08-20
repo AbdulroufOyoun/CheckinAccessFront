@@ -277,6 +277,12 @@
         <strong>{{ room.number }}</strong>
         <small>{{ room.room_type?.name || room.name || '—' }}</small>
         <small>{{ room.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}</small>
+        @if (room.schedule) {
+          <small>{{ 'ROOM_STATUS_CLASS' | translate }}
+            {{ isRTL ? (room.schedule.subject_ar || room.schedule.subject) : (room.schedule.subject || room.schedule.subject_ar) }}
+            {{ room.schedule.start }}–{{ room.schedule.end }}
+          </small>
+        }
       </button>
       }
     </div>

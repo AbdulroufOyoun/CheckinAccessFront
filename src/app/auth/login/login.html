@@ -20,7 +20,7 @@
   <!-- ═══════════════════════════════════════════════
        MAIN CARD
   ═══════════════════════════════════════════════ -->
-  <div class="auth-card-wrap">
+  <main id="main" class="auth-card-wrap">
     <div class="auth-card">
       <!-- Top gradient accent bar -->
       <div class="auth-card__accent-bar"></div>
@@ -29,7 +29,7 @@
 
         <!-- ── LOGO ──────────────────────────────── -->
         <div class="auth-logo">
-          <div class="auth-logo__icon">
+          <div class="auth-logo__icon" aria-hidden="true">
             <!-- Building2 icon -->
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
               stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -55,6 +55,13 @@
           <h2 class="auth-heading__title">Welcome Back</h2>
           <p class="auth-heading__subtitle">{{ 'EMAIL' | translate }} &amp; {{ 'PASSWORD' | translate }}</p>
         </div>
+
+        @if (pausedTenant) {
+          <div class="auth-paused" role="alert">
+            <strong>{{ 'TOAST_TENANT_PAUSED' | translate }}</strong>
+            <p>{{ 'TENANT_INACTIVE' | translate }}</p>
+          </div>
+        }
 
         <!-- ── PHONE FIELD ───────────────────────── -->
         <!-- <div class="form-group">
@@ -82,50 +89,46 @@
 
         <form (ngSubmit)="login()">
         <div class="form-group">
-          <label class="form-label">{{'EMAIL'|translate}}</label>
+          <label class="form-label" for="login-email">{{'EMAIL'|translate}}</label>
           <div class="form-input-wrap">
-            <!-- Phone icon -->
-            <span class="form-input__icon form-input__icon--ltr">
+            <span class="form-input__icon form-input__icon--ltr" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07
-                         A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.36
-                         A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72
-                         c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91
-                         a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45
-                         c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
               </svg>
             </span>
-            <input type="email" name="email" class="form-input form-input--with-icon" [(ngModel)]="email"
-              placeholder="example@example.com" dir="ltr" autocomplete="email" />
+            <input id="login-email" type="email" name="email" class="form-input form-input--with-icon" [(ngModel)]="email"
+              placeholder="example@example.com" dir="ltr" autocomplete="username"
+              [attr.aria-invalid]="hasError && !email"
+              [attr.aria-describedby]="hasError && !email ? 'login-email-error' : null" />
           </div>
           @if(hasError && !email){
-          <p class="form-error"> {{ 'ENTER_EMAIL' | translate }}</p>
+          <p class="form-error" id="login-email-error"> {{ 'ENTER_EMAIL' | translate }}</p>
           }
         </div>
 
         <div class="form-group">
-          <label class="form-label">{{'PASSWORD'|translate}}</label>
+          <label class="form-label" for="login-password">{{'PASSWORD'|translate}}</label>
           <div class="form-input-wrap">
-            <!-- Phone icon -->
-            <span class="form-input__icon form-input__icon--ltr">
+            <span class="form-input__icon form-input__icon--ltr" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07
-                         A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.36
-                         A2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72
-                         c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91
-                         a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45
-                         c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
             </span>
-            <input type="password" name="password" class="form-input form-input--with-icon" [(ngModel)]="password" dir="ltr" />
+            <input id="login-password" type="password" name="password" class="form-input form-input--with-icon"
+              [(ngModel)]="password" dir="ltr" autocomplete="current-password"
+              [attr.aria-invalid]="(hasError && !password) || (password.length > 0 && password.length < 4)"
+              [attr.aria-describedby]="(hasError && !password) ? 'login-password-error' : (password.length > 0 && password.length < 4) ? 'login-password-length' : null" />
           </div>
-          @if(hasError &&!password ){
-          <p class="form-error"> {{ 'ENTER_PASSWORD' | translate }}</p>
+          @if (hasError && !password) {
+          <p class="form-error" id="login-password-error"> {{ 'ENTER_PASSWORD' | translate }}</p>
           }
-          @if(password.length > 0 && password.length < 4) { <p class="form-error"> {{ 'MSG_PASSWORD' | translate }}</p>
-            }
+          @if (password.length > 0 && password.length < 4) {
+            <p class="form-error" id="login-password-length"> {{ 'MSG_PASSWORD' | translate }}</p>
+          }
         </div>
         <!-- ── SUBMIT BUTTON ─────────────────────── -->
         <!-- Default state -->
@@ -134,7 +137,7 @@
           @if (!isLoading) {
           {{ 'LOGIN' | translate }}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />
           </svg>
@@ -146,5 +149,5 @@
         </form>
       </div>
     </div>
-  </div>
+  </main>
 </div>

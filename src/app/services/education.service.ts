@@ -31,6 +31,7 @@ export interface EduSection {
   doctor?: { id: number; name?: string };
   room?: { id: number; name?: string; number?: string };
   academic_term?: AcademicTerm | null;
+  academicTerm?: AcademicTerm | null;
   section_times?: EduSectionTime[];
   sectionTimes?: EduSectionTime[];
 }
@@ -131,6 +132,25 @@ export interface EduReports {
   enrollments_by_status: Record<string, number>;
   students_enrolled: number;
   archives_total?: number;
+}
+
+export interface CompoundAccessCompound {
+  id: number;
+  name?: string | null;
+  number?: string | null;
+}
+
+export interface CompoundAccessStudent {
+  id: number;
+  name?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+}
+
+export interface CompoundAccessRow {
+  user_id: number;
+  user?: CompoundAccessStudent | null;
+  compounds: CompoundAccessCompound[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -325,5 +345,21 @@ export class EducationService {
     term_label?: string;
   }): Promise<ApiResponse<{ archived_count: number; archive_batch_id: string }>> {
     return this.mutate(this.api.post(Apiendpointd.enrollmentArchivesArchiveAll, body));
+  }
+
+  getCompoundAccess(): Promise<ApiResponse<CompoundAccessRow[]>> {
+    return this.api.get(Apiendpointd.compoundAccess);
+  }
+
+  getCompoundAccessCompounds(): Promise<ApiResponse<CompoundAccessCompound[]>> {
+    return this.api.get(Apiendpointd.compoundAccessCompounds);
+  }
+
+  searchCompoundAccessStudents(query: string): Promise<ApiResponse<CompoundAccessStudent[]>> {
+    return this.api.get(Apiendpointd.compoundAccessStudents(query));
+  }
+
+  syncCompoundAccess(userId: number, compoundIds: number[]): Promise<ApiResponse<CompoundAccessRow>> {
+    return this.api.put(Apiendpointd.compoundAccessStudent(userId), { compound_ids: compoundIds });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import { QuickActions } from './quick-actions/quick-actions';
 import { OccupancyChart } from './occupancy-chart/occupancy-chart';
 import { RoomGrid } from './room-grid/room-grid';
 import { KpiCards } from './kpi-cards/kpi-cards';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
 import { EduReports } from '../services/education.service';
@@ -16,6 +17,8 @@ import { RoomStatusItem, RoomStatusPayload, RoomStatusSummary } from '../service
 import { Booking } from '../services/bookings.service';
 import { Apiendpointd } from '../apiEndpoints';
 import { ApiResponse } from '../interfaces/api-response';
+import { RealtimeService } from '../services/realtime.service';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -34,12 +37,14 @@ import { ApiResponse } from '../interfaces/api-response';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly api = inject(ApiService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroy$ = new Subject<void>();
 
   filtersOpen = false;
   selectedBuildingId: number | null = null;
@@ -119,7 +124,17 @@ export class Dashboard implements OnInit {
     this.hasEducation = this.auth.hasModule('education');
     if (isPlatformBrowser(this.platformId)) {
       void this.loadAll();
+      this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
+        if (this.hasProperty) {
+          void this.loadDashboard();
+        }
+      });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private async loadAll(): Promise<void> {

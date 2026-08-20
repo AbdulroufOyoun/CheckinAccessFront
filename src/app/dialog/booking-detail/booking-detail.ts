@@ -16,6 +16,7 @@ import { ApiResponse } from '../../interfaces/api-response';
 
 export interface BookingDetailDialogData {
   bookingId: number;
+  preview?: Booking | null;
 }
 
 @Component({
@@ -55,6 +56,8 @@ export class BookingDetailDialog implements OnInit {
     this.isRTL =
       this.document.documentElement.getAttribute('dir') === 'rtl' ||
       this.translate.getCurrentLang() === 'ar';
+    this.booking = this.data.preview ?? null;
+    this.loading = !this.booking;
     void this.load();
   }
 
@@ -227,17 +230,22 @@ export class BookingDetailDialog implements OnInit {
   }
 
   private async load(): Promise<void> {
-    this.loading = true;
+    const hadPreview = !!this.booking;
+    if (!hadPreview) {
+      this.loading = true;
+    }
     try {
       const res = await this.bookings.show(this.data.bookingId);
-      this.booking = res.data || null;
+      this.booking = res.data || this.booking;
       if (!this.booking) {
         this.snackbar.show(this.translate.instant('BOOK_DETAIL_NOT_FOUND'), 'error');
         this.dialogRef.close();
       }
     } catch (e: unknown) {
-      this.snackbar.show(this.err(e), 'error');
-      this.dialogRef.close();
+      if (!hadPreview) {
+        this.snackbar.show(this.err(e), 'error');
+        this.dialogRef.close();
+      }
     } finally {
       this.loading = false;
       this.cdr.detectChanges();

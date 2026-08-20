@@ -210,7 +210,11 @@
       <app-room-grid [rooms]="rooms" [summary]="summary" [loading]="loadingProperty" [canOpenRooms]="canRoomStatus"></app-room-grid>
     </div>
     <div class="dashboard__col-narrow">
-      <app-occupancy-chart [summary]="summary"></app-occupancy-chart>
+      @defer (on viewport; prefetch on idle) {
+        <app-occupancy-chart [summary]="summary"></app-occupancy-chart>
+      } @placeholder {
+        <div class="occ-chart-placeholder" aria-hidden="true"></div>
+      }
     </div>
   </div>
 

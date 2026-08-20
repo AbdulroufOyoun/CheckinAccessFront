@@ -1,5 +1,7 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, DOCUMENT, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ApiResponse, LoginResponse } from '../../interfaces/api-response';
@@ -16,8 +18,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   styleUrl: './login.css',
 })
 export class Login {
+  private readonly document = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
+
   isLoading = false;
   hasError = false;
+  pausedTenant = false;
   phone = '';
   email = '';
   password = '';
@@ -29,7 +35,16 @@ export class Login {
     private cdr: ChangeDetectorRef,
     private translate: TranslateService,
     private authService: AuthService,
-  ) {}
+    private title: Title,
+  ) {
+    this.title.setTitle('Sign in — CheckinAccess');
+    if (isPlatformBrowser(this.platformId)) {
+      const lang = (localStorage.getItem('lang') as 'ar' | 'en') || 'en';
+      this.document.documentElement.lang = lang;
+      this.document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      this.translate.use(lang).subscribe(() => this.cdr.detectChanges());
+    }
+  }
 
   private stopLoading(): void {
     this.isLoading = false;
@@ -57,6 +72,7 @@ export class Login {
 
   async login(): Promise<void> {
     this.hasError = false;
+    this.pausedTenant = false;
     if (!this.email || !this.password) {
       this.hasError = true;
       this.stopLoading();
@@ -115,12 +131,14 @@ export class Login {
         'error',
       );
     } catch (error: unknown) {
-      this.stopLoading();
       try {
-        this.snackbar.show(this.errorText(error), 'error');
+        const text = this.errorText(error);
+        this.pausedTenant = SnackbarService.isTenantInactive(text);
+        this.snackbar.show(text, this.pausedTenant ? 'warning' : 'error');
       } catch {
         // Never leave the button stuck if toast fails.
       }
+      this.stopLoading();
     } finally {
       // Guarantee the spinner stops even if a path above returned early incorrectly.
       if (this.isLoading) {

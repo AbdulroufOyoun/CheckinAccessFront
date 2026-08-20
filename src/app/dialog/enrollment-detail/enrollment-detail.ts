@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
+  AcademicTerm,
   EducationService,
   EduEnrollmentRow,
   EduFacilityOption,
@@ -25,7 +26,7 @@ export interface EnrollmentDetailDialogData {
   styleUrls: ['../add-subject/add-subject.css', '../add-enrollment/add-enrollment.css', './enrollment-detail.css'],
 })
 export class EnrollmentDetail implements OnInit {
-  private readonly dialogRef = inject(MatDialogRef<EnrollmentDetail, boolean>);
+  private readonly dialogRef = inject(MatDialogRef<EnrollmentDetail, boolean | { edit: true; userId: number }>);
   private readonly edu = inject(EducationService);
   private readonly snackbar = inject(SnackbarService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -53,6 +54,26 @@ export class EnrollmentDetail implements OnInit {
 
   get studentName(): string {
     return this.data.user?.name || this.data.user?.email || `#${this.data.userId}`;
+  }
+
+  get enrolledTermsLabel(): string {
+    const labels = [...new Set(
+      this.rows
+        .map((row) => this.termLabel(this.termOf(row)))
+        .filter((name) => !!name),
+    )];
+    return labels.length ? labels.join(' · ') : this.translate.instant('ENR_NO_TERM');
+  }
+
+  termOf(row: EduEnrollmentRow): AcademicTerm | null {
+    const section = row.enrollment.section;
+    return section?.academic_term ?? section?.academicTerm ?? null;
+  }
+
+  termLabel(term?: AcademicTerm | null): string {
+    if (!term) return '';
+    if (this.isRTL) return term.name_ar || term.name || '';
+    return term.name || term.name_ar || '';
   }
 
   subjectLabel(s?: EduSubject | null): string {
@@ -86,6 +107,10 @@ export class EnrollmentDetail implements OnInit {
 
   close(): void {
     this.dialogRef.close(this.changed);
+  }
+
+  editEnrollment(): void {
+    this.dialogRef.close({ edit: true, userId: this.data.userId });
   }
 
   async setStatus(row: EduEnrollmentRow, status: string): Promise<void> {

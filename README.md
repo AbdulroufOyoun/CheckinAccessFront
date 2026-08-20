@@ -18,7 +18,8 @@ Platform owners should use **CheckinAccessPlatform** against the central API ins
 |------|--------|
 | Node.js | 20+ recommended |
 | npm | Comes with Node |
-| Backend | [CheckinAccess](https://github.com/AbdulroufOyoun/CheckinAccess) running on port **8000** |
+| Backend | [CheckinAccess](https://github.com/AbdulroufOyoun/CheckinAccess) HTTP API on port **8000** |
+| Reverb | Same backend: `php artisan reverb:start` on port **8081** (required for live room occupancy; 8080 is Herd nginx) |
 | Hosts | `127.0.0.1 ratco.localhost` (or your tenant domain) |
 
 ## First-time install
@@ -34,14 +35,23 @@ API base URL is derived from the browser hostname in `src/app/apiEndpoints.ts`:
 - Opening `http://localhost:4200` → API host `http://ratco.localhost:8000`
 - Opening `http://ratco.localhost:4200` → API host `http://ratco.localhost:8000`
 
-Make sure the Laravel backend accepts that host:
+Make sure the Laravel backend accepts that host. Run **both** of these from `CheckinAccess` (two terminals):
 
 ```bash
 cd ../CheckinAccess
 php artisan serve --host=0.0.0.0 --port=8000
 ```
 
+```bash
+cd ../CheckinAccess
+php artisan reverb:start
+```
+
+Without Reverb, the admin UI still loads, but dashboard / room status / booking room pickers will not update live.
+
 ## How to run
+
+Keep the backend API **and** Reverb running first, then:
 
 ```bash
 npm start
@@ -93,6 +103,7 @@ npm test
 | CORS / network failed | Backend must listen on `0.0.0.0:8000` and tenant host must resolve |
 | Login 403 / wrong tenant | Use matching tenant domain; do not hit central host for admin APIs |
 | Empty menus | Admin permissions / tenant modules (`property`, `education`) |
+| Room occupancy not updating live | Start Reverb in the backend repo: `php artisan reverb:start` |
 
 ## License
 
