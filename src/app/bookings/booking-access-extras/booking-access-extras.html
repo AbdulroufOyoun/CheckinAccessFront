@@ -1,0 +1,73 @@
+<section class="bae" [class.bae--compact]="compact">
+  <header class="bae__head">
+    <div>
+      <h3>{{ 'BOOK_ACCESS_EXTRAS' | translate }}</h3>
+      <p>{{ 'BOOK_ACCESS_EXTRAS_HINT' | translate }}</p>
+    </div>
+    @if (selectedCount) {
+    <span class="bae__count">{{ 'BOOK_ACCESS_EXTRAS_COUNT' | translate: { n: selectedCount } }}</span>
+    }
+  </header>
+
+  @if (selectedCount) {
+  <div class="bae__chips">
+    @for (item of selectedOptions(); track item.unit_type + '-' + item.unit_id) {
+    <span class="bae__chip" [class.bae__chip--gate]="item.unit_type === 'gate'"
+      [class.bae__chip--facility]="item.unit_type === 'facility'"
+      [class.bae__chip--parking]="item.unit_type === 'parking'">
+      <span class="bae__chip-type">{{ typeBadge(item) | translate }}</span>
+      <strong>{{ item.name }}</strong>
+      @if (item.typeLabel) { <em>{{ item.typeLabel }}</em> }
+      <button type="button" (click)="removeKey(item.unit_type + ':' + item.unit_id)"
+        [attr.aria-label]="'REMOVE' | translate">×</button>
+    </span>
+    }
+  </div>
+  }
+
+  <nav class="bae__tabs" role="tablist">
+    <button type="button" role="tab" [class.is-on]="tab === 'gate'" (click)="setTab('gate')">
+      {{ 'PROP_GATE' | translate }}
+      <span>{{ gates.length }}</span>
+    </button>
+    <button type="button" role="tab" [class.is-on]="tab === 'facility'" (click)="setTab('facility')">
+      {{ 'PROP_FACILITY' | translate }}
+      <span>{{ facilities.length }}</span>
+    </button>
+    <button type="button" role="tab" [class.is-on]="tab === 'parking'" (click)="setTab('parking')">
+      {{ 'PROP_PARKING' | translate }}
+      <span>{{ parkings.length }}</span>
+    </button>
+  </nav>
+
+  <label class="bae__search">
+    <span>{{ 'SEARCH' | translate }}</span>
+    <input type="search" [(ngModel)]="search" [placeholder]="'BOOK_ACCESS_EXTRAS_SEARCH' | translate" />
+  </label>
+
+  @if (loading) {
+  <p class="bae__muted">{{ 'LOADING' | translate }}</p>
+  } @else if (!filteredOptions.length) {
+  <p class="bae__muted">
+    {{ emptyKey() | translate }}
+  </p>
+  } @else {
+  <ul class="bae__grid">
+    @for (option of filteredOptions; track option.unit_type + '-' + option.unit_id) {
+    <li>
+      <button type="button" class="bae__card" [class.is-on]="isSelected(option)" (click)="toggle(option)">
+        <span class="bae__badge">{{ typeBadge(option) | translate }}</span>
+        <strong>{{ option.name }}</strong>
+        @if (option.typeLabel) {
+        <small class="bae__type">{{ option.typeLabel }}</small>
+        }
+        @if (option.meta) {
+        <small class="bae__meta">{{ option.meta }}</small>
+        }
+        <span class="bae__check" aria-hidden="true">{{ isSelected(option) ? '✓' : '+' }}</span>
+      </button>
+    </li>
+    }
+  </ul>
+  }
+</section>

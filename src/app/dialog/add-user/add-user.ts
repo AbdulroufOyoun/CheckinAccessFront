@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, Inject, OnInit, inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TenantUser, UsersService } from '../../services/users.service';
 import { SnackbarService } from '../../services/snackbar.service';
 
@@ -12,9 +13,14 @@ interface DialogData {
   user?: TenantUser;
 }
 
+interface SelectOption {
+  value: string;
+  key: string;
+}
+
 @Component({
   selector: 'app-add-user',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, TranslateModule],
   templateUrl: './add-user.html',
   styleUrl: './add-user.css',
 })
@@ -23,6 +29,8 @@ export class AddUser implements OnInit {
   private readonly usersApi = inject(UsersService);
   private readonly snackbar = inject(SnackbarService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly translate = inject(TranslateService);
+  private readonly document = inject(DOCUMENT);
 
   isRTL = false;
   saving = false;
@@ -39,30 +47,45 @@ export class AddUser implements OnInit {
     active: true,
   };
 
-  nationalities = [
-    'Saudi',
-    'Egyptian',
-    'Yemeni',
-    'Kuwaiti',
-    'Qatari',
-    'Emirati',
-    'Omani',
-    'Bahraini',
-    'Jordanian',
-    'Syrian',
-    'Lebanese',
-    'Libyan',
-    'Algerian',
-    'Sudanese',
+  readonly nationalities: SelectOption[] = [
+    { value: 'Saudi', key: 'USR_NAT_SAUDI' },
+    { value: 'Egyptian', key: 'USR_NAT_EGYPTIAN' },
+    { value: 'Yemeni', key: 'USR_NAT_YEMENI' },
+    { value: 'Kuwaiti', key: 'USR_NAT_KUWAITI' },
+    { value: 'Qatari', key: 'USR_NAT_QATARI' },
+    { value: 'Emirati', key: 'USR_NAT_EMIRATI' },
+    { value: 'Omani', key: 'USR_NAT_OMANI' },
+    { value: 'Bahraini', key: 'USR_NAT_BAHRAINI' },
+    { value: 'Jordanian', key: 'USR_NAT_JORDANIAN' },
+    { value: 'Syrian', key: 'USR_NAT_SYRIAN' },
+    { value: 'Lebanese', key: 'USR_NAT_LEBANESE' },
+    { value: 'Libyan', key: 'USR_NAT_LIBYAN' },
+    { value: 'Algerian', key: 'USR_NAT_ALGERIAN' },
+    { value: 'Sudanese', key: 'USR_NAT_SUDANESE' },
   ];
 
-  titles = ['Mr', 'Mrs', 'Ms', 'Miss', 'Dr', 'Prof'];
+  readonly titles: SelectOption[] = [
+    { value: 'Mr', key: 'USR_HON_MR' },
+    { value: 'Mrs', key: 'USR_HON_MRS' },
+    { value: 'Ms', key: 'USR_HON_MS' },
+    { value: 'Miss', key: 'USR_HON_MISS' },
+    { value: 'Dr', key: 'USR_HON_DR' },
+    { value: 'Prof', key: 'USR_HON_PROF' },
+  ];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {
     this.mode = data?.mode === 'edit' ? 'edit' : 'add';
   }
 
   ngOnInit(): void {
+    this.isRTL =
+      this.document.documentElement.getAttribute('dir') === 'rtl' ||
+      this.translate.getCurrentLang() === 'ar';
+    this.translate.onLangChange.subscribe((e) => {
+      this.isRTL = e.lang === 'ar';
+      this.cdr.detectChanges();
+    });
+
     if (this.mode === 'edit' && this.data?.user) {
       this.userId = this.data.user.id;
       this.patchForm(this.data.user);
@@ -93,7 +116,7 @@ export class AddUser implements OnInit {
   async save(): Promise<void> {
     this.normalizeMobile();
     if (!this.form.name.trim() || !this.form.email.trim() || this.form.mobile.length !== 10) {
-      this.snackbar.show('Name, email and 10-digit mobile are required', 'error');
+      this.snackbar.show(this.translate.instant('USR_DIALOG_REQUIRED'), 'error');
       return;
     }
 
@@ -118,7 +141,7 @@ export class AddUser implements OnInit {
           title: body.title,
           active: body.active,
         });
-        this.snackbar.show('User updated', 'success');
+        this.snackbar.show(this.translate.instant('USR_DIALOG_UPDATED'), 'success');
       } else {
         await this.usersApi.create({
           name: body.name,
@@ -128,7 +151,7 @@ export class AddUser implements OnInit {
           title: body.title,
           password: body.password,
         });
-        this.snackbar.show('User saved (created or linked to tenant)', 'success');
+        this.snackbar.show(this.translate.instant('USR_DIALOG_SAVED'), 'success');
       }
       this.close(true);
     } catch (error: unknown) {
@@ -150,6 +173,6 @@ export class AddUser implements OnInit {
         .filter(Boolean);
       if (parts.length) return parts.join(' ');
     }
-    return 'Request failed';
+    return this.translate.instant('REQUEST_FAILED');
   }
 }

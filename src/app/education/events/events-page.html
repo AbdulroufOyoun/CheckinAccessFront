@@ -1,0 +1,67 @@
+<section class="edu-page evt-page" [class.evt-page--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="edu-page__hero">
+    <div>
+      <p class="edu-page__eyebrow">{{ 'EVT_EYEBROW' | translate }}</p>
+      <h1>{{ 'EVT_TITLE' | translate }}</h1>
+      <p class="edu-page__subtitle">{{ 'EVT_SUBTITLE' | translate }}</p>
+    </div>
+    <div class="evt-page__actions">
+      <button type="button" class="edu-btn edu-btn--ghost" (click)="load()" [disabled]="loading">
+        {{ loading ? ('LOADING' | translate) : ('EVT_REFRESH' | translate) }}
+      </button>
+      <a routerLink="/Education/Events/New" class="edu-btn edu-btn--primary">{{ 'EVT_NEW' | translate }}</a>
+    </div>
+  </header>
+
+  @if (showSkeleton) {
+    <app-page-skeleton variant="table" />
+  } @else {
+    <div class="evt-toolbar">
+      <input type="search" [(ngModel)]="search" [placeholder]="'EVT_SEARCH' | translate" />
+      <select [(ngModel)]="statusFilter">
+        <option value="">{{ 'EVT_FILTER_ALL' | translate }}</option>
+        <option value="draft">{{ 'EVT_STATUS_DRAFT' | translate }}</option>
+        <option value="active">{{ 'EVT_STATUS_ACTIVE' | translate }}</option>
+        <option value="cancelled">{{ 'EVT_STATUS_CANCELLED' | translate }}</option>
+      </select>
+    </div>
+
+    @if (!filteredRows.length) {
+      <div class="evt-empty">
+        <strong>{{ 'EVT_EMPTY' | translate }}</strong>
+        <p>{{ 'EVT_EMPTY_HINT' | translate }}</p>
+      </div>
+    } @else {
+      <div class="evt-grid">
+        @for (row of filteredRows; track row.id) {
+          <article class="evt-card evt-card--{{ row.status }}">
+            <header>
+              <span class="evt-chip">{{ statusLabel(row.status) }}</span>
+              <h2>{{ row.name }}</h2>
+              <p>{{ row.start_date }} → {{ row.end_date }}</p>
+            </header>
+            <dl>
+              <div><dt>{{ 'EVT_ROOMS' | translate }}</dt><dd>{{ roomLabel(row) }}</dd></div>
+              <div><dt>{{ 'EVT_AUDIENCE' | translate }}</dt><dd>{{ audienceLabel(row) }}</dd></div>
+              <div><dt>{{ 'EVT_SUPERVISORS' | translate }}</dt><dd>{{ row.supervisors?.length || 0 }}</dd></div>
+            </dl>
+            <footer>
+              @if (row.status === 'draft') {
+                <button type="button" class="edu-btn edu-btn--primary" (click)="activate(row)">{{ 'EVT_ACTIVATE' | translate }}</button>
+              }
+              @if (row.status !== 'cancelled') {
+                <button type="button" class="edu-btn edu-btn--ghost" (click)="edit(row)">{{ 'EDIT' | translate }}</button>
+              }
+              @if (row.status === 'active') {
+                <button type="button" class="edu-btn edu-btn--ghost" (click)="cancel(row)">{{ 'EVT_CANCEL' | translate }}</button>
+              }
+              @if (row.status === 'draft') {
+                <button type="button" class="edu-btn edu-btn--danger" (click)="remove(row)">{{ 'DELETE' | translate }}</button>
+              }
+            </footer>
+          </article>
+        }
+      </div>
+    }
+  }
+</section>

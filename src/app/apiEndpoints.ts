@@ -363,6 +363,10 @@ export class Apiendpointd {
     return this.mianUrl + 'bookings';
   }
 
+  public static get bookingsDeleted(): string {
+    return this.bookings + '/deleted';
+  }
+
   public static get bookingsByUnit(): string {
     return this.bookings + '/unit/filter';
   }
@@ -393,6 +397,14 @@ export class Apiendpointd {
 
   public static bookingRemoveLocks(id: number | string): string {
     return `${this.bookings}/${id}/remove-locks`;
+  }
+
+  public static bookingAssignUnits(id: number | string): string {
+    return `${this.bookings}/${id}/assign-units`;
+  }
+
+  public static bookingRemoveUnits(id: number | string): string {
+    return `${this.bookings}/${id}/remove-units`;
   }
 
   public static bookingOccupants(id: number | string): string {
@@ -514,6 +526,30 @@ export class Apiendpointd {
 
   public static get educationReports(): string {
     return this.education + 'reports';
+  }
+
+  public static get educationEvents(): string {
+    return this.education + 'events';
+  }
+
+  public static educationEventById(id: number | string): string {
+    return `${this.educationEvents}/${id}`;
+  }
+
+  public static get educationEventRooms(): string {
+    return `${this.educationEvents}/rooms`;
+  }
+
+  public static get educationEventValidate(): string {
+    return `${this.educationEvents}/validate-availability`;
+  }
+
+  public static educationEventActivate(id: number | string): string {
+    return `${this.educationEventById(id)}/activate`;
+  }
+
+  public static educationEventCancel(id: number | string): string {
+    return `${this.educationEventById(id)}/cancel`;
   }
 
   public static get compoundAccess(): string {

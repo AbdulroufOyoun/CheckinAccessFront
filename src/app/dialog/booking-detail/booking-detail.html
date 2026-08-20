@@ -13,6 +13,15 @@
     </button>
   </header>
 
+  @if (!loading && booking && isDeleted) {
+  <div class="bd__deleted-notice" role="note">
+    {{ 'BOOK_DETAIL_DELETED_NOTICE' | translate }}
+    @if (booking.deleted_at) {
+    <span dir="ltr"> · {{ formatDateTime(booking.deleted_at) }}</span>
+    }
+  </div>
+  }
+
   @if (loading) {
   <div class="bd__loading" aria-busy="true">
     <div class="bd__skel"></div>
@@ -101,12 +110,12 @@
     </section>
 
     <section class="bd__section">
-      <h3>{{ 'BOOK_DETAIL_UNITS' | translate }}</h3>
-      @if (!units.length) {
+      <h3>{{ 'BOOK_ROOM' | translate }}</h3>
+      @if (!roomUnits.length) {
       <p class="bd__muted">{{ 'BOOK_DETAIL_NO_UNITS' | translate }}</p>
       } @else {
       <ul class="bd__list">
-        @for (u of units; track u.id || $index) {
+        @for (u of roomUnits; track u.id || $index) {
         <li>
           @if (unitClickable(u)) {
           <button type="button" class="bd__link-row" (click)="goToUnit(u)"
@@ -128,6 +137,43 @@
         </li>
         }
       </ul>
+      }
+    </section>
+
+    <section class="bd__section bd__section--access">
+      <div class="bd__section-head">
+        <h3>{{ 'BOOK_ACCESS_EXTRAS' | translate }}</h3>
+        @if (canEditAccess && accessDraftDirty) {
+        <button type="button" class="bd__save-access" [disabled]="unitsBusy" (click)="saveAccessExtras()">
+          {{ unitsBusy ? ('SAVING' | translate) : ('BOOK_ACCESS_EXTRAS_SAVE' | translate) }}
+        </button>
+        }
+      </div>
+      <p class="bd__muted bd__access-hint">{{ 'BOOK_ACCESS_EXTRAS_HINT' | translate }}</p>
+
+      @if (accessUnits.length && !canEditAccess) {
+      <ul class="bd__access-list">
+        @for (u of accessUnits; track u.id || $index) {
+        <li class="bd__access-item">
+          <span class="bd__access-badge">{{ unitTypeLabel(u) }}</span>
+          <div>
+            <strong>{{ unitLabel(u) }}</strong>
+            @if (unitSubLabel(u); as sub) {
+            <small>{{ sub }}</small>
+            }
+          </div>
+        </li>
+        }
+      </ul>
+      }
+
+      @if (canEditAccess) {
+      <app-booking-access-extras
+        [compact]="true"
+        [selected]="accessExtrasDraft"
+        (selectedChange)="onAccessExtrasChange($event)" />
+      } @else if (!accessUnits.length) {
+      <p class="bd__muted">{{ 'BOOK_ACCESS_EXTRAS_EMPTY' | translate }}</p>
       }
     </section>
 

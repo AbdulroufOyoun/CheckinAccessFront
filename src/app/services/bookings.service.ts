@@ -56,11 +56,29 @@ export interface BookingUnit {
   room_id?: number | null;
   building_id?: number | null;
   facility_id?: number | null;
+  gate_id?: number | null;
+  parking_id?: number | null;
   floor_id?: number | null;
   suite_id?: number | null;
   room?: { id: number; number?: string; name?: string; floor?: { building?: { name?: string } } } | null;
   building?: { id: number; name?: string } | null;
-  facility?: { id: number; name?: string } | null;
+  facility?: {
+    id: number;
+    name?: string;
+    facilitie_type?: { id: number; name?: string } | null;
+    facilitie_type_id?: number;
+  } | null;
+  gate?: {
+    id: number;
+    name?: string;
+    direction?: string;
+    building?: { id: number; name?: string } | null;
+  } | null;
+  parking?: {
+    id: number;
+    name?: string;
+    location?: string;
+  } | null;
 }
 
 export interface Booking {
@@ -69,6 +87,7 @@ export interface Booking {
   cancelled?: boolean;
   on_hold?: boolean;
   created_at?: string;
+  deleted_at?: string | null;
   user?: { id: number; name?: string; email?: string; mobile?: string } | null;
   booking_periods?: BookingPeriod[];
   bookingPeriods?: BookingPeriod[];
@@ -82,6 +101,14 @@ export interface Booking {
   active_occupant_count?: number;
 }
 
+export interface BookingStatusCounts {
+  all: number;
+  active: number;
+  paused: number;
+  cancelled: number;
+  deleted: number;
+}
+
 export interface BookingsPage {
   success?: boolean;
   message?: string;
@@ -90,6 +117,10 @@ export interface BookingsPage {
   current_page?: number;
   last_page?: number;
   per_page?: number;
+  from?: number;
+  to?: number;
+  counts?: BookingStatusCounts;
+  total_deleted?: number;
 }
 
 export interface CreateBookingPeriodPayload {
@@ -137,16 +168,34 @@ export class BookingsService {
   private readonly api = inject(ApiService);
   private readonly treeCache = inject(PropertyTreeCache);
 
-  list(params?: { status?: string; per_page?: number }): Promise<BookingsPage> {
+  list(params?: {
+    status?: string;
+    per_page?: number;
+    page?: number;
+    q?: string;
+  }): Promise<BookingsPage> {
     const qs = new URLSearchParams();
     if (params?.status) qs.set('status', params.status);
-    qs.set('per_page', String(params?.per_page ?? 100));
+    if (params?.q?.trim()) qs.set('q', params.q.trim());
+    if (params?.page && params.page > 0) qs.set('page', String(params.page));
+    qs.set('per_page', String(params?.per_page ?? 20));
     const suffix = qs.toString() ? `?${qs}` : '';
     return this.api.get(`${Apiendpointd.bookings}${suffix}`).then((raw: unknown) => {
       const res = raw as {
         success?: boolean;
         message?: string;
-        data?: Booking[] | { data?: Booking[]; total?: number; current_page?: number; last_page?: number; per_page?: number };
+        data?:
+          | Booking[]
+          | {
+              data?: Booking[];
+              total?: number;
+              current_page?: number;
+              last_page?: number;
+              per_page?: number;
+              from?: number;
+              to?: number;
+              counts?: BookingStatusCounts;
+            };
         total?: number;
       };
 
@@ -168,6 +217,61 @@ export class BookingsService {
         current_page: page.current_page,
         last_page: page.last_page,
         per_page: page.per_page,
+        from: page.from ?? undefined,
+        to: page.to ?? undefined,
+        counts: page.counts,
+      };
+    });
+  }
+
+  listDeleted(params?: {
+    per_page?: number;
+    page?: number;
+    q?: string;
+  }): Promise<BookingsPage> {
+    const qs = new URLSearchParams();
+    if (params?.q?.trim()) qs.set('q', params.q.trim());
+    if (params?.page && params.page > 0) qs.set('page', String(params.page));
+    qs.set('per_page', String(params?.per_page ?? 20));
+    const suffix = qs.toString() ? `?${qs}` : '';
+    return this.api.get(`${Apiendpointd.bookingsDeleted}${suffix}`).then((raw: unknown) => {
+      const res = raw as {
+        success?: boolean;
+        message?: string;
+        data?:
+          | Booking[]
+          | {
+              data?: Booking[];
+              total?: number;
+              current_page?: number;
+              last_page?: number;
+              per_page?: number;
+              from?: number;
+              to?: number;
+              total_deleted?: number;
+            };
+      };
+
+      if (Array.isArray(res.data)) {
+        return {
+          success: res.success,
+          message: res.message,
+          data: res.data,
+        };
+      }
+
+      const page = res.data || {};
+      return {
+        success: res.success,
+        message: res.message,
+        data: page.data || [],
+        total: page.total,
+        current_page: page.current_page,
+        last_page: page.last_page,
+        per_page: page.per_page,
+        from: page.from ?? undefined,
+        to: page.to ?? undefined,
+        total_deleted: page.total_deleted,
       };
     });
   }
@@ -206,6 +310,17 @@ export class BookingsService {
 
   removeLocks(id: number, lockIds: number[]): Promise<ApiResponse<Booking>> {
     return this.api.post(Apiendpointd.bookingRemoveLocks(id), { lock_ids: lockIds });
+  }
+
+  assignUnits(
+    id: number,
+    units: Array<{ unit_type: string; unit_id: number; sequential?: boolean; sub_units_included?: boolean }>,
+  ): Promise<ApiResponse<Booking>> {
+    return this.api.post(Apiendpointd.bookingAssignUnits(id), { units });
+  }
+
+  removeUnits(id: number, unitRowIds: number[]): Promise<ApiResponse<Booking>> {
+    return this.api.post(Apiendpointd.bookingRemoveUnits(id), { unit_row_ids: unitRowIds });
   }
 
   addOccupant(id: number, userId: number, note?: string): Promise<ApiResponse<Booking>> {

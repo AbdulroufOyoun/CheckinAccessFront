@@ -1,0 +1,89 @@
+<div
+  class="cfm-dialog"
+  role="alertdialog"
+  aria-modal="true"
+  [class.cfm-dialog--rtl]="isRTL"
+  [class.cfm-dialog--danger]="variant === 'danger'"
+  [class.cfm-dialog--warning]="variant === 'warning'"
+  [class.cfm-dialog--info]="variant === 'info'"
+>
+  <div class="cfm-dialog__hero">
+    <div class="cfm-dialog__icon" aria-hidden="true">
+      @if (variant === 'danger') {
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4" />
+        <path d="M12 16h.01" />
+      </svg>
+      } @else if (variant === 'warning') {
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </svg>
+      } @else {
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+      }
+    </div>
+
+    <button class="cfm-dialog__close" type="button" (click)="cancel()" [attr.aria-label]="'CLOSE' | translate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <h2 class="cfm-dialog__title">
+      {{ data.titleKey | translate: data.titleParams }}
+    </h2>
+
+    @if (data.messageKey) {
+    <p class="cfm-dialog__message">
+      {{ data.messageKey | translate: data.messageParams }}
+    </p>
+    }
+  </div>
+
+  @if (data.preview) {
+  <div class="cfm-dialog__preview">
+    @if (data.preview.initials) {
+    <div class="cfm-dialog__avatar">{{ data.preview.initials }}</div>
+    }
+    <div class="cfm-dialog__preview-body">
+      <strong>{{ data.preview.title }}</strong>
+      @if (data.preview.subtitle) {
+      <span>{{ data.preview.subtitle }}</span>
+      }
+    </div>
+  </div>
+
+  @if (data.preview.meta?.length) {
+  <dl class="cfm-dialog__meta">
+    @for (row of data.preview.meta; track row.labelKey) {
+    <div class="cfm-dialog__meta-row">
+      <dt>{{ row.labelKey | translate }}</dt>
+      <dd>{{ row.value }}</dd>
+    </div>
+    }
+  </dl>
+  }
+  }
+
+  @if (data.hintKey) {
+  <p class="cfm-dialog__hint">
+    {{ data.hintKey | translate: data.hintParams }}
+  </p>
+  }
+
+  <div class="cfm-dialog__footer">
+    <button class="cfm-dialog__btn cfm-dialog__btn--ghost" type="button" (click)="cancel()">
+      {{ (data.cancelKey || 'CANCEL') | translate }}
+    </button>
+    <button class="cfm-dialog__btn cfm-dialog__btn--confirm" type="button" (click)="confirm()">
+      {{ (data.confirmKey || 'CONFIRM') | translate }}
+    </button>
+  </div>
+</div>

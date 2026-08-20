@@ -150,8 +150,10 @@
       } @else {
       <ul class="ud-booking-list">
         @for (b of bookings; track b.id) {
-        <li class="ud-booking" [class.ud-booking--cancelled]="b.status === 'cancelled'"
-          [class.ud-booking--hold]="b.status === 'on_hold'">
+        <li class="ud-booking ud-booking--clickable" [class.ud-booking--cancelled]="b.status === 'cancelled'"
+          [class.ud-booking--hold]="b.status === 'on_hold'" (click)="openBookingDetails(b)"
+          (keydown.enter)="openBookingDetails(b)" tabindex="0" role="button"
+          [attr.aria-label]="'BOOK_DETAIL_OPEN' | translate: { id: b.id }">
           <div class="ud-booking__room">{{ b.room }}</div>
           <div class="ud-booking__body">
             <strong>{{ 'USR_DETAIL_BOOKING_ID' | translate: { id: b.id } }}</strong>

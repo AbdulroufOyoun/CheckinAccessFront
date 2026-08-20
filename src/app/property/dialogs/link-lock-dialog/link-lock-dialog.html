@@ -9,8 +9,8 @@
 
   <div class="dialog-body">
     <p class="hint-warn">
-      <strong>⚠</strong>
-      {{ 'LOCKS_UNLINK_FIRST_HINT' | translate }}
+      <strong>ℹ</strong>
+      {{ 'LOCKS_LINK_PICK_HINT' | translate }}
     </p>
 
     <label class="field">
@@ -20,31 +20,17 @@
 
     <ul class="lock-list">
       @for (lock of filtered; track lock.id) {
-        <li [class.is-busy]="isLinkedElsewhere(lock)">
-          <label class="lock-row" [class.is-busy]="isLinkedElsewhere(lock)">
-            <input
-              type="checkbox"
-              [checked]="isChecked(lock.id)"
-              [disabled]="isLinkedElsewhere(lock)"
-              (change)="toggle(lock.id)"
-            />
+        <li>
+          <label class="lock-row">
+            <input type="checkbox" [checked]="isChecked(lock.id)" (change)="toggle(lock.id)" />
             <span class="lock-meta">
               <strong>{{ lock.lockName || lock.lockAlias || ('#' + lock.id) }}</strong>
               <small>{{ lock.lockId || lock.lockMac || '' }}</small>
             </span>
-            @if (isLinkedHere(lock.id)) {
-              <span class="status status--here">
-                ✓ {{ 'LOCKS_STATUS_LINKED_HERE' | translate }}
-              </span>
-            } @else if (isLinkedElsewhere(lock)) {
-              <span class="status status--busy">
-                {{ 'LOCKS_STATUS_LINKED_ELSEWHERE' | translate }}
-              </span>
-            }
           </label>
         </li>
       } @empty {
-        <li class="empty">{{ 'PROP_NO_LOCKS' | translate }}</li>
+        <li class="empty">{{ 'LOCKS_NONE_TO_ADD' | translate }}</li>
       }
     </ul>
   </div>

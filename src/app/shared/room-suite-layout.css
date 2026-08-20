@@ -1,0 +1,144 @@
+/* Shared suite vs standalone room layout (booking create + room status) */
+.rsl-floor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px 12px;
+}
+
+.rsl-standalone {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+.rsl-standalone__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rsl-muted, #64748b);
+}
+
+.rsl-standalone__head svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.rsl-suite {
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--rsl-suite-accent, #7c3aed) 22%, #e2e8f0);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--rsl-suite-accent, #7c3aed) 7%, white) 0%, #ffffff 42%),
+    #fff;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: inset 3px 0 0 var(--rsl-suite-accent, #7c3aed);
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 100%;
+  min-width: min(100%, 168px);
+}
+
+.rsl-suite__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rsl-suite__title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.rsl-suite__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--rsl-suite-accent, #7c3aed);
+  background: color-mix(in srgb, var(--rsl-suite-accent, #7c3aed) 12%, white);
+  border: 1px solid color-mix(in srgb, var(--rsl-suite-accent, #7c3aed) 22%, white);
+}
+
+.rsl-suite__title strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 780;
+  color: var(--rsl-ink, #0f172a);
+  line-height: 1.25;
+}
+
+.rsl-suite__title small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--rsl-muted, #64748b);
+}
+
+.rsl-suite__meta {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--rsl-suite-accent, #7c3aed);
+  background: color-mix(in srgb, var(--rsl-suite-accent, #7c3aed) 10%, white);
+  border: 1px solid color-mix(in srgb, var(--rsl-suite-accent, #7c3aed) 18%, white);
+  white-space: nowrap;
+}
+
+.rsl-suite__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px 2px 2px;
+}
+
+.rsl-suite__grid > * {
+  flex: 0 0 var(--rsl-room-w, 148px);
+  width: var(--rsl-room-w, 148px);
+  max-width: var(--rsl-room-w, 148px);
+  min-height: 104px;
+}
+
+.rsl-room--in-suite {
+  position: relative;
+}
+
+.rsl-room--in-suite::before {
+  content: '';
+  position: absolute;
+  inset-block: 10px;
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--rsl-suite-accent, #7c3aed) 55%, white);
+  opacity: 0.75;
+}
+
+[dir='rtl'] .rsl-room--in-suite::before {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}

@@ -17,6 +17,15 @@ import {
 import { TimePicker } from '../shared/time-picker/time-picker';
 import { RealtimeService } from '../services/realtime.service';
 import { DurationPreset, DurationsService } from '../services/durations.service';
+import { BookingAccessExtras } from './booking-access-extras/booking-access-extras';
+import { BookingExtraPick } from './booking-extra-unit';
+import {
+  BuildingRoomGroups,
+  FloorRoomGroups,
+  groupRoomsByBuildingFloor,
+  suiteAvailableCount,
+  SuiteRoomGroup,
+} from '../shared/room-display-groups';
 
 type BookingMode = 'full_day' | 'hourly';
 type WizardStep = 1 | 2 | 3;
@@ -42,9 +51,9 @@ interface PeriodDraft {
 @Component({
   selector: 'app-booking-create-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TimePicker],
+  imports: [CommonModule, FormsModule, TranslateModule, TimePicker, BookingAccessExtras],
   templateUrl: './booking-create-page.html',
-  styleUrl: './booking-create-page.css',
+  styleUrls: ['./booking-create-page.css', '../shared/room-suite-layout.css'],
 })
 export class BookingCreatePage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
@@ -73,6 +82,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   periods: PeriodDraft[] = [];
   occupants: TenantUser[] = [];
   occupantQuery = '';
+  accessExtras: BookingExtraPick[] = [];
 
   form = {
     room_id: '' as number | '',
@@ -247,11 +257,19 @@ export class BookingCreatePage implements OnInit, OnDestroy {
       if (this.statusFilter === 'available' && room.status !== 'available') return false;
       if (this.buildingFilter && room.building?.id !== this.buildingFilter) return false;
       if (!q) return true;
-      const hay = [room.number, room.name, room.room_type?.name, room.building?.name]
+      const hay = [room.number, room.name, room.room_type?.name, room.building?.name, room.suite?.name, room.suite?.number]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
       return hay.includes(q);
+    });
+  }
+
+  get roomDisplayGroups(): BuildingRoomGroups[] {
+    return groupRoomsByBuildingFloor(this.filteredRooms, {
+      unknownBuilding: this.translate.instant('ROOM_STATUS_UNKNOWN_BUILDING'),
+      floorPrefix: this.translate.instant('ROOM_STATUS_FLOOR'),
+      noFloor: this.translate.instant('ROOM_STATUS_NO_FLOOR'),
     });
   }
 
@@ -311,9 +329,6 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   applyDaysPreset(period: PeriodDraft, preset: DurationPreset): void {
     if (!preset.days) return;
-    if (period.mode !== 'full_day') {
-      period.mode = 'full_day';
-    }
     this.normalizeCheckIn(period, false);
     period.check_out_date = this.addDaysInclusive(period.check_in_date, preset.days);
     this.normalizeCheckOut(period, false);
@@ -323,9 +338,6 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   applyDateRangePreset(period: PeriodDraft, preset: DurationPreset): void {
     if (!preset.start_date || !preset.end_date) return;
-    if (period.mode !== 'full_day') {
-      period.mode = 'full_day';
-    }
     period.check_in_date = preset.start_date.slice(0, 10);
     period.check_out_date = preset.end_date.slice(0, 10);
     this.normalizeCheckIn(period, false);
@@ -523,6 +535,26 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     return this.translate.instant(map[status] || status);
   }
 
+  trackBuilding(_: number, g: BuildingRoomGroups): string {
+    return String(g.buildingId ?? 'none');
+  }
+
+  trackFloor(_: number, f: FloorRoomGroups): string {
+    return String(f.floorId ?? 'none');
+  }
+
+  trackSuite(_: number, s: SuiteRoomGroup): string {
+    return String(s.suiteId);
+  }
+
+  suiteAvailabilityLabel(group: SuiteRoomGroup): string {
+    const available = suiteAvailableCount(group);
+    return this.translate.instant('ROOM_SUITE_AVAILABILITY', {
+      available,
+      total: group.rooms.length,
+    });
+  }
+
   async save(): Promise<void> {
     if (!this.canSave || this.saving) {
       this.showSaveError(
@@ -539,7 +571,15 @@ export class BookingCreatePage implements OnInit, OnDestroy {
       sequential: false,
       sub_units_included: false,
     };
-    const bookingPeriods = this.periods.map((period) => this.toPeriodPayload(period, roomUnit));
+    const extraUnits = this.accessExtras.map((x) => ({
+      unit_type: x.unit_type,
+      unit_id: x.unit_id,
+      sequential: false,
+      sub_units_included: false,
+    }));
+    const bookingPeriods = this.periods.map((period) =>
+      this.toPeriodPayload(period, [roomUnit, ...extraUnits]),
+    );
 
     this.saveError = '';
     this.saving = true;
@@ -826,9 +866,14 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     };
   }
 
+  onAccessExtrasChange(picks: BookingExtraPick[]): void {
+    this.accessExtras = picks;
+    this.cdr.detectChanges();
+  }
+
   private toPeriodPayload(
     period: PeriodDraft,
-    unit: CreateBookingPeriodPayload['units'][number],
+    units: CreateBookingPeriodPayload['units'],
   ): CreateBookingPeriodPayload {
     const timed = period.mode === 'hourly';
     const payload: CreateBookingPeriodPayload = {
@@ -839,7 +884,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
       gregorian_holidays_included: period.gregorian_holidays_included,
       islamic_holidays_included: period.islamic_holidays_included,
       excluded_weekdays: period.excluded_weekdays,
-      units: [unit],
+      units,
     };
     if (timed) {
       payload.period_times = [

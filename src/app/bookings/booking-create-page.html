@@ -19,7 +19,7 @@
         <i>1</i>{{ 'BOOK_STEP_PERIOD' | translate }}
       </span>
       <span class="bc-steps__item" [class.is-on]="step === 2" [class.is-done]="step > 2">
-        <i>2</i>{{ 'BOOK_STEP_ROOM' | translate }}
+        <i>2</i>{{ 'BOOK_STEP_ROOM_ACCESS' | translate }}
       </span>
       <span class="bc-steps__item" [class.is-on]="step === 3">
         <i>3</i>{{ 'BOOK_STEP_CONFIRM' | translate }}
@@ -98,7 +98,7 @@
         </div>
       </div>
 
-      @if (p.mode === 'full_day' && stayPresets.length) {
+      @if (stayPresets.length) {
       <div class="bc-dur-presets">
         <span class="bc-dur-presets__label">{{ 'DUR_PRESETS' | translate }}</span>
         <p class="bc-help">{{ 'DUR_PRESETS_DAYS_HINT' | translate }}</p>
@@ -287,27 +287,84 @@
     @if (!filteredRooms.length) {
     <p class="bc-muted">{{ 'BOOK_NO_ROOMS' | translate }}</p>
     } @else {
-    <div class="bc-room-grid">
-      @for (room of filteredRooms; track room.id) {
-      <button type="button" class="bc-room-card bc-room-card--{{ room.status }}"
-        [class.is-selected]="selectedRoom?.id === room.id"
-        [disabled]="room.status !== 'available'"
-        (click)="selectRoom(room)">
-        <span class="bc-room-card__status">{{ statusLabel(room.status) }}</span>
-        <strong>{{ room.number }}</strong>
-        <small>{{ room.room_type?.name || room.name || '—' }}</small>
-        <small>{{ room.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}</small>
-        <small>{{ 'BOOK_ROOM_CAPACITY' | translate: { n: room.capacity || 1 } }}</small>
-        @if (room.schedule) {
-          <small>{{ 'ROOM_STATUS_CLASS' | translate }}
-            {{ isRTL ? (room.schedule.subject_ar || room.schedule.subject) : (room.schedule.subject || room.schedule.subject_ar) }}
-            {{ room.schedule.start }}–{{ room.schedule.end }}
-          </small>
+    <div class="bc-room-board">
+      @for (building of roomDisplayGroups; track trackBuilding($index, building)) {
+        @if (roomDisplayGroups.length > 1 || building.floors.length > 1) {
+        <header class="bc-room-board__building">
+          <h3>{{ building.buildingName }}</h3>
+        </header>
         }
-      </button>
+
+        @for (floor of building.floors; track trackFloor($index, floor)) {
+          @if (building.floors.length > 1 || roomDisplayGroups.length > 1) {
+          <div class="bc-room-board__floor">
+            <span>{{ floor.floorLabel }}</span>
+            <strong>{{ floor.roomCount }}</strong>
+          </div>
+          }
+
+          <div class="rsl-floor">
+            @if (floor.standalone.length) {
+            <section class="rsl-standalone">
+              <h3 class="rsl-standalone__head">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                {{ 'ROOM_STANDALONE_ROOMS' | translate }}
+              </h3>
+              <div class="bc-room-grid">
+                @for (room of floor.standalone; track room.id) {
+                <button type="button" class="bc-room-card bc-room-card--{{ room.status }}"
+                  [class.is-selected]="selectedRoom?.id === room.id"
+                  [disabled]="room.status !== 'available'"
+                  (click)="selectRoom(room)">
+                  <ng-container *ngTemplateOutlet="bookingRoomCard; context: { $implicit: room }"></ng-container>
+                </button>
+                }
+              </div>
+            </section>
+            }
+
+            @for (suite of floor.suites; track trackSuite($index, suite)) {
+            <section class="rsl-suite bc-suite-block">
+              <header class="rsl-suite__head">
+                <div class="rsl-suite__title">
+                  <span class="rsl-suite__icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2" />
+                      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                      <path d="M2 13h20" />
+                    </svg>
+                  </span>
+                  <div>
+                    <strong>{{ suite.suiteLabel }}</strong>
+                    <small>{{ 'ROOM_SUITE_GROUP' | translate }}</small>
+                  </div>
+                </div>
+                <span class="rsl-suite__meta">{{ suiteAvailabilityLabel(suite) }}</span>
+              </header>
+              <div class="rsl-suite__grid">
+                @for (room of suite.rooms; track room.id) {
+                <button type="button" class="bc-room-card bc-room-card--{{ room.status }} bc-room-card--in-suite rsl-room--in-suite"
+                  [class.is-selected]="selectedRoom?.id === room.id"
+                  [disabled]="room.status !== 'available'"
+                  (click)="selectRoom(room)">
+                  <ng-container *ngTemplateOutlet="bookingRoomCard; context: { $implicit: room, inSuite: true }"></ng-container>
+                </button>
+                }
+              </div>
+            </section>
+            }
+          </div>
+        }
       }
     </div>
     }
+
+    <app-booking-access-extras [selected]="accessExtras" (selectedChange)="onAccessExtrasChange($event)" />
     }
     } @else {
     <div class="bc-confirm">
@@ -369,6 +426,9 @@
           <strong>{{ selectedRoom?.number || '—' }}</strong>
           <small>
             {{ selectedRoom?.room_type?.name || selectedRoom?.name || '—' }}
+            @if (selectedRoom?.suite) {
+              · {{ 'ROOM_STATUS_SUITE' | translate }}: {{ selectedRoom?.suite?.name || selectedRoom?.suite?.number }}
+            }
             ·
             {{ selectedRoom?.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}
             ·
@@ -386,6 +446,31 @@
           </div>
         </div>
       </div>
+
+      @if (accessExtras.length) {
+      <section class="bc-confirm-extras">
+        <h3>{{ 'BOOK_ACCESS_EXTRAS' | translate }}</h3>
+        <ul class="bc-confirm-extras__list">
+          @for (extra of accessExtras; track extra.unit_type + '-' + extra.unit_id) {
+          <li>
+            <span class="bc-confirm-extras__type">
+              {{
+                extra.unit_type === 'gate'
+                  ? ('BOOK_EXTRA_GATE' | translate)
+                  : extra.unit_type === 'facility'
+                    ? ('BOOK_EXTRA_FACILITY' | translate)
+                    : ('BOOK_EXTRA_PARKING' | translate)
+              }}
+            </span>
+            <strong>{{ extra.name || ('#' + extra.unit_id) }}</strong>
+            @if (extra.typeLabel) {
+            <em>{{ extra.typeLabel }}</em>
+            }
+          </li>
+          }
+        </ul>
+      </section>
+      }
 
       @for (p of periods; track p.id; let i = $index) {
       <article class="bc-confirm__period">
@@ -483,3 +568,21 @@
   </footer>
   }
 </div>
+
+<ng-template #bookingRoomCard let-room let-inSuite="inSuite">
+  <span class="bc-room-card__status">{{ statusLabel(room.status) }}</span>
+  <strong>{{ room.number }}</strong>
+  <small>{{ room.room_type?.name || room.name || '—' }}</small>
+  @if (inSuite) {
+  <small class="bc-room-card__suite-tag">{{ 'ROOM_SUITE_CHILD' | translate }}</small>
+  } @else {
+  <small>{{ room.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}</small>
+  }
+  <small>{{ 'BOOK_ROOM_CAPACITY' | translate: { n: room.capacity || 1 } }}</small>
+  @if (room.schedule) {
+    <small>{{ 'ROOM_STATUS_CLASS' | translate }}
+      {{ isRTL ? (room.schedule.subject_ar || room.schedule.subject) : (room.schedule.subject || room.schedule.subject_ar) }}
+      {{ room.schedule.start }}–{{ room.schedule.end }}
+    </small>
+  }
+</ng-template>

@@ -1,0 +1,99 @@
+.evt-page__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.evt-toolbar {
+  display: grid;
+  grid-template-columns: 1fr minmax(160px, 220px);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.evt-toolbar input,
+.evt-toolbar select {
+  width: 100%;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.evt-empty {
+  padding: 28px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.evt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.evt-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.evt-card h2 {
+  margin: 8px 0 4px;
+  font-size: 1.1rem;
+}
+
+.evt-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.evt-card dt {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.evt-card dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.evt-card footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.evt-chip {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.evt-card--active .evt-chip {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.evt-card--cancelled .evt-chip {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.edu-btn--danger {
+  color: #b91c1c;
+}
+
+@media (max-width: 720px) {
+  .evt-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

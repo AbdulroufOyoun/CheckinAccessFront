@@ -1,0 +1,280 @@
+.evt-wiz {
+  display: grid;
+  gap: 18px;
+}
+
+.evt-wiz__hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.evt-wiz__back {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  padding: 0;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.evt-wiz__eyebrow {
+  margin: 0 0 4px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.evt-wiz__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.evt-wiz__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.evt-wiz__step i {
+  font-style: normal;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: #e2e8f0;
+}
+
+.evt-wiz__step.is-on,
+.evt-wiz__step.is-done {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.evt-wiz__step.is-on i,
+.evt-wiz__step.is-done i {
+  background: #2563eb;
+  color: #fff;
+}
+
+.evt-wiz__panel {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.evt-wiz__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.evt-wiz__field {
+  display: grid;
+  gap: 6px;
+}
+
+.evt-wiz__field--wide {
+  grid-column: 1 / -1;
+}
+
+.evt-wiz__field input,
+.evt-wiz__field textarea {
+  width: 100%;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.evt-wiz__modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.evt-wiz__mode {
+  text-align: start;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.evt-wiz__mode.is-on {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.evt-wiz__mode small {
+  display: block;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.evt-wiz__times {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.evt-wiz__weekdays,
+.evt-wiz__toggles {
+  display: grid;
+  gap: 10px;
+}
+
+.evt-wiz__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.evt-wiz__chip {
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.evt-wiz__chip.is-on {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.evt-wiz__rooms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.evt-wiz__room {
+  text-align: start;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+}
+
+.evt-wiz__room.is-on {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.evt-wiz__room.is-busy {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.evt-wiz__room em {
+  color: #b45309;
+  font-style: normal;
+  font-size: 0.8rem;
+}
+
+.evt-wiz__search {
+  position: relative;
+}
+
+.evt-wiz__search input {
+  width: 100%;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.evt-wiz__hits {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  z-index: 2;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.evt-wiz__hits button {
+  display: block;
+  width: 100%;
+  text-align: start;
+  border: 0;
+  background: transparent;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.evt-wiz__picked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.evt-wiz__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.evt-wiz__tag button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.evt-wiz__summary {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.evt-wiz__summary dt {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.evt-wiz__summary dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.evt-wiz__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.evt-wiz__error {
+  color: #b91c1c;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .evt-wiz__grid,
+  .evt-wiz__modes,
+  .evt-wiz__times {
+    grid-template-columns: 1fr;
+  }
+}

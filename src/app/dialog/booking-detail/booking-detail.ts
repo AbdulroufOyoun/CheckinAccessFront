@@ -17,6 +17,8 @@ import { ApiService } from '../../services/api.service';
 import { Apiendpointd } from '../../apiEndpoints';
 import { ApiResponse } from '../../interfaces/api-response';
 import { TenantUser, UsersService } from '../../services/users.service';
+import { BookingAccessExtras } from '../../bookings/booking-access-extras/booking-access-extras';
+import { BookingExtraPick, bookingExtraKey } from '../../bookings/booking-extra-unit';
 
 export interface BookingDetailDialogData {
   bookingId: number;
@@ -26,7 +28,7 @@ export interface BookingDetailDialogData {
 @Component({
   selector: 'app-booking-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, TranslateModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, TranslateModule, BookingAccessExtras],
   templateUrl: './booking-detail.html',
   styleUrl: './booking-detail.css',
 })
@@ -45,10 +47,12 @@ export class BookingDetailDialog implements OnInit {
   loading = true;
   navigating = false;
   occupantBusy = false;
+  unitsBusy = false;
   isRTL = false;
   booking: Booking | null = null;
   users: TenantUser[] = [];
   occupantQuery = '';
+  accessExtrasDraft: BookingExtraPick[] = [];
 
   private readonly weekdayKeys = [
     'BOOK_DETAIL_WD_SUN',
@@ -66,6 +70,9 @@ export class BookingDetailDialog implements OnInit {
       this.translate.getCurrentLang() === 'ar';
     this.booking = this.data.preview ?? null;
     this.loading = !this.booking;
+    if (this.booking) {
+      this.syncAccessDraftFromBooking();
+    }
     void this.load();
     void this.loadUsers();
   }
@@ -75,6 +82,10 @@ export class BookingDetailDialog implements OnInit {
     if (this.booking.cancelled) return 'cancelled';
     if (this.booking.on_hold) return 'paused';
     return 'active';
+  }
+
+  get isDeleted(): boolean {
+    return !!this.booking?.deleted_at;
   }
 
   get occupants(): BookingOccupant[] {
@@ -94,7 +105,7 @@ export class BookingDetailDialog implements OnInit {
   }
 
   get canEditOccupants(): boolean {
-    return this.status === 'active';
+    return !this.isDeleted && this.status === 'active';
   }
 
   get occupantHits(): TenantUser[] {
@@ -116,6 +127,30 @@ export class BookingDetailDialog implements OnInit {
 
   get units(): BookingUnit[] {
     return this.booking?.booking_period_units || this.booking?.bookingPeriodUnits || [];
+  }
+
+  get roomUnits(): BookingUnit[] {
+    return this.units.filter((u) => !!(u.room_id || u.room));
+  }
+
+  get accessUnits(): BookingUnit[] {
+    return this.units.filter(
+      (u) => !!(u.gate_id || u.gate || u.facility_id || u.facility || u.parking_id || u.parking),
+    );
+  }
+
+  get canEditAccess(): boolean {
+    return !this.isDeleted && this.status === 'active';
+  }
+
+  get accessDraftDirty(): boolean {
+    const current = new Set(this.accessUnits.map((u) => this.unitExtraKey(u)).filter(Boolean) as string[]);
+    const draft = new Set(this.accessExtrasDraft.map((p) => bookingExtraKey(p.unit_type, p.unit_id)));
+    if (current.size !== draft.size) return true;
+    for (const key of current) {
+      if (!draft.has(key)) return true;
+    }
+    return false;
   }
 
   get locks(): Array<{ id: number; lockName?: string; lockAlias?: string; lockMac?: string }> {
@@ -164,16 +199,37 @@ export class BookingDetailDialog implements OnInit {
     return (
       this.unitRoomId(unit) != null ||
       !!(unit.building?.id || unit.building_id) ||
-      !!(unit.facility?.id || unit.facility_id)
+      !!(unit.facility?.id || unit.facility_id) ||
+      !!(unit.gate?.id || unit.gate_id) ||
+      !!(unit.parking?.id || unit.parking_id)
     );
   }
 
   unitLabel(unit: BookingUnit): string {
     if (unit.room) return unit.room.number || unit.room.name || `Room #${unit.room.id}`;
     if (unit.facility) return unit.facility.name || `Facility #${unit.facility.id}`;
+    if (unit.gate) return unit.gate.name || `Gate #${unit.gate.id}`;
+    if (unit.parking) return unit.parking.name || `Parking #${unit.parking.id}`;
     if (unit.building) return unit.building.name || `Building #${unit.building.id}`;
     if (unit.room_id) return `Room #${unit.room_id}`;
+    if (unit.facility_id) return `Facility #${unit.facility_id}`;
+    if (unit.gate_id) return `Gate #${unit.gate_id}`;
+    if (unit.parking_id) return `Parking #${unit.parking_id}`;
     return '—';
+  }
+
+  unitTypeLabel(unit: BookingUnit): string {
+    if (unit.gate_id || unit.gate) return this.translate.instant('BOOK_EXTRA_GATE');
+    if (unit.facility_id || unit.facility) return this.translate.instant('BOOK_EXTRA_FACILITY');
+    if (unit.parking_id || unit.parking) return this.translate.instant('BOOK_EXTRA_PARKING');
+    if (unit.room_id || unit.room) return this.translate.instant('BOOK_ROOM');
+    return this.translate.instant('BOOK_DETAIL_UNITS');
+  }
+
+  unitSubLabel(unit: BookingUnit): string {
+    if (unit.facility?.facilitie_type?.name) return unit.facility.facilitie_type.name;
+    if (unit.gate?.building?.name) return unit.gate.building.name;
+    return this.buildingLabel(unit);
   }
 
   buildingLabel(unit: BookingUnit): string {
@@ -227,6 +283,66 @@ export class BookingDetailDialog implements OnInit {
     const facilityId = unit.facility?.id ?? unit.facility_id;
     if (facilityId) {
       await this.navigateAway(['/Property'], { type: 'facility', id: facilityId });
+      return;
+    }
+    const gateId = unit.gate?.id ?? unit.gate_id;
+    if (gateId) {
+      await this.navigateAway(['/Property'], { type: 'gate', id: gateId });
+    }
+  }
+
+  onAccessExtrasChange(picks: BookingExtraPick[]): void {
+    this.accessExtrasDraft = picks;
+    this.cdr.detectChanges();
+  }
+
+  async saveAccessExtras(): Promise<void> {
+    if (!this.booking || !this.canEditAccess || this.unitsBusy || !this.accessDraftDirty) return;
+    this.unitsBusy = true;
+
+    const currentByKey = new Map<string, BookingUnit>();
+    for (const unit of this.accessUnits) {
+      const key = this.unitExtraKey(unit);
+      if (key) currentByKey.set(key, unit);
+    }
+
+    const draftKeys = new Set(
+      this.accessExtrasDraft.map((p) => bookingExtraKey(p.unit_type, p.unit_id)),
+    );
+
+    const toRemove = [...currentByKey.entries()]
+      .filter(([key]) => !draftKeys.has(key))
+      .map(([, unit]) => unit.id)
+      .filter((id): id is number => !!id);
+
+    const toAdd = this.accessExtrasDraft.filter(
+      (p) => !currentByKey.has(bookingExtraKey(p.unit_type, p.unit_id)),
+    );
+
+    try {
+      if (toRemove.length) {
+        const res = await this.bookings.removeUnits(this.data.bookingId, toRemove);
+        this.booking = res.data || this.booking;
+      }
+      if (toAdd.length) {
+        const res = await this.bookings.assignUnits(
+          this.data.bookingId,
+          toAdd.map((p) => ({
+            unit_type: p.unit_type,
+            unit_id: p.unit_id,
+            sequential: false,
+            sub_units_included: false,
+          })),
+        );
+        this.booking = res.data || this.booking;
+      }
+      this.syncAccessDraftFromBooking();
+      this.snackbar.show(this.translate.instant('BOOK_ACCESS_EXTRAS_SAVED'), 'success');
+    } catch (e: unknown) {
+      this.snackbar.show(this.err(e), 'error');
+    } finally {
+      this.unitsBusy = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -339,6 +455,7 @@ export class BookingDetailDialog implements OnInit {
     try {
       const res = await this.bookings.show(this.data.bookingId);
       this.booking = res.data || this.booking;
+      this.syncAccessDraftFromBooking();
       if (!this.booking) {
         this.snackbar.show(this.translate.instant('BOOK_DETAIL_NOT_FOUND'), 'error');
         this.dialogRef.close();
@@ -361,6 +478,52 @@ export class BookingDetailDialog implements OnInit {
     } catch {
       this.users = [];
     }
+  }
+
+  private syncAccessDraftFromBooking(): void {
+    const draft: BookingExtraPick[] = [];
+    for (const unit of this.accessUnits) {
+      if (unit.gate_id || unit.gate) {
+        draft.push({
+          unit_type: 'gate',
+          unit_id: Number(unit.gate?.id ?? unit.gate_id),
+          name: unit.gate?.name,
+          typeLabel: unit.gate?.direction || unit.gate?.building?.name,
+        });
+        continue;
+      }
+      if (unit.facility_id || unit.facility) {
+        draft.push({
+          unit_type: 'facility',
+          unit_id: Number(unit.facility?.id ?? unit.facility_id),
+          name: unit.facility?.name,
+          typeLabel: unit.facility?.facilitie_type?.name,
+        });
+        continue;
+      }
+      if (unit.parking_id || unit.parking) {
+        draft.push({
+          unit_type: 'parking',
+          unit_id: Number(unit.parking?.id ?? unit.parking_id),
+          name: unit.parking?.name,
+          typeLabel: unit.parking?.location,
+        });
+      }
+    }
+    this.accessExtrasDraft = draft.filter((p) => Number.isFinite(p.unit_id));
+  }
+
+  private unitExtraKey(unit: BookingUnit): string | null {
+    if (unit.gate_id || unit.gate) {
+      return bookingExtraKey('gate', Number(unit.gate?.id ?? unit.gate_id));
+    }
+    if (unit.facility_id || unit.facility) {
+      return bookingExtraKey('facility', Number(unit.facility?.id ?? unit.facility_id));
+    }
+    if (unit.parking_id || unit.parking) {
+      return bookingExtraKey('parking', Number(unit.parking?.id ?? unit.parking_id));
+    }
+    return null;
   }
 
   private err(e: unknown): string {

@@ -1,0 +1,234 @@
+.bae {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--bc-line, #d8e0e8) 90%, #2563eb 10%);
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.bae--compact {
+  margin-top: 0;
+  padding: 14px;
+}
+
+.bae__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.bae__head h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.bae__head p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--bc-muted, #5b6b7c);
+  line-height: 1.45;
+}
+
+.bae__count {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.bae__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.bae__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--bc-line, #d8e0e8);
+  background: #fff;
+  font-size: 0.78rem;
+}
+
+.bae__chip--gate {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.bae__chip--facility {
+  border-color: #ddd6fe;
+  background: #f5f3ff;
+}
+
+.bae__chip--parking {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.bae__chip-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.bae__chip em {
+  font-style: normal;
+  opacity: 0.65;
+}
+
+.bae__chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.55;
+  padding: 0 2px;
+}
+
+.bae__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.bae__tabs button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--bc-line, #d8e0e8);
+  background: #fff;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.bae__tabs button span {
+  min-width: 1.4rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 0.72rem;
+}
+
+.bae__tabs button.is-on {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.bae__search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+}
+
+.bae__search input {
+  border: 1px solid var(--bc-line, #d8e0e8);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.bae__muted {
+  margin: 0;
+  padding: 16px;
+  text-align: center;
+  color: var(--bc-muted, #5b6b7c);
+  font-size: 0.86rem;
+}
+
+.bae__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 10px;
+  max-height: min(42vh, 360px);
+  overflow: auto;
+}
+
+.bae__card {
+  width: 100%;
+  text-align: start;
+  display: grid;
+  gap: 4px;
+  padding: 12px 40px 12px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--bc-line, #d8e0e8);
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.bae__card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+}
+
+.bae__card.is-on {
+  border-color: #2563eb;
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+}
+
+.bae__badge {
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.bae__card strong {
+  font-size: 0.92rem;
+}
+
+.bae__type,
+.bae__meta {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--bc-muted, #5b6b7c);
+}
+
+.bae__check {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.bae__card.is-on .bae__check {
+  background: #2563eb;
+  color: #fff;
+}

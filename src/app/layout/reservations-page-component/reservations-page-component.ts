@@ -16,6 +16,8 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 import { AssignBookingLocksDialog } from '../../dialog/assign-booking-locks/assign-booking-locks';
 import { BookingDetailDialog } from '../../dialog/booking-detail/booking-detail';
+import { ConfirmDialog } from '../../dialog/confirm-dialog/confirm-dialog';
+import { firstValueFrom } from 'rxjs';
 import { RealtimeService } from '../../services/realtime.service';
 
 interface ReservationRow {
@@ -61,19 +63,28 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   private readonly realtime = inject(RealtimeService);
   private readonly destroy$ = new Subject<void>();
 
+  readonly perPage = 20;
+
   loading = true;
   isRTL = false;
   search = '';
   statusFilter = '';
   reservations: ReservationRow[] = [];
-  filteredReservations: ReservationRow[] = [];
+  total = 0;
+  currentPage = 1;
+  lastPage = 1;
+  pageFrom = 0;
+  pageTo = 0;
 
   statCounts = {
     all: 0,
     active: 0,
     paused: 0,
     cancelled: 0,
+    deleted: 0,
   };
+
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.isRTL =
@@ -88,8 +99,8 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
       const q = params.get('q') ?? '';
       if (q !== this.search) {
         this.search = q;
-        this.filterReservations();
-        this.cdr.detectChanges();
+        this.currentPage = 1;
+        void this.load();
       }
     });
     void this.load();
@@ -101,6 +112,7 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.searchTimer) clearTimeout(this.searchTimer);
   }
 
   guestInitials(name: string): string {
@@ -126,37 +138,55 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   setStatusFilter(status: string): void {
+    if (this.statusFilter === status) return;
     this.statusFilter = status;
-    this.filterReservations();
+    this.currentPage = 1;
+    void this.load();
   }
 
   onSearchChange(): void {
-    this.filterReservations();
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      this.currentPage = 1;
+      void this.load();
+    }, 300);
   }
 
-  filterReservations(): void {
-    const q = this.search.trim().toLowerCase();
-    this.filteredReservations = this.reservations.filter((r) => {
-      const matchSearch =
-        !q
-        || r.guestName.toLowerCase().includes(q)
-        || String(r.id).includes(q)
-        || r.unitLabel.toLowerCase().includes(q)
-        || r.building.toLowerCase().includes(q);
-      const matchStatus = !this.statusFilter || r.status === this.statusFilter;
-      return matchSearch && matchStatus;
-    });
+  goToPage(page: number): void {
+    const next = Math.min(Math.max(page, 1), this.lastPage || 1);
+    if (next === this.currentPage) return;
+    this.currentPage = next;
+    void this.load();
   }
 
   async load(): Promise<void> {
     this.loading = true;
     try {
-      const res = await this.bookingsApi.list({ per_page: 100 });
+      const res = await this.bookingsApi.list({
+        per_page: this.perPage,
+        page: this.currentPage,
+        status: this.apiStatus(),
+        q: this.search.trim() || undefined,
+      });
       const rows = Array.isArray(res.data) ? res.data : [];
       this.reservations = rows.map((b) => this.toRow(b));
-      this.updateStats();
-      this.filterReservations();
+      this.total = res.total ?? rows.length;
+      this.currentPage = res.current_page ?? this.currentPage;
+      this.lastPage = Math.max(res.last_page ?? 1, 1);
+      this.pageFrom = res.from ?? (rows.length ? (this.currentPage - 1) * this.perPage + 1 : 0);
+      this.pageTo = res.to ?? (rows.length ? this.pageFrom + rows.length - 1 : 0);
+      if (res.counts) {
+        this.statCounts = {
+          all: res.counts.all ?? 0,
+          active: res.counts.active ?? 0,
+          paused: res.counts.paused ?? 0,
+          cancelled: res.counts.cancelled ?? 0,
+          deleted: res.counts.deleted ?? res.total_deleted ?? 0,
+        };
+      }
     } catch (e: unknown) {
+      this.reservations = [];
+      this.total = 0;
       this.snackbar.show(this.err(e), 'error');
     } finally {
       this.loading = false;
@@ -166,6 +196,10 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
 
   openNewReservation(): void {
     void this.router.navigate(['/Reservations/New']);
+  }
+
+  openDeletedReservations(): void {
+    void this.router.navigate(['/Reservations/Deleted']);
   }
 
   openDetails(row: ReservationRow, event?: Event): void {
@@ -202,7 +236,7 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   async cancelReservation(row: ReservationRow): Promise<void> {
-    const ok = confirm(this.translate.instant('BOOK_CANCEL_CONFIRM', { id: row.id }));
+    const ok = await this.openCancelConfirm(row);
     if (!ok) return;
     try {
       await this.bookingsApi.cancel(row.id);
@@ -214,7 +248,7 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   async deleteReservation(row: ReservationRow): Promise<void> {
-    const ok = confirm(this.translate.instant('BOOK_DELETE_CONFIRM', { id: row.id }));
+    const ok = await this.openDeleteConfirm(row);
     if (!ok) return;
     try {
       await this.bookingsApi.remove(row.id);
@@ -240,6 +274,17 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
       .subscribe((saved) => {
         if (saved) void this.load();
       });
+  }
+
+  get hasFilters(): boolean {
+    return !!this.search.trim() || !!this.statusFilter;
+  }
+
+  private apiStatus(): string | undefined {
+    if (this.statusFilter === 'active') return 'active';
+    if (this.statusFilter === 'paused') return 'on_hold';
+    if (this.statusFilter === 'cancelled') return 'cancelled';
+    return undefined;
   }
 
   private toRow(b: Booking): ReservationRow {
@@ -300,13 +345,54 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
     return m ? `${m[1]}:${m[2]}` : value;
   }
 
-  private updateStats(): void {
-    this.statCounts = {
-      all: this.reservations.length,
-      active: this.reservations.filter((r) => r.status === 'active').length,
-      paused: this.reservations.filter((r) => r.status === 'paused').length,
-      cancelled: this.reservations.filter((r) => r.status === 'cancelled').length,
-    };
+  private async openCancelConfirm(row: ReservationRow): Promise<boolean> {
+    const ref = this.dialog.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      backdropClass: 'custom-backdrop',
+      width: '440px',
+      maxWidth: '94vw',
+      autoFocus: false,
+      data: {
+        variant: 'danger',
+        titleKey: 'BOOK_CANCEL_DIALOG_TITLE',
+        hintKey: 'BOOK_CANCEL_DIALOG_HINT',
+        confirmKey: 'BOOK_CANCEL_DIALOG_CONFIRM',
+        preview: {
+          initials: this.guestInitials(row.guestName),
+          title: row.guestName,
+          subtitle: `#${row.id} · ${row.unitLabel}`,
+          meta: [
+            { labelKey: 'BOOK_CHECK_IN', value: this.formatDate(row.checkIn) },
+            { labelKey: 'BOOK_CHECK_OUT', value: this.formatDate(row.checkOut) },
+          ],
+        },
+      },
+    });
+    return (await firstValueFrom(ref.afterClosed())) === true;
+  }
+
+  private async openDeleteConfirm(row: ReservationRow): Promise<boolean> {
+    const ref = this.dialog.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      backdropClass: 'custom-backdrop',
+      width: '440px',
+      maxWidth: '94vw',
+      autoFocus: false,
+      data: {
+        variant: 'warning',
+        titleKey: 'BOOK_DELETE_DIALOG_TITLE',
+        messageKey: 'BOOK_DELETE_DIALOG_MESSAGE',
+        messageParams: { id: row.id },
+        hintKey: 'BOOK_DELETE_DIALOG_HINT',
+        confirmKey: 'BOOK_DELETE_DIALOG_CONFIRM',
+        preview: {
+          initials: this.guestInitials(row.guestName),
+          title: row.guestName,
+          subtitle: `#${row.id} · ${row.unitLabel}`,
+        },
+      },
+    });
+    return (await firstValueFrom(ref.afterClosed())) === true;
   }
 
   private err(e: unknown): string {
