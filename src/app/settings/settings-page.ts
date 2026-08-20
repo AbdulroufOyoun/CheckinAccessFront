@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ChangePassword } from '../dialog/change-password/change-password';
 import { AuthService } from '../services/auth.service';
+import { LocaleService } from '../services/locale.service';
 
 @Component({
   selector: 'app-settings-page',
@@ -14,9 +15,8 @@ import { AuthService } from '../services/auth.service';
 })
 export class SettingsPage implements OnInit {
   private readonly dialog = inject(MatDialog);
-  private readonly translate = inject(TranslateService);
   private readonly auth = inject(AuthService);
-  private readonly document = inject(DOCUMENT);
+  private readonly locale = inject(LocaleService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   currentLang: 'ar' | 'en' = 'en';
@@ -24,24 +24,15 @@ export class SettingsPage implements OnInit {
   adminEmail = '';
 
   ngOnInit(): void {
-    this.currentLang = (localStorage.getItem('lang') as 'ar' | 'en') || 'en';
+    this.currentLang = this.locale.lang();
     const user = this.auth.getUser();
     this.adminName = user?.name || '';
     this.adminEmail = user?.email || '';
   }
 
   toggleLang(): void {
-    this.currentLang = this.currentLang === 'en' ? 'ar' : 'en';
-    localStorage.setItem('lang', this.currentLang);
-    this.translate.use(this.currentLang).subscribe(() => {
-      const html = this.document.documentElement;
-      if (this.currentLang === 'ar') {
-        html.setAttribute('dir', 'rtl');
-        html.setAttribute('lang', 'ar');
-      } else {
-        html.setAttribute('dir', 'ltr');
-        html.setAttribute('lang', 'en');
-      }
+    void this.locale.toggle().then(() => {
+      this.currentLang = this.locale.lang();
       this.cdr.detectChanges();
     });
   }
