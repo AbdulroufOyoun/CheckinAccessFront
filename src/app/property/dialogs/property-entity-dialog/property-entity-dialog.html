@@ -393,7 +393,7 @@
     @if (data.entity === 'lock') {
       <label class="field">
         <span>{{ 'LOCKS_COL_LOCKID' | translate }} *</span>
-        <input [(ngModel)]="form['lockId']" name="lockId" required />
+        <input [(ngModel)]="form['lockId']" name="lockId" maxlength="500" required />
       </label>
       <label class="field">
         <span>{{ 'LOCKS_COL_NAME' | translate }}</span>

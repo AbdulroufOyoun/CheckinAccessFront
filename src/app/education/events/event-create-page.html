@@ -1,0 +1,189 @@
+<section class="evt-wiz" [class.evt-wiz--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="evt-wiz__hero">
+    <div>
+      <button type="button" class="evt-wiz__back" (click)="cancel()" [disabled]="saving">
+        {{ 'EVT_BACK' | translate }}
+      </button>
+      <p class="evt-wiz__eyebrow">{{ 'EVT_CREATE_EYEBROW' | translate }}</p>
+      <h1>{{ editId ? ('EVT_EDIT_TITLE' | translate) : ('EVT_CREATE_TITLE' | translate) }}</h1>
+    </div>
+    <nav class="evt-wiz__steps" aria-label="steps">
+      <span class="evt-wiz__step" [class.is-on]="step === 1" [class.is-done]="step > 1"><i>1</i>{{ 'EVT_STEP_PERIOD' | translate }}</span>
+      <span class="evt-wiz__step" [class.is-on]="step === 2" [class.is-done]="step > 2"><i>2</i>{{ 'EVT_STEP_ROOMS' | translate }}</span>
+      <span class="evt-wiz__step" [class.is-on]="step === 3" [class.is-done]="step > 3"><i>3</i>{{ 'EVT_STEP_AUDIENCE' | translate }}</span>
+      <span class="evt-wiz__step" [class.is-on]="step === 4"><i>4</i>{{ 'EVT_STEP_CONFIRM' | translate }}</span>
+    </nav>
+  </header>
+
+  <section class="evt-wiz__panel">
+    @if (step === 1) {
+      <div class="evt-wiz__grid">
+        <label class="evt-wiz__field evt-wiz__field--wide">
+          <span>{{ 'EVT_NAME' | translate }} *</span>
+          <input type="text" [(ngModel)]="form.name" [placeholder]="'EVT_NAME_PH' | translate" />
+        </label>
+        <label class="evt-wiz__field evt-wiz__field--wide">
+          <span>{{ 'EVT_DESCRIPTION' | translate }}</span>
+          <textarea rows="3" [(ngModel)]="form.description"></textarea>
+        </label>
+        <label class="evt-wiz__field">
+          <span>{{ 'EVT_START_DATE' | translate }} *</span>
+          <input type="date" [(ngModel)]="form.start_date" [min]="today" />
+        </label>
+        <label class="evt-wiz__field">
+          <span>{{ 'EVT_END_DATE' | translate }} *</span>
+          <input type="date" [(ngModel)]="form.end_date" [min]="form.start_date || today" />
+        </label>
+      </div>
+
+      <div class="evt-wiz__modes">
+        <button type="button" class="evt-wiz__mode" [class.is-on]="!form.time_scheduled" (click)="form.time_scheduled = false">
+          <strong>{{ 'EVT_MODE_FULL' | translate }}</strong>
+          <small>{{ 'EVT_MODE_FULL_HINT' | translate }}</small>
+        </button>
+        <button type="button" class="evt-wiz__mode" [class.is-on]="form.time_scheduled" (click)="form.time_scheduled = true">
+          <strong>{{ 'EVT_MODE_TIMED' | translate }}</strong>
+          <small>{{ 'EVT_MODE_TIMED_HINT' | translate }}</small>
+        </button>
+      </div>
+
+      @if (form.time_scheduled) {
+        <div class="evt-wiz__times">
+          <div class="evt-wiz__field">
+            <span>{{ 'EVT_START_TIME' | translate }}</span>
+            <app-time-picker [(ngModel)]="form.start_time" [invalid]="periodTimeInvalid()" />
+          </div>
+          <div class="evt-wiz__field">
+            <span>{{ 'EVT_END_TIME' | translate }}</span>
+            <app-time-picker [(ngModel)]="form.end_time" [invalid]="periodTimeInvalid()" />
+          </div>
+        </div>
+        @if (periodTimeInvalid()) {
+          <p class="evt-wiz__error">{{ 'EVT_TIME_INVALID' | translate }}</p>
+        }
+      }
+
+      <div class="evt-wiz__weekdays">
+        <span>{{ 'EVT_EXCLUDE_DAYS' | translate }}</span>
+        <div class="evt-wiz__chips">
+          @for (d of weekdays; track d.code) {
+            <button type="button" class="evt-wiz__chip" [class.is-on]="isExcludedDay(d.code)" (click)="toggleExcludedDay(d.code)">
+              {{ d.labelKey | translate }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="evt-wiz__toggles">
+        <label><input type="checkbox" [(ngModel)]="form.weekends_included" /> {{ 'EVT_WEEKENDS' | translate }}</label>
+        <label><input type="checkbox" [(ngModel)]="form.gregorian_holidays_included" /> {{ 'EVT_GREG_HOLIDAYS' | translate }}</label>
+        <label><input type="checkbox" [(ngModel)]="form.islamic_holidays_included" /> {{ 'EVT_ISLAMIC_HOLIDAYS' | translate }}</label>
+      </div>
+    }
+
+    @if (step === 2) {
+      @if (loadingRooms) {
+        <p>{{ 'LOADING' | translate }}</p>
+      } @else if (!roomOptions.length) {
+        <p>{{ 'EVT_NO_ROOMS' | translate }}</p>
+      } @else {
+        <p class="evt-wiz__hint">{{ 'EVT_ROOMS_HINT' | translate }}</p>
+        <div class="evt-wiz__rooms">
+          @for (room of roomOptions; track room.id) {
+            <button
+              type="button"
+              class="evt-wiz__room"
+              [class.is-on]="isRoomSelected(room.id)"
+              [class.is-busy]="!room.available"
+              [disabled]="!room.available"
+              (click)="toggleRoom(room)"
+            >
+              <strong>{{ room.name || room.number || ('#' + room.id) }}</strong>
+              <small>{{ room.building?.name || '' }}</small>
+              @if (!room.available) {
+                <em>{{ conflictLabel(room.conflict_reason) }}</em>
+              }
+            </button>
+          }
+        </div>
+      }
+    }
+
+    @if (step === 3) {
+      <div class="evt-wiz__modes">
+        <button type="button" class="evt-wiz__mode" [class.is-on]="form.audience_mode === 'all_students'" (click)="form.audience_mode = 'all_students'">
+          <strong>{{ 'EVT_AUDIENCE_ALL' | translate }}</strong>
+        </button>
+        <button type="button" class="evt-wiz__mode" [class.is-on]="form.audience_mode === 'selected_students'" (click)="form.audience_mode = 'selected_students'">
+          <strong>{{ 'EVT_AUDIENCE_SELECTED_LABEL' | translate }}</strong>
+        </button>
+      </div>
+
+      @if (form.audience_mode === 'selected_students') {
+        <div class="evt-wiz__search">
+          <input type="search" [(ngModel)]="attendeeQuery" (input)="searchAttendees()" [placeholder]="'EVT_SEARCH_STUDENTS' | translate" />
+          @if (attendeeHits.length) {
+            <div class="evt-wiz__hits">
+              @for (u of attendeeHits; track u.id) {
+                <button type="button" (click)="addAttendee(u)">{{ u.name || ('#' + u.id) }}</button>
+              }
+            </div>
+          }
+        </div>
+        <div class="evt-wiz__picked">
+          @for (u of attendees; track u.id) {
+            <span class="evt-wiz__tag">{{ u.name || ('#' + u.id) }} <button type="button" (click)="removeAttendee(u.id)">×</button></span>
+          }
+        </div>
+      }
+
+      <h3>{{ 'EVT_SUPERVISORS' | translate }} *</h3>
+      <div class="evt-wiz__search">
+        <input type="search" [(ngModel)]="supervisorQuery" (input)="searchSupervisors()" [placeholder]="'EVT_SEARCH_SUPERVISORS' | translate" />
+        @if (supervisorHits.length) {
+          <div class="evt-wiz__hits">
+            @for (u of supervisorHits; track u.id) {
+              <button type="button" (click)="addSupervisor(u)">{{ u.name || ('#' + u.id) }}</button>
+            }
+          </div>
+        }
+      </div>
+      <div class="evt-wiz__picked">
+        @for (u of supervisors; track u.id) {
+          <span class="evt-wiz__tag">{{ u.name || ('#' + u.id) }} <button type="button" (click)="removeSupervisor(u.id)">×</button></span>
+        }
+      </div>
+    }
+
+    @if (step === 4) {
+      <dl class="evt-wiz__summary">
+        <div><dt>{{ 'EVT_NAME' | translate }}</dt><dd>{{ form.name }}</dd></div>
+        <div><dt>{{ 'EVT_PERIOD' | translate }}</dt><dd>{{ form.start_date }} → {{ form.end_date }}</dd></div>
+        <div><dt>{{ 'EVT_ROOMS' | translate }}</dt><dd>{{ selectedRoomIds.size }}</dd></div>
+        <div><dt>{{ 'EVT_AUDIENCE' | translate }}</dt><dd>{{ form.audience_mode === 'all_students' ? ('EVT_AUDIENCE_ALL' | translate) : attendees.length }}</dd></div>
+        <div><dt>{{ 'EVT_SUPERVISORS' | translate }}</dt><dd>{{ supervisors.length }}</dd></div>
+      </dl>
+    }
+  </section>
+
+  <footer class="evt-wiz__actions">
+    @if (step > 1) {
+      <button type="button" class="edu-btn edu-btn--ghost" (click)="back()" [disabled]="saving">{{ 'BOOK_BACK' | translate }}</button>
+    } @else {
+      <button type="button" class="edu-btn edu-btn--ghost" (click)="cancel()" [disabled]="saving">{{ 'CANCEL' | translate }}</button>
+    }
+
+    @if (step === 1) {
+      <button type="button" class="edu-btn edu-btn--primary" (click)="goToRooms()" [disabled]="!canGoStep2">{{ 'BOOK_CONTINUE' | translate }}</button>
+    } @else if (step === 2) {
+      <button type="button" class="edu-btn edu-btn--primary" (click)="goAudience()" [disabled]="!canGoStep3">{{ 'BOOK_CONTINUE' | translate }}</button>
+    } @else if (step === 3) {
+      <button type="button" class="edu-btn edu-btn--primary" (click)="goConfirm()">{{ 'BOOK_CONTINUE' | translate }}</button>
+    } @else {
+      <button type="button" class="edu-btn edu-btn--ghost" (click)="saveDraft()" [disabled]="saving || !canSave">{{ 'EVT_SAVE_DRAFT' | translate }}</button>
+      <button type="button" class="edu-btn edu-btn--primary" (click)="saveAndActivate()" [disabled]="saving || !canSave">
+        {{ saving ? ('SAVING' | translate) : ('EVT_SAVE_ACTIVATE' | translate) }}
+      </button>
+    }
+  </footer>
+</section>

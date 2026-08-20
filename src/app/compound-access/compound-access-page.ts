@@ -1,30 +1,34 @@
 import { ChangeDetectorRef, Component, DestroyRef, ElementRef, HostListener, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
-import { SnackbarService } from '../../services/snackbar.service';
+import { firstValueFrom } from 'rxjs';
+import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
+import { SnackbarService } from '../services/snackbar.service';
+import { ConfirmDialog } from '../dialog/confirm-dialog/confirm-dialog';
 import {
   CompoundAccessCompound,
   CompoundAccessRow,
-  CompoundAccessStudent,
-  EducationService,
-} from '../../services/education.service';
+  CompoundAccessUser,
+  CompoundAccessService,
+} from '../services/compound-access.service';
 
 @Component({
   selector: 'app-compound-access-page',
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, PageSkeleton],
   templateUrl: './compound-access-page.html',
-  styleUrls: ['../education-shared.css', '../enrollments/enrollments-page.css', './compound-access-page.css'],
+  styleUrls: ['../education/education-shared.css', '../education/enrollments/enrollments-page.css', './compound-access-page.css'],
 })
 export class CompoundAccessPage implements OnInit {
-  private readonly edu = inject(EducationService);
+  private readonly compoundAccess = inject(CompoundAccessService);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialog = inject(MatDialog);
 
   @ViewChild('studentInput') private studentInput?: ElementRef<HTMLInputElement>;
 
@@ -39,11 +43,11 @@ export class CompoundAccessPage implements OnInit {
   dialogOpen = false;
   editingUserId: number | null = null;
   studentQuery = '';
-  studentHits: CompoundAccessStudent[] = [];
+  studentHits: CompoundAccessUser[] = [];
   searchingStudents = false;
   studentMenuOpen = false;
   studentHighlight = 0;
-  selectedStudent: CompoundAccessStudent | null = null;
+  selectedStudent: CompoundAccessUser | null = null;
   selectedCompoundIds = new Set<number>();
 
   private studentSearchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -130,8 +134,8 @@ export class CompoundAccessPage implements OnInit {
     this.loading = true;
     try {
       const [rowsRes, compoundsRes] = await Promise.all([
-        this.edu.getCompoundAccess(),
-        this.edu.getCompoundAccessCompounds(),
+        this.compoundAccess.list(),
+        this.compoundAccess.listCompounds(),
       ]);
       this.rows = Array.isArray(rowsRes.data) ? rowsRes.data : [];
       this.compounds = Array.isArray(compoundsRes.data) ? compoundsRes.data : [];
@@ -200,10 +204,10 @@ export class CompoundAccessPage implements OnInit {
     this.selectedCompoundIds = new Set();
   }
 
-  initials(student: CompoundAccessStudent | null | undefined): string {
-    const name = (student?.name || '').trim();
+  initials(user: CompoundAccessUser | null | undefined): string {
+    const name = (user?.name || '').trim();
     if (!name) {
-      return student?.id ? String(student.id).slice(-2) : '';
+      return user?.id ? String(user.id).slice(-2) : '';
     }
     const parts = name.split(/\s+/).filter(Boolean);
     if (parts.length === 1) {
@@ -307,7 +311,7 @@ export class CompoundAccessPage implements OnInit {
     this.studentMenuOpen = true;
     this.cdr.detectChanges();
     try {
-      const res = await this.edu.searchCompoundAccessStudents(q);
+      const res = await this.compoundAccess.searchUsers(q);
       if (gen !== this.studentSearchGen) {
         return;
       }
@@ -326,19 +330,19 @@ export class CompoundAccessPage implements OnInit {
     }
   }
 
-  pickStudent(student: CompoundAccessStudent): void {
-    this.selectedStudent = student;
-    this.studentQuery = this.studentLabel(student);
+  pickStudent(user: CompoundAccessUser): void {
+    this.selectedStudent = user;
+    this.studentQuery = this.studentLabel(user);
     this.studentHits = [];
     this.studentMenuOpen = false;
     this.cdr.detectChanges();
   }
 
-  studentLabel(student: CompoundAccessStudent | null | undefined): string {
-    if (!student) {
+  studentLabel(user: CompoundAccessUser | null | undefined): string {
+    if (!user) {
       return '';
     }
-    return [student.name, student.mobile].filter(Boolean).join(' · ') || student.email || `#${student.id}`;
+    return [user.name, user.mobile].filter(Boolean).join(' · ') || user.email || `#${user.id}`;
   }
 
   contactLabel(user: { email?: string | null; mobile?: string | null } | null | undefined): string {
@@ -358,7 +362,7 @@ export class CompoundAccessPage implements OnInit {
     }
     this.saving = true;
     try {
-      await this.edu.syncCompoundAccess(userId, [...this.selectedCompoundIds]);
+      await this.compoundAccess.sync(userId, [...this.selectedCompoundIds]);
       this.dialogOpen = false;
       this.snackbar.show(this.translate.instant('EDU_CA_SAVED'), 'success');
       await this.load();
@@ -372,9 +376,12 @@ export class CompoundAccessPage implements OnInit {
   }
 
   async revoke(row: CompoundAccessRow): Promise<void> {
+    const ok = await this.openRevokeConfirm(row);
+    if (!ok) return;
+
     this.saving = true;
     try {
-      await this.edu.syncCompoundAccess(row.user_id, []);
+      await this.compoundAccess.sync(row.user_id, []);
       this.snackbar.show(this.translate.instant('EDU_CA_REVOKED'), 'success');
       await this.load();
     } catch (e: unknown) {
@@ -384,6 +391,35 @@ export class CompoundAccessPage implements OnInit {
       this.saving = false;
       this.cdr.detectChanges();
     }
+  }
+
+  private async openRevokeConfirm(row: CompoundAccessRow): Promise<boolean> {
+    const studentName = row.user?.name || `#${row.user_id}`;
+    const compounds = row.compounds.map((c) => this.compoundLabel(c)).join(' · ');
+
+    const ref = this.dialog.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      backdropClass: 'custom-backdrop',
+      width: '440px',
+      maxWidth: '94vw',
+      autoFocus: false,
+      data: {
+        variant: 'danger',
+        titleKey: 'EDU_CA_REVOKE_DIALOG_TITLE',
+        hintKey: 'EDU_CA_REVOKE_DIALOG_HINT',
+        confirmKey: 'EDU_CA_REVOKE_DIALOG_CONFIRM',
+        preview: {
+          initials: this.initials(row.user),
+          title: studentName,
+          subtitle: this.contactLabel(row.user),
+          meta: [
+            { labelKey: 'EDU_CA_COMPOUNDS', value: compounds || '—' },
+          ],
+        },
+      },
+    });
+
+    return (await firstValueFrom(ref.afterClosed())) === true;
   }
 
   compoundLabel(compound: CompoundAccessCompound): string {

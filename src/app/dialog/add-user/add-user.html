@@ -9,13 +9,13 @@
         </svg>
       </div>
       <div>
-        <h2 class="dialog-header__title">{{ mode === 'edit' ? 'Edit User' : 'Add User' }}</h2>
-        <p class="dialog-header__subtitle">
-          Shared central users table — existing email/mobile will be linked to this tenant
-        </p>
+        <h2 class="dialog-header__title">
+          {{ (mode === 'edit' ? 'USR_DIALOG_TITLE_EDIT' : 'USR_DIALOG_TITLE_ADD') | translate }}
+        </h2>
+        <p class="dialog-header__subtitle">{{ 'USR_DIALOG_SUBTITLE' | translate }}</p>
       </div>
     </div>
-    <button class="dialog-header__close" type="button" (click)="close()" aria-label="Close dialog">
+    <button class="dialog-header__close" type="button" (click)="close()" [attr.aria-label]="'CLOSE' | translate">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280"
         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
@@ -27,44 +27,51 @@
   <div class="dialog-body">
     <div class="dialog-form">
       <div class="form-field">
-        <label class="form-field__label">Full name <span class="form-field__required">*</span></label>
-        <input type="text" class="form-input" name="name" [(ngModel)]="form.name" placeholder="Ahmed Al-Rashidi" />
+        <label class="form-field__label">
+          {{ 'USR_DETAIL_FULL_NAME' | translate }} <span class="form-field__required">*</span>
+        </label>
+        <input type="text" class="form-input" name="name" [(ngModel)]="form.name"
+          [placeholder]="'USR_DIALOG_NAME_PH' | translate" />
       </div>
 
       <div class="form-field">
-        <label class="form-field__label">Title</label>
+        <label class="form-field__label">{{ 'USR_DETAIL_TITLE' | translate }}</label>
         <select class="form-select" name="title" [(ngModel)]="form.title">
           <option value="">—</option>
-          @for (t of titles; track t) {
-          <option [value]="t">{{ t }}</option>
+          @for (t of titles; track t.value) {
+          <option [value]="t.value">{{ t.key | translate }}</option>
           }
         </select>
       </div>
 
       <div class="form-field">
-        <label class="form-field__label">Mobile (10 digits) <span class="form-field__required">*</span></label>
+        <label class="form-field__label">
+          {{ 'USR_DIALOG_MOBILE' | translate }} <span class="form-field__required">*</span>
+        </label>
         <input type="tel" class="form-input" name="mobile" [(ngModel)]="form.mobile" (blur)="normalizeMobile()"
-          placeholder="0501234567" dir="ltr" maxlength="14" />
+          [placeholder]="'USR_DIALOG_MOBILE_PH' | translate" dir="ltr" maxlength="14" />
       </div>
 
       <div class="form-field">
-        <label class="form-field__label">Email <span class="form-field__required">*</span></label>
+        <label class="form-field__label">
+          {{ 'EMAIL' | translate }} <span class="form-field__required">*</span>
+        </label>
         <input type="email" class="form-input" name="email" [(ngModel)]="form.email" placeholder="email@example.com" />
       </div>
 
       <div class="form-field">
-        <label class="form-field__label">Nationality</label>
+        <label class="form-field__label">{{ 'USR_DETAIL_NATIONALITY' | translate }}</label>
         <select class="form-select" name="nationality" [(ngModel)]="form.nationality">
-          <option value="">Select nationality</option>
-          @for (n of nationalities; track n) {
-          <option [value]="n">{{ n }}</option>
+          <option value="">{{ 'USR_DIALOG_SELECT_NATIONALITY' | translate }}</option>
+          @for (n of nationalities; track n.value) {
+          <option [value]="n.value">{{ n.key | translate }}</option>
           }
         </select>
       </div>
 
       @if (mode === 'add') {
       <div class="form-field">
-        <label class="form-field__label">Password (optional, defaults to mobile)</label>
+        <label class="form-field__label">{{ 'USR_DIALOG_PASSWORD' | translate }}</label>
         <input type="password" class="form-input" name="password" [(ngModel)]="form.password" dir="ltr" />
       </div>
       }
@@ -72,7 +79,7 @@
       @if (mode === 'edit') {
       <div class="form-field form-field--full">
         <label class="form-field__label">
-          <input type="checkbox" [(ngModel)]="form.active" name="active" /> Active
+          <input type="checkbox" [(ngModel)]="form.active" name="active" /> {{ 'USR_ACTIVE' | translate }}
         </label>
       </div>
       }
@@ -80,9 +87,11 @@
   </div>
 
   <div class="dialog-footer">
-    <button class="dialog-btn dialog-btn--secondary" type="button" (click)="close()" [disabled]="saving">Cancel</button>
+    <button class="dialog-btn dialog-btn--secondary" type="button" (click)="close()" [disabled]="saving">
+      {{ 'CANCEL' | translate }}
+    </button>
     <button class="dialog-btn dialog-btn--primary" type="button" (click)="save()" [disabled]="saving">
-      {{ saving ? 'Saving…' : 'Save' }}
+      {{ saving ? ('SAVING' | translate) : ('SAVE' | translate) }}
     </button>
   </div>
 </div>

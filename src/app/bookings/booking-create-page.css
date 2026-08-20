@@ -504,6 +504,64 @@
   gap: 10px;
 }
 
+.bc-room-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  --rsl-suite-accent: #7c3aed;
+  --rsl-muted: var(--bc-muted);
+  --rsl-ink: var(--bc-ink);
+}
+
+.bc-room-board__building h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 760;
+  color: var(--bc-ink);
+}
+
+.bc-room-board__floor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 2px 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--bc-muted);
+}
+
+.bc-room-board__floor strong {
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+}
+
+.bc-suite-block {
+  margin-top: 0;
+}
+
+.bc-room-card--in-suite {
+  min-height: 104px;
+  padding-inline-start: 14px;
+}
+
+.bc-room-card__suite-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #7c3aed;
+  background: color-mix(in srgb, #7c3aed 10%, white);
+  border: 1px solid color-mix(in srgb, #7c3aed 18%, white);
+}
+
 .bc-room-card {
   text-align: start;
   border: 1.5px solid var(--bc-line);
@@ -1459,4 +1517,49 @@
 .bc-dur-presets__chip:hover {
   border-color: var(--bc-accent, #1d4ed8);
   color: var(--bc-accent, #1d4ed8);
+}
+
+.bc-confirm-extras {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--bc-line);
+  background: #f8fbff;
+}
+
+.bc-confirm-extras h3 {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+}
+
+.bc-confirm-extras__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bc-confirm-extras__list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--bc-line);
+  font-size: 0.8rem;
+}
+
+.bc-confirm-extras__type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--bc-muted);
+}
+
+.bc-confirm-extras__list em {
+  font-style: normal;
+  opacity: 0.65;
 }

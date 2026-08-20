@@ -47,7 +47,9 @@ type NavIcon =
   | 'users'
   | 'admins'
   | 'roles'
-  | 'locks';
+  | 'locks'
+  | 'events'
+  | 'trash';
 
 interface NavItem {
   labelKey: string;
@@ -146,6 +148,12 @@ export class AppShell implements OnInit, OnDestroy {
             visible: this.canProperty('manage bookings'),
           },
           {
+            labelKey: 'BOOK_VIEW_DELETED',
+            route: '/Reservations/Deleted',
+            icon: 'trash',
+            visible: this.canProperty('manage bookings'),
+          },
+          {
             labelKey: 'ROOM_STATUS_NAV',
             route: '/RoomStatus',
             icon: 'room-status',
@@ -175,12 +183,6 @@ export class AppShell implements OnInit, OnDestroy {
             route: '/Locks',
             icon: 'locks',
             visible: this.canProperty('manage locks'),
-          },
-          {
-            labelKey: 'EDU_COMPOUND_ACCESS',
-            route: '/CompoundAccess',
-            icon: 'locks',
-            visible: this.auth.hasModule('property') && this.canManageCompoundAccess(),
           },
           {
             labelKey: 'REPORTS',
@@ -231,10 +233,10 @@ export class AppShell implements OnInit, OnDestroy {
             visible: this.auth.hasModule('education') && this.auth.can('manage enrollments'),
           },
           {
-            labelKey: 'EDU_COMPOUND_ACCESS',
-            route: '/CompoundAccess',
-            icon: 'locks',
-            visible: this.auth.hasModule('education') && this.canManageCompoundAccess(),
+            labelKey: 'EDU_EVENTS',
+            route: '/Education/Events',
+            icon: 'events',
+            visible: this.auth.hasModule('education') && this.auth.can('manage events'),
           },
           {
             labelKey: 'EDU_REPORTS',
@@ -253,6 +255,12 @@ export class AppShell implements OnInit, OnDestroy {
             route: '/Users',
             icon: 'users',
             visible: this.auth.can('manage users'),
+          },
+          {
+            labelKey: 'COMPOUND_ACCESS_NAV',
+            route: '/CompoundAccess',
+            icon: 'locks',
+            visible: this.canShowCompoundAccess(),
           },
           {
             labelKey: 'ADMINS',
@@ -574,6 +582,13 @@ export class AppShell implements OnInit, OnDestroy {
 
   private canManageCompoundAccess(): boolean {
     return this.auth.canAny('manage education', 'manage compounds', 'manage locks');
+  }
+
+  private canShowCompoundAccess(): boolean {
+    return (
+      (this.auth.hasModule('property') || this.auth.hasModule('education')) &&
+      this.canManageCompoundAccess()
+    );
   }
 
   toggleSidebar(): void {

@@ -37,6 +37,15 @@ export const routes: Routes = [
       },
 
       {
+        path: 'Reservations/Deleted',
+        canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
+        loadComponent: () =>
+          import('./layout/deleted-reservations-page/deleted-reservations-page').then(
+            (m) => m.DeletedReservationsPageComponent,
+          ),
+      },
+
+      {
         path: 'Reservations/New',
         canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
         loadComponent: () =>
@@ -179,7 +188,7 @@ export const routes: Routes = [
           permissionGuard('manage education', 'manage compounds', 'manage locks'),
         ],
         loadComponent: () =>
-          import('./education/compound-access/compound-access-page').then((m) => m.CompoundAccessPage),
+          import('./compound-access/compound-access-page').then((m) => m.CompoundAccessPage),
       },
       {
         path: 'Education/CompoundAccess',
@@ -191,6 +200,17 @@ export const routes: Routes = [
         canActivate: [moduleGuard('education'), permissionGuard('view education reports')],
         loadComponent: () =>
           import('./education/reports/education-reports-page').then((m) => m.EducationReportsPage),
+      },
+      {
+        path: 'Education/Events',
+        canActivate: [moduleGuard('education'), permissionGuard('manage events')],
+        loadComponent: () => import('./education/events/events-page').then((m) => m.EventsPage),
+      },
+      {
+        path: 'Education/Events/New',
+        canActivate: [moduleGuard('education'), permissionGuard('manage events')],
+        loadComponent: () =>
+          import('./education/events/event-create-page').then((m) => m.EventCreatePage),
       },
     ],
   },

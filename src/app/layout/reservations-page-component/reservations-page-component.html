@@ -6,12 +6,26 @@
       <p class="rp__subtitle">
         @if (loading) {
         <span class="rp__skel" aria-hidden="true"></span>
+        } @else if (total && pageFrom) {
+        {{ 'BOOK_PAGE_RANGE' | translate: { from: pageFrom, to: pageTo, total: total } }}
         } @else {
-        {{ 'BOOK_PAGE_COUNT' | translate: { n: filteredReservations.length } }}
+        {{ 'BOOK_PAGE_COUNT' | translate: { n: total } }}
         }
-      </p>
+      </p>    
     </div>
     <div class="rp__actions">
+      <button type="button" class="rp-btn rp-btn--ghost rp-btn--deleted-link" (click)="openDeletedReservations()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 6h18" />
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+        </svg>
+        {{ 'BOOK_VIEW_DELETED' | translate }}
+        @if (statCounts.deleted) {
+        <span class="rp-btn__badge">{{ statCounts.deleted }}</span>
+        }
+      </button>
       <button type="button" class="rp-btn rp-btn--ghost" (click)="load()" [disabled]="loading">
         {{ loading ? ('LOADING' | translate) : ('BOOK_REFRESH' | translate) }}
       </button>
@@ -48,6 +62,12 @@
         <span>{{ 'BOOK_TAB_CANCELLED' | translate }}</span>
         <em>{{ statCounts.cancelled }}</em>
       </button>
+      <!-- <button type="button" class="rp-tab rp-tab--deleted" (click)="openDeletedReservations()">
+        <span>{{ 'BOOK_TAB_DELETED' | translate }}</span>
+        @if (statCounts.deleted) {
+        <em>{{ statCounts.deleted }}</em>
+        }
+      </button> -->
     </div>
 
     <label class="rp__search">
@@ -63,10 +83,10 @@
 
   @if (loading) {
   <app-page-skeleton variant="table" [rows]="7" [cols]="7" />
-  } @else if (!filteredReservations.length) {
+  } @else if (!reservations.length) {
   <div class="rp-empty">
-    <strong>{{ (reservations.length ? 'BOOK_EMPTY_SEARCH' : 'BOOK_EMPTY') | translate }}</strong>
-    @if (!reservations.length) {
+    <strong>{{ (hasFilters ? 'BOOK_EMPTY_SEARCH' : 'BOOK_EMPTY') | translate }}</strong>
+    @if (!hasFilters) {
     <p>{{ 'BOOK_EMPTY_HINT' | translate }}</p>
     <button type="button" class="rp-btn rp-btn--primary" (click)="openNewReservation()">
       {{ 'BOOK_CREATE_FIRST' | translate }}
@@ -99,7 +119,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (res of filteredReservations; track res.id; let i = $index) {
+        @for (res of reservations; track res.id; let i = $index) {
         <tr class="reveal-item rp-row" [style.--reveal-i]="i < 12 ? i : 12" @fadeInOut
           (click)="openDetails(res)" (keydown.enter)="openDetails(res)" tabindex="0" role="link"
           [attr.aria-label]="'BOOK_DETAIL_OPEN' | translate: { id: res.id }">
@@ -207,5 +227,21 @@
       </tbody>
     </table>
   </div>
+
+  @if (lastPage > 1) {
+  <nav class="rp-pager" [attr.aria-label]="'PAG_NAV' | translate">
+    <button type="button" class="rp-pager__btn" (click)="goToPage(currentPage - 1)"
+      [disabled]="currentPage <= 1 || loading">
+      {{ 'PAG_PREV' | translate }}
+    </button>
+    <span class="rp-pager__info">
+      {{ 'PAG_PAGE' | translate: { page: currentPage, last: lastPage } }}
+    </span>
+    <button type="button" class="rp-pager__btn" (click)="goToPage(currentPage + 1)"
+      [disabled]="currentPage >= lastPage || loading">
+      {{ 'PAG_NEXT' | translate }}
+    </button>
+  </nav>
+  }
   }
 </div>

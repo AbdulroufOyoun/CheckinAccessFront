@@ -14,25 +14,20 @@ import {
   RoomStatusSummary,
 } from '../services/room-status.service';
 import { RealtimeService } from '../services/realtime.service';
-
-interface FloorGroup {
-  floorId: number | null;
-  floorLabel: string;
-  rooms: RoomStatusItem[];
-}
-
-interface BuildingGroup {
-  buildingId: number | null;
-  buildingName: string;
-  floors: FloorGroup[];
-}
+import {
+  BuildingRoomGroups,
+  FloorRoomGroups,
+  groupRoomsByBuildingFloor,
+  suiteAvailableCount,
+  SuiteRoomGroup,
+} from '../shared/room-display-groups';
 
 @Component({
   selector: 'app-room-status-page',
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './room-status-page.html',
-  styleUrl: './room-status-page.css',
+  styleUrls: ['./room-status-page.css', '../shared/room-suite-layout.css'],
 })
 export class RoomStatusPage implements OnInit, OnDestroy {
   private readonly api = inject(RoomStatusService);
@@ -143,38 +138,12 @@ export class RoomStatusPage implements OnInit, OnDestroy {
     });
   }
 
-  get groups(): BuildingGroup[] {
-    const map = new Map<string, BuildingGroup>();
-    for (const room of this.filteredRooms) {
-      const buildingId = room.building?.id ?? null;
-      const buildingKey = String(buildingId ?? 'none');
-      if (!map.has(buildingKey)) {
-        map.set(buildingKey, {
-          buildingId,
-          buildingName: room.building?.name || this.translate.instant('ROOM_STATUS_UNKNOWN_BUILDING'),
-          floors: [],
-        });
-      }
-      const building = map.get(buildingKey)!;
-      const floorId = room.floor?.id ?? null;
-      let floor = building.floors.find((f) => f.floorId === floorId);
-      if (!floor) {
-        floor = {
-          floorId,
-          floorLabel: room.floor
-            ? `${this.translate.instant('ROOM_STATUS_FLOOR')} ${room.floor.number}`
-            : this.translate.instant('ROOM_STATUS_NO_FLOOR'),
-          rooms: [],
-        };
-        building.floors.push(floor);
-      }
-      floor.rooms.push(room);
-    }
-
-    return [...map.values()].map((b) => ({
-      ...b,
-      floors: b.floors.sort((a, c) => String(a.floorLabel).localeCompare(String(c.floorLabel), undefined, { numeric: true })),
-    }));
+  get groups(): BuildingRoomGroups[] {
+    return groupRoomsByBuildingFloor(this.filteredRooms, {
+      unknownBuilding: this.translate.instant('ROOM_STATUS_UNKNOWN_BUILDING'),
+      floorPrefix: this.translate.instant('ROOM_STATUS_FLOOR'),
+      noFloor: this.translate.instant('ROOM_STATUS_NO_FLOOR'),
+    });
   }
 
   get filteredCount(): number {
@@ -257,16 +226,28 @@ export class RoomStatusPage implements OnInit, OnDestroy {
     return [subject, section].filter(Boolean).join(' · ') || this.translate.instant('ROOM_STATUS_CLASS');
   }
 
-  trackBuilding(_: number, g: BuildingGroup): string {
+  trackBuilding(_: number, g: BuildingRoomGroups): string {
     return String(g.buildingId ?? 'none');
   }
 
-  trackFloor(_: number, f: FloorGroup): string {
+  trackFloor(_: number, f: FloorRoomGroups): string {
     return String(f.floorId ?? 'none');
+  }
+
+  trackSuite(_: number, s: SuiteRoomGroup): string {
+    return String(s.suiteId);
   }
 
   trackRoom(_: number, r: RoomStatusItem): number {
     return r.id;
+  }
+
+  suiteAvailabilityLabel(group: SuiteRoomGroup): string {
+    const available = suiteAvailableCount(group);
+    return this.translate.instant('ROOM_SUITE_AVAILABILITY', {
+      available,
+      total: group.rooms.length,
+    });
   }
 
   openRoom(room: RoomStatusItem): void {

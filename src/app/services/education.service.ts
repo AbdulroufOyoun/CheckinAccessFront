@@ -3,6 +3,13 @@ import { ApiService } from './api.service';
 import { Apiendpointd } from '../apiEndpoints';
 import { ApiResponse } from '../interfaces/api-response';
 import { EducationReferenceCache } from './education-reference-cache.service';
+import {
+  CompoundAccessService,
+  type CompoundAccessCompound,
+  type CompoundAccessRow,
+  type CompoundAccessStudent,
+  type CompoundAccessUser,
+} from './compound-access.service';
 
 export interface EduSubject {
   id: number;
@@ -134,29 +141,18 @@ export interface EduReports {
   archives_total?: number;
 }
 
-export interface CompoundAccessCompound {
-  id: number;
-  name?: string | null;
-  number?: string | null;
-}
-
-export interface CompoundAccessStudent {
-  id: number;
-  name?: string | null;
-  email?: string | null;
-  mobile?: string | null;
-}
-
-export interface CompoundAccessRow {
-  user_id: number;
-  user?: CompoundAccessStudent | null;
-  compounds: CompoundAccessCompound[];
-}
+export type {
+  CompoundAccessCompound,
+  CompoundAccessRow,
+  CompoundAccessStudent,
+  CompoundAccessUser,
+} from './compound-access.service';
 
 @Injectable({ providedIn: 'root' })
 export class EducationService {
   private readonly api = inject(ApiService);
   private readonly scheduleCache = inject(EducationReferenceCache);
+  private readonly compoundAccess = inject(CompoundAccessService);
 
   private async mutate<T>(op: Promise<T>): Promise<T> {
     const result = await op;
@@ -348,18 +344,18 @@ export class EducationService {
   }
 
   getCompoundAccess(): Promise<ApiResponse<CompoundAccessRow[]>> {
-    return this.api.get(Apiendpointd.compoundAccess);
+    return this.compoundAccess.list();
   }
 
   getCompoundAccessCompounds(): Promise<ApiResponse<CompoundAccessCompound[]>> {
-    return this.api.get(Apiendpointd.compoundAccessCompounds);
+    return this.compoundAccess.listCompounds();
   }
 
   searchCompoundAccessStudents(query: string): Promise<ApiResponse<CompoundAccessStudent[]>> {
-    return this.api.get(Apiendpointd.compoundAccessStudents(query));
+    return this.compoundAccess.searchUsers(query);
   }
 
   syncCompoundAccess(userId: number, compoundIds: number[]): Promise<ApiResponse<CompoundAccessRow>> {
-    return this.api.put(Apiendpointd.compoundAccessStudent(userId), { compound_ids: compoundIds });
+    return this.compoundAccess.sync(userId, compoundIds);
   }
 }

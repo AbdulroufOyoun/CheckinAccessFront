@@ -9,6 +9,8 @@ import { SnackbarService } from '../services/snackbar.service';
 import { AuthService } from '../services/auth.service';
 import { TenantUser, UsersService } from '../services/users.service';
 import { AddUser } from '../dialog/add-user/add-user';
+import { BookingDetailDialog } from '../dialog/booking-detail/booking-detail';
+import { Booking } from '../services/bookings.service';
 
 interface BookingRow {
   id: number;
@@ -17,6 +19,7 @@ interface BookingRow {
   checkIn: string;
   checkOut: string;
   room: string;
+  raw: Booking;
 }
 
 const AVATAR_PALETTE = [
@@ -134,6 +137,19 @@ export class UserDetailPage implements OnInit, OnDestroy {
     });
   }
 
+  openBookingDetails(row: BookingRow, event?: Event): void {
+    event?.stopPropagation();
+    this.dialog.open(BookingDetailDialog, {
+      panelClass: ['custom-dialog'],
+      backdropClass: 'custom-backdrop',
+      width: '560px',
+      maxWidth: '96vw',
+      maxHeight: '92vh',
+      autoFocus: false,
+      data: { bookingId: row.id, preview: row.raw },
+    });
+  }
+
   async removeUser(): Promise<void> {
     if (!this.user) return;
     const ok = confirm(
@@ -205,10 +221,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
           : [];
 
       this.bookings = rows.map((raw) => {
-        const b = raw as {
-          id: number;
-          cancelled?: boolean;
-          on_hold?: boolean;
+        const b = raw as Booking & {
           booking_periods?: Array<{ check_in_date?: string; check_out_date?: string }>;
           booking_period_units?: Array<{
             room_id?: number;
@@ -236,6 +249,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
             unit?.room?.number ||
             unit?.room?.name ||
             (unit?.room_id ? String(unit.room_id) : '—'),
+          raw: b,
         };
       });
     } catch {
