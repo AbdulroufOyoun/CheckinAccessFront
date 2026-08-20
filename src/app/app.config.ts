@@ -1,17 +1,20 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
 
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { TRANSLATE_HTTP_LOADER_CONFIG } from '@ngx-translate/http-loader';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { apiErrorInterceptor } from './interceptors/api-error.interceptor';
 
 export function HttpLoaderFactory(): TranslateHttpLoader {
   return new TranslateHttpLoader();
@@ -19,12 +22,11 @@ export function HttpLoaderFactory(): TranslateHttpLoader {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
-    provideCharts(withDefaultRegisterables()),
     provideRouter(routes),
-    provideClientHydration(withEventReplay()),
-    provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideAnimationsAsync(),
+    provideHttpClient(withInterceptors([authInterceptor, apiErrorInterceptor])),
     importProvidersFrom(
       TranslateModule.forRoot({
         fallbackLang: 'en',

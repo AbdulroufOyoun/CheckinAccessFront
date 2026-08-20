@@ -1,9 +1,9 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
+import { Subject, takeUntil } from 'rxjs';
 import { SnackbarService } from '../services/snackbar.service';
 import {
   RoomOccupancyStatus,
@@ -13,6 +13,7 @@ import {
   RoomStatusService,
   RoomStatusSummary,
 } from '../services/room-status.service';
+import { RealtimeService } from '../services/realtime.service';
 
 interface FloorGroup {
   floorId: number | null;
@@ -29,17 +30,19 @@ interface BuildingGroup {
 @Component({
   selector: 'app-room-status-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, PageSkeleton],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './room-status-page.html',
   styleUrl: './room-status-page.css',
 })
-export class RoomStatusPage implements OnInit {
+export class RoomStatusPage implements OnInit, OnDestroy {
   private readonly api = inject(RoomStatusService);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroy$ = new Subject<void>();
 
   isRTL = false;
   loading = false;
@@ -64,6 +67,12 @@ export class RoomStatusPage implements OnInit {
   }> = [];
   payload: RoomStatusPayload | null = null;
 
+  readonly skeletonKpis = [0, 1, 2, 3, 4];
+  readonly skeletonFloors = [
+    { id: 1, rooms: [0, 1, 2, 3, 4, 5, 6, 7] },
+    { id: 2, rooms: [0, 1, 2, 3, 4, 5] },
+  ];
+
   ngOnInit(): void {
     this.isRTL =
       this.document.documentElement.getAttribute('dir') === 'rtl' ||
@@ -78,6 +87,14 @@ export class RoomStatusPage implements OnInit {
     this.time = this.toTimeInput(now);
 
     void this.bootstrap();
+    this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      void this.load(true);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get floorsForBuilding(): Array<{
@@ -165,6 +182,7 @@ export class RoomStatusPage implements OnInit {
   }
 
   async bootstrap(): Promise<void> {
+    this.loading = true;
     try {
       this.buildings = await this.api.getFilterBuildings();
     } catch {
@@ -173,9 +191,11 @@ export class RoomStatusPage implements OnInit {
     await this.load();
   }
 
-  async load(): Promise<void> {
+  async load(silent = false): Promise<void> {
     if (!this.date || !this.time) return;
-    this.loading = true;
+    if (!silent) {
+      this.loading = true;
+    }
     try {
       this.payload = await this.api.getStatus({
         date: this.date,
@@ -186,13 +206,18 @@ export class RoomStatusPage implements OnInit {
       });
       this.loaded = true;
     } catch (e: unknown) {
+      if (silent) {
+        return;
+      }
       const m = (e as { error?: { message?: string } })?.error?.message;
       this.snackbar.show(
         typeof m === 'string' ? m : this.translate.instant('REQUEST_FAILED'),
         'error',
       );
     } finally {
-      this.loading = false;
+      if (!silent) {
+        this.loading = false;
+      }
       this.cdr.detectChanges();
     }
   }

@@ -21,6 +21,10 @@ export class Apiendpointd {
     return this.mianUrl.replace(/\/api\/admins\/?$/, '/api/');
   }
 
+  public static get broadcastingAuth(): string {
+    return this.apiRoot + 'broadcasting/auth';
+  }
+
   public static get extendedBuildings(): string {
     return this.mianUrl + 'extended-buildings/';
   }
@@ -91,6 +95,10 @@ export class Apiendpointd {
 
   public static get roomsAvailability(): string {
     return this.extendedBuildings + 'rooms/availability';
+  }
+
+  public static roomClasses(id: number | string): string {
+    return `${this.extendedBuildings}rooms/${id}/classes`;
   }
 
   public static get weekends(): string {
@@ -478,5 +486,22 @@ export class Apiendpointd {
 
   public static get educationReports(): string {
     return this.education + 'reports';
+  }
+
+  public static get compoundAccess(): string {
+    return this.education + 'compound-access';
+  }
+
+  public static get compoundAccessCompounds(): string {
+    return this.compoundAccess + '/compounds';
+  }
+
+  public static compoundAccessStudents(query?: string): string {
+    const qs = query?.trim() ? `?q=${encodeURIComponent(query.trim())}` : '';
+    return `${this.compoundAccess}/students${qs}`;
+  }
+
+  public static compoundAccessStudent(userId: number | string): string {
+    return `${this.compoundAccess}/students/${userId}`;
   }
 }

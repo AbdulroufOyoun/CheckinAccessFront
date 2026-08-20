@@ -288,6 +288,15 @@
   min-width: 0;
 }
 
+.occ-chart-placeholder {
+  min-height: 360px;
+  height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--surface-border, #e8edf5);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+}
+
 .dashboard__grid-3col {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));

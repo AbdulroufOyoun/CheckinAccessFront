@@ -87,6 +87,9 @@
             </span>
           </td>
           <td class="edu-ui__actions">
+            <button type="button" class="edu-ui__btn edu-ui__btn--details" (click)="openCreate(group.userId)">
+              {{ 'ENR_EDIT' | translate }}
+            </button>
             <button type="button" class="edu-ui__btn edu-ui__btn--details" (click)="openDetails(group)">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

@@ -461,8 +461,6 @@
   width: 360px;
   left: 0;
   right: auto;
-  max-height: min(440px, calc(100vh - 88px));
-  overflow: auto;
   padding: 6px 0 8px;
 }
 
@@ -479,6 +477,10 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #9CA3AF;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
 }
 
 .navbar__search-item {
@@ -667,6 +669,13 @@
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: all;
+}
+
+.navbar__dropdown.navbar__dropdown--search {
+  max-height: min(70vh, calc(100vh - 88px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .navbar__dropdown--notif {

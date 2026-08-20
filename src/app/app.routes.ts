@@ -1,120 +1,123 @@
 import { Routes } from '@angular/router';
-import { Dashboard } from './dashboard/dashboard';
-import { AppShell } from './layout/app-shell/app-shell';
-import { ReservationsPageComponent } from './layout/reservations-page-component/reservations-page-component';
-import { OtpVerification } from './auth/otp-verification/otp-verification';
 import { Login } from './auth/login/login';
-import { Users } from './users/users';
-import { UserDetailPage } from './users/user-detail-page';
-import { Reports } from './reports/reports';
-import { RoomStatusPage } from './room-status/room-status-page';
-import { RoomDetailPage } from './room-status/room-detail-page';
-import { HolidaysPage } from './holidays/holidays-page';
-import { BookingCreatePage } from './bookings/booking-create-page';
-import { PropertyConsole } from './property/property-console/property-console';
 import { authGuard, guestGuard, moduleGuard, permissionGuard } from './guards/auth.guard';
-import { SubjectsPage } from './education/subjects/subjects-page';
-import { SectionsPage } from './education/sections/sections-page';
-import { EnrollmentsPage } from './education/enrollments/enrollments-page';
-import { EducationReportsPage } from './education/reports/education-reports-page';
-import { SchedulePage } from './education/schedule/schedule-page';
-import { AdminsPage } from './admins/admins-page';
-import { RolesPage } from './roles/roles-page';
-import { SettingsPage } from './settings/settings-page';
-import { AcademicTermsPage } from './education/academic-terms/academic-terms-page';
-import { EnrollmentHistoryPage } from './education/enrollment-history/enrollment-history-page';
-import { LocksPage } from './property/locks-page/locks-page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'Login', pathMatch: 'full' },
 
   { path: 'Login', component: Login, canActivate: [guestGuard] },
-  { path: 'OtpVerification', component: OtpVerification, canActivate: [guestGuard] },
+  {
+    path: 'OtpVerification',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./auth/otp-verification/otp-verification').then((m) => m.OtpVerification),
+  },
 
   {
     path: '',
-    component: AppShell,
+    loadComponent: () => import('./layout/app-shell/app-shell').then((m) => m.AppShell),
     canActivate: [authGuard],
     children: [
-      { path: 'Dashboard', component: Dashboard },
-      { path: 'Settings', component: SettingsPage },
+      {
+        path: 'Dashboard',
+        loadComponent: () => import('./dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'Settings',
+        loadComponent: () => import('./settings/settings-page').then((m) => m.SettingsPage),
+      },
 
       {
         path: 'Reservations',
-        component: ReservationsPageComponent,
         canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
+        loadComponent: () =>
+          import('./layout/reservations-page-component/reservations-page-component').then(
+            (m) => m.ReservationsPageComponent,
+          ),
       },
 
       {
         path: 'Reservations/New',
-        component: BookingCreatePage,
         canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
+        loadComponent: () =>
+          import('./bookings/booking-create-page').then((m) => m.BookingCreatePage),
       },
 
       {
         path: 'RoomStatus',
-        component: RoomStatusPage,
         canActivate: [
           moduleGuard('property'),
           permissionGuard('manage bookings', 'view buildings', 'manage buildings'),
         ],
+        loadComponent: () =>
+          import('./room-status/room-status-page').then((m) => m.RoomStatusPage),
       },
       {
         path: 'RoomStatus/:id',
-        component: RoomDetailPage,
         canActivate: [
           moduleGuard('property'),
           permissionGuard('manage bookings', 'view buildings', 'manage buildings'),
         ],
+        loadComponent: () =>
+          import('./room-status/room-detail-page').then((m) => m.RoomDetailPage),
       },
 
       {
         path: 'Holidays',
-        component: HolidaysPage,
         canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
+        loadComponent: () => import('./holidays/holidays-page').then((m) => m.HolidaysPage),
       },
 
       {
         path: 'Users',
-        component: Users,
         canActivate: [permissionGuard('manage users')],
+        loadComponent: () => import('./users/users').then((m) => m.Users),
       },
       {
         path: 'Users/:id',
-        component: UserDetailPage,
         canActivate: [permissionGuard('manage users')],
+        loadComponent: () => import('./users/user-detail-page').then((m) => m.UserDetailPage),
       },
 
       {
         path: 'Admins',
-        component: AdminsPage,
         canActivate: [permissionGuard('manage admins')],
+        loadComponent: () => import('./admins/admins-page').then((m) => m.AdminsPage),
       },
 
       {
         path: 'Roles',
-        component: RolesPage,
         canActivate: [permissionGuard('manage roles')],
+        loadComponent: () => import('./roles/roles-page').then((m) => m.RolesPage),
       },
 
       {
         path: 'Reports',
-        component: Reports,
         canActivate: [moduleGuard('property'), permissionGuard('view reports')],
+        loadComponent: () => import('./reports/reports').then((m) => m.Reports),
       },
 
       {
         path: 'Property',
-        component: PropertyConsole,
         canActivate: [
           moduleGuard('property'),
-          permissionGuard('manage buildings', 'view buildings', 'manage rooms', 'view rooms', 'manage compounds', 'view compounds'),
+          permissionGuard(
+            'manage buildings',
+            'view buildings',
+            'manage rooms',
+            'view rooms',
+            'manage compounds',
+            'view compounds',
+          ),
         ],
+        loadComponent: () =>
+          import('./property/property-console/property-console').then((m) => m.PropertyConsole),
       },
       {
         path: 'Locks',
-        component: LocksPage,
         canActivate: [moduleGuard('property'), permissionGuard('manage locks')],
+        loadComponent: () =>
+          import('./property/locks-page/locks-page').then((m) => m.LocksPage),
       },
       {
         path: 'FacilitiesManagement',
@@ -124,38 +127,53 @@ export const routes: Routes = [
 
       {
         path: 'Education/Subjects',
-        component: SubjectsPage,
         canActivate: [moduleGuard('education'), permissionGuard('manage education')],
+        loadComponent: () =>
+          import('./education/subjects/subjects-page').then((m) => m.SubjectsPage),
       },
       {
         path: 'Education/Sections',
-        component: SectionsPage,
         canActivate: [moduleGuard('education'), permissionGuard('manage education')],
+        loadComponent: () =>
+          import('./education/sections/sections-page').then((m) => m.SectionsPage),
       },
       {
         path: 'Education/Schedule',
-        component: SchedulePage,
         canActivate: [moduleGuard('education'), permissionGuard('manage education')],
+        loadComponent: () =>
+          import('./education/schedule/schedule-page').then((m) => m.SchedulePage),
       },
       {
         path: 'Education/Enrollments',
-        component: EnrollmentsPage,
         canActivate: [moduleGuard('education'), permissionGuard('manage enrollments')],
+        loadComponent: () =>
+          import('./education/enrollments/enrollments-page').then((m) => m.EnrollmentsPage),
       },
       {
         path: 'Education/Terms',
-        component: AcademicTermsPage,
         canActivate: [moduleGuard('education'), permissionGuard('manage education')],
+        loadComponent: () =>
+          import('./education/academic-terms/academic-terms-page').then((m) => m.AcademicTermsPage),
       },
       {
         path: 'Education/EnrollmentHistory',
-        component: EnrollmentHistoryPage,
         canActivate: [moduleGuard('education'), permissionGuard('manage enrollments')],
+        loadComponent: () =>
+          import('./education/enrollment-history/enrollment-history-page').then(
+            (m) => m.EnrollmentHistoryPage,
+          ),
+      },
+      {
+        path: 'Education/CompoundAccess',
+        canActivate: [moduleGuard('education'), permissionGuard('manage education')],
+        loadComponent: () =>
+          import('./education/compound-access/compound-access-page').then((m) => m.CompoundAccessPage),
       },
       {
         path: 'Education/Reports',
-        component: EducationReportsPage,
         canActivate: [moduleGuard('education'), permissionGuard('view education reports')],
+        loadComponent: () =>
+          import('./education/reports/education-reports-page').then((m) => m.EducationReportsPage),
       },
     ],
   },

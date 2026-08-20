@@ -1,0 +1,52 @@
+<div class="toast-stack" aria-live="polite" aria-relevant="additions">
+  @for (msg of snackbar.messages(); track msg.id) {
+    <article
+      class="app-toast"
+      [class.app-toast--success]="msg.kind === 'success'"
+      [class.app-toast--error]="msg.kind === 'error'"
+      [class.app-toast--warning]="msg.kind === 'warning'"
+      [attr.role]="msg.kind === 'success' ? 'status' : 'alert'"
+      (mouseenter)="snackbar.pause(msg.id)"
+      (mouseleave)="snackbar.resume(msg.id)"
+    >
+      <span class="app-toast__icon" aria-hidden="true">
+        @if (msg.kind === 'success') {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+            <path d="M8 12.2 10.6 15 16 9.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        } @else if (msg.kind === 'warning') {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4.8 3.8 19.2h16.4L12 4.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            <path d="M12 10v4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <circle cx="12" cy="16.6" r="0.9" fill="currentColor" />
+          </svg>
+        } @else {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+            <path d="M12 8v5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            <circle cx="12" cy="16.2" r="0.95" fill="currentColor" />
+          </svg>
+        }
+      </span>
+
+      <div class="app-toast__copy">
+        <strong class="app-toast__title">{{ msg.titleKey | translate }}</strong>
+        <p class="app-toast__text">{{ msg.text }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="app-toast__close"
+        (click)="snackbar.dismiss(msg.id)"
+        [attr.aria-label]="'CLOSE' | translate"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </button>
+
+      <span class="app-toast__progress" [class.app-toast__progress--slow]="msg.kind === 'warning'" aria-hidden="true"></span>
+    </article>
+  }
+</div>

@@ -1,10 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatDialog } from '@angular/material/dialog';
+import { Subject, takeUntil } from 'rxjs';
 import {
   Booking,
   BookingPeriod,
@@ -15,6 +16,7 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 import { AssignBookingLocksDialog } from '../../dialog/assign-booking-locks/assign-booking-locks';
 import { BookingDetailDialog } from '../../dialog/booking-detail/booking-detail';
+import { RealtimeService } from '../../services/realtime.service';
 
 interface ReservationRow {
   id: number;
@@ -47,7 +49,7 @@ interface ReservationRow {
     ]),
   ],
 })
-export class ReservationsPageComponent implements OnInit {
+export class ReservationsPageComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly bookingsApi = inject(BookingsService);
@@ -56,6 +58,8 @@ export class ReservationsPageComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
   private readonly dialog = inject(MatDialog);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroy$ = new Subject<void>();
 
   loading = true;
   isRTL = false;
@@ -89,6 +93,14 @@ export class ReservationsPageComponent implements OnInit {
       }
     });
     void this.load();
+    this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      void this.load();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   guestInitials(name: string): string {
@@ -165,7 +177,7 @@ export class ReservationsPageComponent implements OnInit {
       maxWidth: '96vw',
       maxHeight: '92vh',
       autoFocus: false,
-      data: { bookingId: row.id },
+      data: { bookingId: row.id, preview: row.raw },
     });
   }
 

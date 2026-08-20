@@ -40,6 +40,13 @@ testem.log
 /typings
 __screenshots__/
 
+# Local tool caches (Lighthouse, Node compile cache) — never commit
+.lh-tmp/
+.lh-chrome/
+lh-*.json
+**/.cache/
+**/node-compile-cache/
+
 # System files
 .DS_Store
 Thumbs.db

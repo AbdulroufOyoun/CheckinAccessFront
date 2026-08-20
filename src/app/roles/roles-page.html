@@ -36,7 +36,7 @@
             }
           </div>
           <span class="rbac__role-count">
-            {{ 'ROLE_PERM_COUNT' | translate: { n: role.permissions?.length || 0 } }}
+            {{ 'ROLE_PERM_COUNT' | translate: { n: permCount(role) } }}
           </span>
         </button>
         } @empty {
@@ -110,7 +110,10 @@
               [disabled]="isSuperAdmin"
               (click)="togglePermission(p.name)">
               <span class="rbac__perm-dot" aria-hidden="true"></span>
-              <span class="rbac__perm-name">{{ p.name }}</span>
+              <span class="rbac__perm-text">
+                <span class="rbac__perm-name">{{ permLabel(p.name) }}</span>
+                <span class="rbac__perm-code">{{ p.name }}</span>
+              </span>
             </button>
             }
           </div>

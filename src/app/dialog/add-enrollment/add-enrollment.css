@@ -6,11 +6,9 @@
   width: min(640px, 100%);
 }
 
-.enr-hint {
-  margin: 0 0 10px;
-  color: #64748b;
-  font-size: 0.82rem;
-  line-height: 1.45;
+.enr-hint--edit {
+  margin-top: 8px;
+  color: #1d4ed8;
 }
 
 .enr-empty {

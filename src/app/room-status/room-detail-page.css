@@ -229,6 +229,115 @@
   font-size: 0.9rem;
 }
 
+.rd-why {
+  margin: 0 0 16px;
+}
+
+.rd-why .rd-muted {
+  margin: 0 0 12px;
+}
+
+.rd-why__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.rd-why__row + .rd-why__row {
+  border-top: 1px solid #f1f5f9;
+}
+
+.rd-why__row div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rd-why__row small {
+  color: var(--rd-muted);
+}
+
+.rd__link--quiet {
+  background: transparent;
+  color: var(--rd-accent);
+  padding-inline: 0;
+}
+
+.rd-lectures .rd-muted {
+  margin: 0 0 12px;
+}
+
+.rd-lectures__days {
+  display: grid;
+  gap: 14px;
+}
+
+.rd-lecture-day h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.rd-lecture-day--today h3 {
+  color: #0e7490;
+}
+
+.rd-list--lectures li {
+  align-items: flex-start;
+}
+
+.rd-lecture {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rd-lecture span {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  color: var(--rd-ink);
+}
+
+.rd-lecture__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  text-align: end;
+  margin-inline-start: auto;
+}
+
+.rd-lecture__meta small {
+  color: var(--rd-muted);
+  font-size: 0.78rem;
+}
+
+.rd-list__item--now {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.rd-pill--today {
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+.rd-pill--lab {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.rd-pill--class {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
 .rd-list {
   list-style: none;
   margin: 0;

@@ -1,4 +1,4 @@
-<div class="rs" [class.rs--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+<div class="rs" [class.rs--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'" [attr.aria-busy]="loading">
   <header class="rs__hero">
     <div class="rs__hero-text">
       <p class="rs__eyebrow">{{ 'ROOM_STATUS_EYEBROW' | translate }}</p>
@@ -59,40 +59,82 @@
     </button>
   </section>
 
-  <section class="rs__kpis" aria-label="summary">
-    <button type="button" class="rs-kpi" [class.is-active]="statusFilter === 'all'" (click)="setStatusFilter('all')">
-      <span class="rs-kpi__label">{{ 'ROOM_STATUS_TOTAL' | translate }}</span>
-      <strong>{{ summary.total }}</strong>
-    </button>
-    <button type="button" class="rs-kpi rs-kpi--available" [class.is-active]="statusFilter === 'available'"
-      (click)="setStatusFilter('available')">
-      <span class="rs-kpi__label">{{ 'ROOM_STATUS_AVAILABLE' | translate }}</span>
-      <strong>{{ summary.available }}</strong>
-    </button>
-    <button type="button" class="rs-kpi rs-kpi--occupied" [class.is-active]="statusFilter === 'occupied'"
-      (click)="setStatusFilter('occupied')">
-      <span class="rs-kpi__label">{{ 'ROOM_STATUS_OCCUPIED' | translate }}</span>
-      <strong>{{ summary.occupied }}</strong>
-    </button>
-    <button type="button" class="rs-kpi rs-kpi--hold" [class.is-active]="statusFilter === 'on_hold'"
-      (click)="setStatusFilter('on_hold')">
-      <span class="rs-kpi__label">{{ 'ROOM_STATUS_ON_HOLD' | translate }}</span>
-      <strong>{{ summary.on_hold }}</strong>
-    </button>
-    <button type="button" class="rs-kpi rs-kpi--inactive" [class.is-active]="statusFilter === 'inactive'"
-      (click)="setStatusFilter('inactive')">
-      <span class="rs-kpi__label">{{ 'ROOM_STATUS_INACTIVE' | translate }}</span>
-      <strong>{{ summary.inactive }}</strong>
-    </button>
-  </section>
+  @if (loading) {
+    <div class="rs-skel" role="status" [attr.aria-label]="'ROOM_STATUS_LOADING' | translate">
+      <section class="rs__kpis" aria-hidden="true">
+        @for (k of skeletonKpis; track k) {
+          <div class="rs-kpi rs-skel__kpi">
+            <span class="rs-skel__bone rs-skel__bone--label"></span>
+            <span class="rs-skel__bone rs-skel__bone--num"></span>
+          </div>
+        }
+      </section>
 
-  @if (loading && !loaded) {
-    <app-page-skeleton variant="cards" [cards]="8" />
-  } @else if (!filteredCount) {
+      <div class="rs-skel__board" aria-hidden="true">
+        <div class="rs-skel__bone rs-skel__bone--meta"></div>
+        <section class="rs-building">
+          <header class="rs-building__head">
+            <span class="rs-skel__bone rs-skel__bone--title"></span>
+            <span class="rs-skel__bone rs-skel__bone--chip"></span>
+          </header>
+          @for (floor of skeletonFloors; track floor.id) {
+            <div class="rs-floor">
+              <div class="rs-floor__head">
+                <span class="rs-skel__bone rs-skel__bone--badge"></span>
+                <span class="rs-floor__line"></span>
+                <span class="rs-skel__bone rs-skel__bone--count"></span>
+              </div>
+              <div class="rs-grid">
+                @for (room of floor.rooms; track room) {
+                  <article class="rs-card rs-skel__card">
+                    <div class="rs-card__top">
+                      <span class="rs-skel__bone rs-skel__bone--status"></span>
+                      <span class="rs-skel__bone rs-skel__bone--dot"></span>
+                    </div>
+                    <span class="rs-skel__bone rs-skel__bone--number"></span>
+                    <span class="rs-skel__bone rs-skel__bone--type"></span>
+                    <span class="rs-skel__bone rs-skel__bone--line"></span>
+                  </article>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+  } @else {
+    <section class="rs__kpis" [attr.aria-label]="'ROOM_STATUS_TITLE' | translate">
+      <button type="button" class="rs-kpi" [class.is-active]="statusFilter === 'all'" (click)="setStatusFilter('all')">
+        <span class="rs-kpi__label">{{ 'ROOM_STATUS_TOTAL' | translate }}</span>
+        <strong>{{ summary.total }}</strong>
+      </button>
+      <button type="button" class="rs-kpi rs-kpi--available" [class.is-active]="statusFilter === 'available'"
+        (click)="setStatusFilter('available')">
+        <span class="rs-kpi__label">{{ 'ROOM_STATUS_AVAILABLE' | translate }}</span>
+        <strong>{{ summary.available }}</strong>
+      </button>
+      <button type="button" class="rs-kpi rs-kpi--occupied" [class.is-active]="statusFilter === 'occupied'"
+        (click)="setStatusFilter('occupied')">
+        <span class="rs-kpi__label">{{ 'ROOM_STATUS_OCCUPIED' | translate }}</span>
+        <strong>{{ summary.occupied }}</strong>
+      </button>
+      <button type="button" class="rs-kpi rs-kpi--hold" [class.is-active]="statusFilter === 'on_hold'"
+        (click)="setStatusFilter('on_hold')">
+        <span class="rs-kpi__label">{{ 'ROOM_STATUS_ON_HOLD' | translate }}</span>
+        <strong>{{ summary.on_hold }}</strong>
+      </button>
+      <button type="button" class="rs-kpi rs-kpi--inactive" [class.is-active]="statusFilter === 'inactive'"
+        (click)="setStatusFilter('inactive')">
+        <span class="rs-kpi__label">{{ 'ROOM_STATUS_INACTIVE' | translate }}</span>
+        <strong>{{ summary.inactive }}</strong>
+      </button>
+    </section>
+
+    @if (!filteredCount) {
     <div class="rs-empty reveal">
       <p>{{ (payload?.rooms?.length ? 'ROOM_STATUS_EMPTY_FILTER' : 'ROOM_STATUS_EMPTY') | translate }}</p>
     </div>
-  } @else {
+    } @else {
     <div class="rs__board reveal">
       <p class="rs__meta">
         {{ 'ROOM_STATUS_SHOWING' | translate: { filtered: filteredCount, total: summary.total, date: date, time: time } }}
@@ -164,5 +206,6 @@
         </section>
       }
     </div>
+    }
   }
 </div>

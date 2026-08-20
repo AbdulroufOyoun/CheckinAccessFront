@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component, Inject, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import {
   EducationService,
   EduSubject,
@@ -14,6 +15,7 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { Apiendpointd } from '../../apiEndpoints';
+import { RealtimeService } from '../../services/realtime.service';
 
 export interface AddSectionDialogData {
   subjects: EduSubject[];
@@ -35,7 +37,7 @@ interface DoctorOption {
   templateUrl: './add-section.html',
   styleUrl: './add-section.css',
 })
-export class AddSection implements OnInit {
+export class AddSection implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<AddSection>);
   private readonly edu = inject(EducationService);
   private readonly snackbar = inject(SnackbarService);
@@ -44,6 +46,8 @@ export class AddSection implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly document = inject(DOCUMENT);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroy$ = new Subject<void>();
 
   saving = false;
   loadingRooms = false;
@@ -125,6 +129,16 @@ export class AddSection implements OnInit {
     if (!this.days.length) {
       void this.loadDays();
     }
+    this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      if (this.scheduleReady) {
+        void this.loadRooms();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private async loadDays(): Promise<void> {

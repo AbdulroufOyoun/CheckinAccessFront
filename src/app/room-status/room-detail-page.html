@@ -57,6 +57,82 @@
     </div>
   </div>
 
+  @if (occupyingNow && (occupyingSchedule || occupyingBooking)) {
+  <section class="rd-card rd-card--wide rd-why">
+    <h2>{{ 'ROOM_DETAIL_WHY_BUSY' | translate }}</h2>
+    <p class="rd-muted">{{ 'ROOM_DETAIL_WHY_BUSY_HINT' | translate: { date: date, time: time } }}</p>
+    @if (occupyingSchedule) {
+    <div class="rd-why__row">
+      <span class="rd-pill rd-pill--class">{{ 'ROOM_STATUS_CLASS' | translate }}</span>
+      <div>
+        <strong>{{ scheduleNowLabel() }}</strong>
+        <small>
+          {{ slotWindow(occupyingSchedule) }}
+          @if (occupyingSchedule.doctor) {
+            · {{ occupyingSchedule.doctor }}
+          }
+        </small>
+      </div>
+    </div>
+    }
+    @if (occupyingBooking) {
+    <div class="rd-why__row">
+      <span class="rd-pill rd-pill--{{ occupyingBooking.on_hold ? 'paused' : 'active' }}">{{ 'ROOM_DETAIL_GUEST' | translate }}</span>
+      <div>
+        <strong>{{ occupyingBooking.guest || ('ROOM_STATUS_GUEST_UNKNOWN' | translate) }}</strong>
+        <small>#{{ occupyingBooking.id }} · {{ occupyingBooking.check_in_date }} → {{ occupyingBooking.check_out_date }}</small>
+      </div>
+    </div>
+    }
+  </section>
+  }
+
+  <section class="rd-card rd-card--wide rd-lectures">
+    <div class="rd-card__head">
+      <h2>{{ 'ROOM_DETAIL_LECTURES' | translate }} ({{ lectures.length }})</h2>
+      <a routerLink="/Education/Schedule" class="rd__link rd__link--quiet">{{ 'ROOM_DETAIL_LECTURES_OPEN' | translate }}</a>
+    </div>
+    <p class="rd-muted">{{ 'ROOM_DETAIL_LECTURES_HINT' | translate }}</p>
+
+    @if (!lectures.length) {
+    <p class="rd-muted">{{ 'ROOM_DETAIL_NO_LECTURES' | translate }}</p>
+    } @else {
+    <div class="rd-lectures__days">
+      @for (day of lectureDays; track day.dayId) {
+      <article class="rd-lecture-day" [class.rd-lecture-day--today]="day.isToday">
+        <h3>
+          {{ day.dayName }}
+          @if (day.isToday) {
+            <span class="rd-pill rd-pill--today">{{ 'ROOM_DETAIL_TODAY' | translate }}</span>
+          }
+        </h3>
+        <ul class="rd-list rd-list--lectures">
+          @for (slot of day.slots; track slot.section_time_id || $index) {
+          <li [class.rd-list__item--now]="isCurrentLecture(slot)">
+            <div class="rd-lecture">
+              <strong>{{ scheduleSlotLabel(slot) }}</strong>
+              <span>{{ slotWindow(slot) }}</span>
+            </div>
+            <div class="rd-lecture__meta">
+              @if (slot.is_practical) {
+                <span class="rd-pill rd-pill--lab">{{ 'SUBJ_PRACTICAL' | translate }}</span>
+              }
+              @if (isCurrentLecture(slot)) {
+                <span class="rd-pill rd-pill--class">{{ 'ROOM_DETAIL_NOW' | translate }}</span>
+              }
+              @if (slot.doctor) {
+                <small>{{ slot.doctor }}</small>
+              }
+            </div>
+          </li>
+          }
+        </ul>
+      </article>
+      }
+    </div>
+    }
+  </section>
+
   <div class="rd-grid">
     <section class="rd-card">
       <h2>{{ 'ROOM_DETAIL_INFO' | translate }}</h2>

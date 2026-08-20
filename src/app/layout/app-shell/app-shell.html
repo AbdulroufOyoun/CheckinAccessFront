@@ -238,6 +238,7 @@
 
           @if (searchOpen) {
           <div
+            #navSearchResults
             id="navbar-search-results"
             class="navbar__dropdown navbar__dropdown--search navbar__dropdown--open"
             role="listbox"
@@ -385,7 +386,7 @@
       </div>
     </header>
 
-    <main class="page-content">
+    <main class="page-content" id="main">
       <router-outlet></router-outlet>
     </main>
   </div>

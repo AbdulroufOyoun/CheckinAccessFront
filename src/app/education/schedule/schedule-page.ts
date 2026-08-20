@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import {
   AcademicTerm,
   EduDay,
@@ -13,6 +14,7 @@ import {
 import { EducationReferenceCache } from '../../services/education-reference-cache.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
+import { RealtimeService } from '../../services/realtime.service';
 
 interface AtomicRow {
   key: string;
@@ -60,12 +62,14 @@ interface DayTrack {
   templateUrl: './schedule-page.html',
   styleUrls: ['../education-shared.css', './schedule-page.css'],
 })
-export class SchedulePage implements OnInit {
+export class SchedulePage implements OnInit, OnDestroy {
   private readonly scheduleCache = inject(EducationReferenceCache);
   private readonly snackbar = inject(SnackbarService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly document = inject(DOCUMENT);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroy$ = new Subject<void>();
 
   private static readonly MIN_ROW_PX = 36;
   private static readonly PX_PER_MINUTE = 1.15;
@@ -131,6 +135,14 @@ export class SchedulePage implements OnInit {
       this.initialLoad = false;
     }
     void this.load();
+    this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      void this.load(true);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get filterSubjectLabel(): string {

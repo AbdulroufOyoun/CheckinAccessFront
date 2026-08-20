@@ -11,6 +11,7 @@ interface MePayload {
   roles: string[];
   permissions: string[];
   modules: TenantModuleName[];
+  tenant_id?: string | number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -136,6 +137,7 @@ export class AuthService {
         roles: data.roles || [],
         permissions: data.permissions || [],
         modules: data.modules || [],
+        tenant_id: data.tenant_id ?? current?.tenant_id ?? null,
       });
       const token = this.getToken();
       if (token) {

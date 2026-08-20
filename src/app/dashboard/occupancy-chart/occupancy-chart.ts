@@ -1,13 +1,18 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { ChartConfiguration, ChartOptions } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
+import { ArcElement, ChartConfiguration, ChartOptions, DoughnutController, Legend, Tooltip } from 'chart.js';
+import { BaseChartDirective, provideCharts } from 'ng2-charts';
 import { RoomStatusSummary } from '../../services/room-status.service';
 
 @Component({
   selector: 'app-occupancy-chart',
   imports: [CommonModule, TranslateModule, BaseChartDirective],
+  providers: [
+    provideCharts({
+      registerables: [DoughnutController, ArcElement, Tooltip, Legend],
+    }),
+  ],
   templateUrl: './occupancy-chart.html',
   styleUrl: './occupancy-chart.css',
 })

@@ -1,0 +1,247 @@
+<div class="edu-ui" [class.edu-ui--rtl]="isRTL">
+  <div class="edu-ui__header">
+    <div>
+      <h1 class="edu-ui__title">{{ 'EDU_CA_TITLE' | translate }}</h1>
+      <p class="edu-ui__subtitle">{{ 'EDU_CA_SUBTITLE' | translate }}</p>
+    </div>
+    <button class="edu-ui__add" type="button" (click)="openCreate()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      {{ 'EDU_CA_GRANT' | translate }}
+    </button>
+  </div>
+
+  <div class="edu-ui__toolbar">
+    <div class="edu-ui__search">
+      <input type="search" [(ngModel)]="filter" [placeholder]="'EDU_CA_FILTER' | translate" />
+    </div>
+  </div>
+
+  @if (showSkeleton) {
+    <app-page-skeleton variant="table" [rows]="6" [cols]="4" />
+  } @else if (!filteredRows.length) {
+    <div class="edu-ui__empty reveal">
+      <p>{{ (rows.length ? 'EDU_CA_EMPTY_FILTER' : 'EDU_CA_EMPTY') | translate }}</p>
+      @if (!rows.length) {
+        <button class="edu-ui__add" type="button" (click)="openCreate()">{{ 'EDU_CA_GRANT' | translate }}</button>
+      }
+    </div>
+  } @else {
+    <div class="table-container reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'EDU_CA_STUDENT' | translate }}</th>
+            <th>{{ 'EDU_CA_CONTACT' | translate }}</th>
+            <th>{{ 'EDU_CA_COMPOUNDS' | translate }}</th>
+            <th>{{ 'EDU_CA_ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredRows; track row.user_id) {
+            <tr>
+              <td>
+                <strong>{{ row.user?.name || ('#' + row.user_id) }}</strong>
+              </td>
+              <td>
+                <span class="edu-ui__text-secondary">{{ contactLabel(row.user) }}</span>
+              </td>
+              <td>
+                <div class="ca-chips">
+                  @for (compound of row.compounds; track compound.id) {
+                    <span class="edu-ui__badge edu-ui__badge--on">{{ compoundLabel(compound) }}</span>
+                  }
+                </div>
+              </td>
+              <td class="edu-ui__actions">
+                <button type="button" class="edu-ui__btn" (click)="openEdit(row)">{{ 'EDU_CA_EDIT' | translate }}</button>
+                <button type="button" class="edu-ui__btn edu-ui__btn--danger" (click)="revoke(row)" [disabled]="saving">
+                  {{ 'EDU_CA_REVOKE' | translate }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (dialogOpen) {
+  <div class="ca-overlay" (click)="closeDialog()">
+    <div
+      class="as ca-dlg"
+      role="dialog"
+      aria-modal="true"
+      [class.as--rtl]="isRTL"
+      [attr.aria-labelledby]="'ca-dlg-title'"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="as__hero">
+        <div class="as__hero-bg" aria-hidden="true"></div>
+        <button class="as__close" type="button" (click)="closeDialog()" [disabled]="saving" [attr.aria-label]="'CLOSE' | translate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+        <p class="as__eyebrow">{{ 'EDU_CA_DIALOG_EYEBROW' | translate }}</p>
+        <h2 class="as__title" id="ca-dlg-title">{{ (editingUserId ? 'EDU_CA_EDIT' : 'EDU_CA_GRANT') | translate }}</h2>
+        <div class="as__preview">
+          <div class="as__preview-code">{{ previewMark }}</div>
+          <div class="as__preview-body">
+            <strong>{{ previewTitle }}</strong>
+            <span>{{ previewMeta }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="as__body">
+        <div class="ca-steps" aria-hidden="true">
+          <div class="ca-steps__item" [class.is-on]="true" [class.is-done]="!!selectedStudent">
+            <span>1</span>
+            <small>{{ 'EDU_CA_STEP_STUDENT' | translate }}</small>
+          </div>
+          <div class="ca-steps__line" [class.is-on]="!!selectedStudent"></div>
+          <div class="ca-steps__item" [class.is-on]="!!selectedStudent">
+            <span>2</span>
+            <small>{{ 'EDU_CA_STEP_COMPOUNDS' | translate }}</small>
+          </div>
+        </div>
+
+        <section class="as__section">
+          <label class="as__field">
+            <span class="as__label">{{ 'EDU_CA_STUDENT' | translate }} <i>*</i></span>
+
+            @if (selectedStudent && !studentMenuOpen) {
+              <div class="ca-picked" [class.ca-picked--locked]="!canSearchStudent">
+                <span class="ca-picked__avatar" aria-hidden="true">{{ initials(selectedStudent) }}</span>
+                <span class="ca-picked__body">
+                  <strong>{{ selectedStudent.name || ('#' + selectedStudent.id) }}</strong>
+                  <small dir="ltr">{{ contactLabel(selectedStudent) }}</small>
+                </span>
+                @if (canSearchStudent) {
+                  <button type="button" class="ca-picked__change" (click)="changeStudent()">
+                    {{ 'EDU_CA_CHANGE' | translate }}
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="ca-select" [class.ca-select--open]="studentMenuOpen">
+                <svg class="ca-select__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3-3" />
+                </svg>
+                <input
+                  #studentInput
+                  class="as__input as__input--lg ca-select__input"
+                  type="search"
+                  [ngModel]="studentQuery"
+                  (ngModelChange)="onStudentQueryChange($event)"
+                  (focus)="onStudentFocus()"
+                  (keydown)="onStudentKeydown($event)"
+                  [placeholder]="'EDU_CA_SEARCH_STUDENT' | translate"
+                  autocomplete="off"
+                  role="combobox"
+                  [attr.aria-expanded]="studentMenuOpen"
+                  aria-autocomplete="list"
+                  [attr.aria-controls]="'ca-student-list'"
+                />
+                @if (studentQuery) {
+                  <button type="button" class="ca-select__clear" (click)="clearStudent()" [attr.aria-label]="'CLOSE' | translate">×</button>
+                }
+                @if (studentMenuOpen) {
+                  <div class="ca-select__menu" id="ca-student-list" role="listbox">
+                    @if (searchingStudents) {
+                      <p class="ca-select__hint">{{ 'LOADING' | translate }}</p>
+                    } @else if (studentQuery.trim().length < 2) {
+                      <p class="ca-select__hint">{{ 'EDU_CA_TYPE_MIN' | translate }}</p>
+                    } @else if (!studentHits.length) {
+                      <p class="ca-select__hint">{{ 'EDU_CA_NO_STUDENTS' | translate }}</p>
+                    } @else {
+                      @for (hit of studentHits; track hit.id; let i = $index) {
+                        <button
+                          type="button"
+                          role="option"
+                          class="ca-select__option"
+                          [class.ca-select__option--active]="i === studentHighlight"
+                          [attr.aria-selected]="i === studentHighlight"
+                          (mousedown)="$event.preventDefault(); pickStudent(hit)"
+                        >
+                          <span class="ca-select__avatar" aria-hidden="true">{{ initials(hit) }}</span>
+                          <span class="ca-select__text">
+                            <strong>{{ hit.name || ('#' + hit.id) }}</strong>
+                            <small dir="ltr">{{ contactLabel(hit) }}</small>
+                          </span>
+                        </button>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </label>
+
+          <div class="as__field">
+            <div class="ca-compounds__head">
+              <span class="as__label">{{ 'EDU_CA_PICK_COMPOUNDS' | translate }} <i>*</i></span>
+              @if (compounds.length) {
+                <div class="ca-compounds__tools">
+                  <button type="button" (click)="selectAllCompounds()">{{ 'EDU_CA_SELECT_ALL' | translate }}</button>
+                  <button type="button" (click)="clearCompounds()">{{ 'EDU_CA_CLEAR' | translate }}</button>
+                </div>
+              }
+            </div>
+            <p class="ca-hint">{{ 'EDU_CA_LOCKS_HINT' | translate }}</p>
+
+            @if (!compounds.length) {
+              <p class="ca-empty">{{ 'EDU_CA_NO_COMPOUNDS' | translate }}</p>
+            } @else {
+              <div class="ca-compounds" role="group" [attr.aria-label]="'EDU_CA_PICK_COMPOUNDS' | translate">
+                @for (compound of compounds; track compound.id) {
+                  <button
+                    type="button"
+                    class="ca-compound"
+                    [class.ca-compound--on]="isSelected(compound.id)"
+                    (click)="toggleCompound(compound.id)"
+                    [attr.aria-pressed]="isSelected(compound.id)"
+                  >
+                    <span class="ca-compound__icon" aria-hidden="true">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
+                      </svg>
+                    </span>
+                    <span class="ca-compound__text">
+                      <strong>{{ compound.name || ('#' + compound.id) }}</strong>
+                      <small>{{ compound.number || ('EDU_CA_ALL_LOCKS' | translate) }}</small>
+                    </span>
+                    <span class="ca-compound__check" aria-hidden="true"></span>
+                  </button>
+                }
+              </div>
+              <p class="ca-count">
+                {{ 'EDU_CA_SELECTED_COUNT' | translate: { n: selectedCount, total: compounds.length } }}
+              </p>
+              @if (editingUserId != null && selectedCount === 0) {
+                <p class="ca-hint ca-hint--warn">{{ 'EDU_CA_EMPTY_SELECTION_HINT' | translate }}</p>
+              }
+            }
+          </div>
+        </section>
+      </div>
+
+      <div class="as__footer">
+        <button class="as__btn as__btn--ghost" type="button" (click)="closeDialog()" [disabled]="saving">
+          {{ 'CANCEL' | translate }}
+        </button>
+        <button class="as__btn as__btn--primary" type="button" (click)="save()" [disabled]="!canSave">
+          @if (saving) {
+            <span class="as__spinner"></span> {{ 'SAVING' | translate }}
+          } @else {
+            {{ editingUserId ? ('SAVE' | translate) : ('EDU_CA_GRANT' | translate) }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

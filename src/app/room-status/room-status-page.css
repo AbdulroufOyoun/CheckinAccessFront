@@ -433,6 +433,155 @@
   font-size: 0.68rem;
 }
 
+.rs-skel__kpi {
+  cursor: default;
+  pointer-events: none;
+}
+
+.rs-skel__kpi:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.rs-skel__board {
+  margin-top: 2px;
+}
+
+.rs-skel__bone {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  background: color-mix(in srgb, var(--rs-line) 70%, white);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.rs-skel__bone::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  inset-inline-start: -45%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.72),
+    transparent
+  );
+  animation: rsSkelShimmer 1.35s ease-in-out infinite;
+}
+
+.rs--rtl .rs-skel__bone::after {
+  background: linear-gradient(
+    to left,
+    transparent,
+    rgba(255, 255, 255, 0.72),
+    transparent
+  );
+}
+
+.rs-skel__bone--label {
+  width: 42%;
+  height: 10px;
+  margin-bottom: 10px;
+}
+
+.rs-skel__bone--num {
+  width: 38%;
+  height: 22px;
+  border-radius: 10px;
+}
+
+.rs-skel__bone--meta {
+  width: min(280px, 70%);
+  height: 12px;
+  margin-bottom: 16px;
+}
+
+.rs-skel__bone--title {
+  width: min(180px, 50%);
+  height: 18px;
+  border-radius: 9px;
+}
+
+.rs-skel__bone--chip {
+  width: 72px;
+  height: 12px;
+}
+
+.rs-skel__bone--badge {
+  width: 88px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.rs-skel__bone--count {
+  width: 22px;
+  height: 12px;
+}
+
+.rs-skel__card {
+  cursor: default;
+  pointer-events: none;
+  min-height: 118px;
+}
+
+.rs-skel__card:hover,
+.rs-skel__card:focus-visible {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--rs-line);
+}
+
+.rs-skel__card::before {
+  background: color-mix(in srgb, var(--rs-line) 80%, white);
+}
+
+.rs-skel__bone--status {
+  width: 52%;
+  height: 10px;
+}
+
+.rs-skel__bone--dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.rs-skel__bone--number {
+  width: 44%;
+  height: 22px;
+  margin-top: 6px;
+  border-radius: 10px;
+}
+
+.rs-skel__bone--type {
+  width: 68%;
+  height: 10px;
+  margin-top: 4px;
+}
+
+.rs-skel__bone--line {
+  width: 86%;
+  height: 8px;
+  margin-top: auto;
+}
+
+.rs-skel .rs-grid .rs-card:nth-child(3n) .rs-skel__bone--number {
+  width: 36%;
+}
+
+.rs-skel .rs-grid .rs-card:nth-child(4n) .rs-skel__bone--type {
+  width: 54%;
+}
+
+@keyframes rsSkelShimmer {
+  100% {
+    inset-inline-start: 110%;
+  }
+}
+
 .rs-empty {
   display: grid;
   place-items: center;

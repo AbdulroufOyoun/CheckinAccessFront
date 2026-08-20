@@ -3,6 +3,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { BookingsService } from '../services/bookings.service';
 import { UsersService, TenantUser } from '../services/users.service';
 import { SnackbarService } from '../services/snackbar.service';
@@ -13,6 +14,7 @@ import {
   RoomStatusService,
 } from '../services/room-status.service';
 import { TimePicker } from '../shared/time-picker/time-picker';
+import { RealtimeService } from '../services/realtime.service';
 
 type BookingMode = 'full_day' | 'hourly';
 type WizardStep = 1 | 2 | 3;
@@ -38,6 +40,8 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroy$ = new Subject<void>();
 
   isRTL = false;
   saving = false;
@@ -97,9 +101,14 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     this.form.check_in_date = this.today;
     this.form.check_out_date = this.today;
     void this.loadLists();
+    this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      void this.refreshRoomsFromOccupancy();
+    });
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.prefetchTimer) {
       clearTimeout(this.prefetchTimer);
       this.prefetchTimer = null;
@@ -416,9 +425,31 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     await this.fetchRoomsForCurrentCriteria({ notifyEmpty: false, background: true });
   }
 
+  private async refreshRoomsFromOccupancy(): Promise<void> {
+    if (!this.canGoStep2) return;
+    const selectedId = typeof this.form.room_id === 'number' ? this.form.room_id : null;
+    this.roomsCacheKey = null;
+    const ok = await this.fetchRoomsForCurrentCriteria({
+      notifyEmpty: false,
+      background: this.step !== 2,
+      preserveSelection: selectedId,
+    });
+    if (!ok || selectedId == null) return;
+    const room = this.availability?.rooms?.find((r) => r.id === selectedId) || null;
+    if (room?.status === 'available') {
+      this.selectedRoom = room;
+      this.form.room_id = selectedId;
+    } else {
+      this.selectedRoom = null;
+      this.form.room_id = '';
+    }
+    this.cdr.detectChanges();
+  }
+
   private async fetchRoomsForCurrentCriteria(options: {
     notifyEmpty: boolean;
     background?: boolean;
+    preserveSelection?: number | null;
   }): Promise<boolean> {
     const key = this.buildRoomsQueryKey();
     if (this.roomsCacheKey === key && this.availability && this.accessibleDays > 0) {
@@ -433,8 +464,10 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
     const run = async (): Promise<boolean> => {
       try {
-        this.selectedRoom = null;
-        this.form.room_id = '';
+        if (options.preserveSelection == null) {
+          this.selectedRoom = null;
+          this.form.room_id = '';
+        }
 
         const timed = this.mode === 'hourly';
         const periodTimes = timed
@@ -484,7 +517,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
         }
         return false;
       } finally {
-        if (token === this.prefetchToken && options.background) {
+        if (token === this.prefetchToken) {
           this.roomsPrefetching = false;
           this.cdr.detectChanges();
         }
@@ -512,7 +545,8 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   selectRoom(room: RoomStatusItem): void {
     if (room.status !== 'available') {
-      this.snackbar.show(this.translate.instant('BOOK_ROOM_OCCUPIED_HINT'), 'error');
+      const key = room.blocked_by === 'schedule' ? 'BOOK_ROOM_OCCUPIED_CLASS' : 'BOOK_ROOM_OCCUPIED_HINT';
+      this.snackbar.show(this.translate.instant(key), 'error');
       return;
     }
     this.selectedRoom = room;

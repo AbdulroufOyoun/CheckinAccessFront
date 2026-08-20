@@ -65,6 +65,11 @@ export class AddRole implements OnInit {
       this.roleNameInput?.nativeElement.focus();
       return;
     }
+    if (name.toLowerCase() === 'super admin') {
+      this.snackbar.show(this.translate.instant('ROLE_SUPER_RESERVED'), 'error');
+      this.roleNameInput?.nativeElement.focus();
+      return;
+    }
 
     this.saving = true;
     this.dialogRef.disableClose = true;

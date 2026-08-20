@@ -1,19 +1,24 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
 import { SnackbarService } from '../services/snackbar.service';
 import {
+  RoomClassSlot,
   RoomDetail,
   RoomOccupancyStatus,
+  RoomStatusBooking,
   RoomStatusItem,
+  RoomStatusSchedule,
   RoomStatusService,
 } from '../services/room-status.service';
 import { Booking, BookingPeriod, BookingsService } from '../services/bookings.service';
 import { ApiService } from '../services/api.service';
 import { Apiendpointd } from '../apiEndpoints';
 import { ApiResponse } from '../interfaces/api-response';
+import { RealtimeService } from '../services/realtime.service';
 
 interface UnlockRow {
   id?: number;
@@ -36,6 +41,13 @@ interface BookingRow {
   raw: Booking;
 }
 
+interface LectureDayGroup {
+  dayId: number;
+  dayName: string;
+  isToday: boolean;
+  slots: RoomClassSlot[];
+}
+
 @Component({
   selector: 'app-room-detail-page',
   standalone: true,
@@ -43,7 +55,7 @@ interface BookingRow {
   templateUrl: './room-detail-page.html',
   styleUrl: './room-detail-page.css',
 })
-export class RoomDetailPage implements OnInit {
+export class RoomDetailPage implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -54,6 +66,8 @@ export class RoomDetailPage implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroy$ = new Subject<void>();
 
   isRTL = false;
   loading = true;
@@ -64,6 +78,7 @@ export class RoomDetailPage implements OnInit {
   room: RoomDetail | null = null;
   statusSnapshot: RoomStatusItem | null = null;
   bookings: BookingRow[] = [];
+  lectures: RoomClassSlot[] = [];
   unlocks: UnlockRow[] = [];
   unlocksAvailable = true;
   highlightLockId: number | null = null;
@@ -85,6 +100,16 @@ export class RoomDetailPage implements OnInit {
       this.highlightLockId = Number(q.get('lock') || 0) || null;
       void this.load();
     });
+    this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe((payload) => {
+      if (this.realtime.affectsRoom(payload, this.roomId)) {
+        void this.load();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   isHighlightedLock(id?: number): boolean {
@@ -149,6 +174,75 @@ export class RoomDetailPage implements OnInit {
     return Math.min(100, Math.round((this.activeBookings / cap) * 100));
   }
 
+  get occupyingSchedule(): RoomStatusSchedule | null {
+    return this.statusSnapshot?.schedule || null;
+  }
+
+  get occupyingBooking(): RoomStatusBooking | null {
+    return this.statusSnapshot?.booking || null;
+  }
+
+  get occupyingNow(): boolean {
+    return this.status === 'occupied' || this.status === 'on_hold';
+  }
+
+  get lectureDays(): LectureDayGroup[] {
+    const groups = new Map<number, LectureDayGroup>();
+    for (const slot of this.lectures) {
+      let group = groups.get(slot.day_id);
+      if (!group) {
+        group = {
+          dayId: slot.day_id,
+          dayName: this.dayLabel(slot.day_name),
+          isToday: !!slot.is_today,
+          slots: [],
+        };
+        groups.set(slot.day_id, group);
+      }
+      group.slots.push(slot);
+    }
+    return [...groups.values()];
+  }
+
+  scheduleNowLabel(): string {
+    return this.scheduleSlotLabel(this.occupyingSchedule);
+  }
+
+  scheduleSlotLabel(schedule?: RoomStatusSchedule | null): string {
+    if (!schedule) return '';
+    const subject = this.isRTL
+      ? (schedule.subject_ar || schedule.subject || '')
+      : (schedule.subject || schedule.subject_ar || '');
+    const section = schedule.section_number
+      ? this.translate.instant('SCHED_SECTION', { n: schedule.section_number })
+      : '';
+    return [subject, section].filter(Boolean).join(' · ');
+  }
+
+  slotWindow(slot: RoomStatusSchedule): string {
+    return [slot.start, slot.end].filter(Boolean).join(' – ');
+  }
+
+  isCurrentLecture(slot: RoomClassSlot): boolean {
+    if (slot.covers_now) return true;
+    const occupyingId = this.occupyingSchedule?.section_time_id;
+    return !!occupyingId && occupyingId === slot.section_time_id;
+  }
+
+  private dayLabel(name?: string | null): string {
+    const map: Record<string, string> = {
+      Sunday: 'BOOK_DAY_SUN',
+      Monday: 'BOOK_DAY_MON',
+      Tuesday: 'BOOK_DAY_TUE',
+      Wednesday: 'BOOK_DAY_WED',
+      Thursday: 'BOOK_DAY_THU',
+      Friday: 'BOOK_DAY_FRI',
+      Saturday: 'BOOK_DAY_SAT',
+    };
+    const key = name ? map[name] : '';
+    return key ? this.translate.instant(key) : name || '—';
+  }
+
   goBack(): void {
     if (window.history.length > 1) this.location.back();
     else void this.router.navigate(['/RoomStatus']);
@@ -165,7 +259,7 @@ export class RoomDetailPage implements OnInit {
     }
     this.loading = true;
     try {
-      const [roomRes, bookingsPage, statusPayload] = await Promise.all([
+      const [roomRes, bookingsPage, statusPayload, classesPayload] = await Promise.all([
         this.roomsApi.getRoomDetail(this.roomId),
         this.bookingsApi.listByUnit('room', this.roomId, 100),
         this.roomsApi.getStatus({
@@ -175,12 +269,16 @@ export class RoomDetailPage implements OnInit {
           floor_id: null,
           suite_id: null,
         }).catch(() => null),
+        this.roomsApi
+          .getRoomClasses(this.roomId, { date: this.date, time: this.time })
+          .catch(() => null),
       ]);
 
       this.room = roomRes?.data || null;
       this.bookings = (bookingsPage.data || []).map((b) => this.toBookingRow(b));
       this.statusSnapshot =
         statusPayload?.rooms?.find((r) => r.id === this.roomId) || null;
+      this.lectures = classesPayload?.classes || [];
 
       try {
         const unlockRes = await this.api.get<ApiResponse<{ data?: UnlockRow[] } | UnlockRow[]>>(
