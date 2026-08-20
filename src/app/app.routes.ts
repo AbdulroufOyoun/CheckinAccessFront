@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { Login } from './auth/login/login';
-import { authGuard, guestGuard, moduleGuard, permissionGuard } from './guards/auth.guard';
+import { authGuard, guestGuard, moduleGuard, moduleGuardAny, permissionGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'Login', pathMatch: 'full' },
@@ -66,6 +66,15 @@ export const routes: Routes = [
         path: 'Holidays',
         canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
         loadComponent: () => import('./holidays/holidays-page').then((m) => m.HolidaysPage),
+      },
+
+      {
+        path: 'Durations',
+        canActivate: [
+          moduleGuardAny('property', 'education'),
+          permissionGuard('manage bookings', 'manage education'),
+        ],
+        loadComponent: () => import('./durations/durations-page').then((m) => m.DurationsPage),
       },
 
       {
@@ -164,10 +173,18 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'Education/CompoundAccess',
-        canActivate: [moduleGuard('education'), permissionGuard('manage education')],
+        path: 'CompoundAccess',
+        canActivate: [
+          moduleGuardAny('property', 'education'),
+          permissionGuard('manage education', 'manage compounds', 'manage locks'),
+        ],
         loadComponent: () =>
           import('./education/compound-access/compound-access-page').then((m) => m.CompoundAccessPage),
+      },
+      {
+        path: 'Education/CompoundAccess',
+        redirectTo: 'CompoundAccess',
+        pathMatch: 'full',
       },
       {
         path: 'Education/Reports',

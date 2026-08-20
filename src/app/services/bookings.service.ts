@@ -22,6 +22,33 @@ export interface BookingPeriod {
   on_hold?: boolean;
   period_times?: BookingPeriodTime[];
   periodTimes?: BookingPeriodTime[];
+  excluded_weekdays?: Array<{ weekday: number }>;
+  excludedWeekdays?: Array<{ weekday: number }>;
+  users?: Array<{ id: number; name?: string; email?: string; mobile?: string }>;
+}
+
+export interface BookingOccupant {
+  id: number;
+  booking_id?: number;
+  user_id: number;
+  status: 'active' | 'withdrawn' | string;
+  joined_at?: string | null;
+  left_at?: string | null;
+  note?: string | null;
+  user?: { id: number; name?: string; email?: string; mobile?: string } | null;
+}
+
+export interface BookingOccupantEvent {
+  id: number;
+  booking_id?: number;
+  occupant_id?: number | null;
+  user_id: number;
+  event: 'added' | 'withdrawn' | 'reinstated' | string;
+  room_id?: number | null;
+  admin_id?: number | null;
+  occurred_at?: string;
+  meta?: Record<string, unknown> | null;
+  user?: { id: number; name?: string; email?: string; mobile?: string } | null;
 }
 
 export interface BookingUnit {
@@ -48,6 +75,11 @@ export interface Booking {
   booking_period_units?: BookingUnit[];
   bookingPeriodUnits?: BookingUnit[];
   locks?: Array<{ id: number; lockName?: string; lockAlias?: string; lockMac?: string }>;
+  occupants?: BookingOccupant[];
+  occupant_events?: BookingOccupantEvent[];
+  occupantEvents?: BookingOccupantEvent[];
+  room_capacity?: number;
+  active_occupant_count?: number;
 }
 
 export interface BookingsPage {
@@ -80,6 +112,7 @@ export interface CreateBookingPeriodPayload {
 export interface CreateBookingPayload {
   bookings: Array<{
     user_id: number;
+    occupant_user_ids?: number[];
     booking_periods: CreateBookingPeriodPayload[];
   }>;
 }
@@ -173,6 +206,19 @@ export class BookingsService {
 
   removeLocks(id: number, lockIds: number[]): Promise<ApiResponse<Booking>> {
     return this.api.post(Apiendpointd.bookingRemoveLocks(id), { lock_ids: lockIds });
+  }
+
+  addOccupant(id: number, userId: number, note?: string): Promise<ApiResponse<Booking>> {
+    return this.api.post(Apiendpointd.bookingOccupants(id), {
+      user_id: userId,
+      note: note || null,
+    });
+  }
+
+  withdrawOccupant(id: number, userId: number, note?: string): Promise<ApiResponse<Booking>> {
+    return this.api.post(Apiendpointd.bookingOccupantWithdraw(id, userId), {
+      note: note || null,
+    });
   }
 
   listByUnit(unitType: string, unitId: number, perPage = 50): Promise<BookingsPage> {

@@ -3,7 +3,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LockableType, PropertyApiService, PropLock } from '../../services/property-api.service';
+import { LockableType, PropertyApiService, PropLock, lockLinkTotal } from '../../services/property-api.service';
 import { SnackbarService } from '../../../services/snackbar.service';
 
 export interface LinkLockDialogData {
@@ -55,7 +55,16 @@ export class LinkLockDialog implements OnInit {
     return this.linkedIdsSet.has(lockId);
   }
 
+  isLinkedElsewhere(lock: PropLock): boolean {
+    return !this.isLinkedHere(lock.id) && lockLinkTotal(lock) > 0;
+  }
+
   toggle(id: number): void {
+    const lock = this.data.available.find((item) => item.id === id);
+    if (lock && this.isLinkedElsewhere(lock)) {
+      this.snackbar.show(this.translate.instant('LOCKS_UNLINK_BEFORE_RELINK'), 'error');
+      return;
+    }
     const i = this.selectedIds.indexOf(id);
     if (i >= 0) this.selectedIds.splice(i, 1);
     else this.selectedIds.push(id);
@@ -75,7 +84,11 @@ export class LinkLockDialog implements OnInit {
     this.saving = true;
     this.dialogRef.disableClose = true;
     try {
-      await this.api.syncLocks(this.data.propertyType, this.data.propertyId, this.selectedIds);
+      const busyIds = new Set(
+        this.data.available.filter((lock) => this.isLinkedElsewhere(lock)).map((lock) => lock.id),
+      );
+      const lockIds = this.selectedIds.filter((id) => !busyIds.has(id));
+      await this.api.syncLocks(this.data.propertyType, this.data.propertyId, lockIds);
       this.snackbar.show(this.translate.instant('PROP_LOCKS_UPDATED'), 'success');
       this.dialogRef.close(true);
     } catch (e: unknown) {

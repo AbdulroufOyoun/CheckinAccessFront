@@ -42,6 +42,65 @@
     </section>
 
     <section class="bd__section">
+      <div class="bd__section-head">
+        <h3>{{ 'BOOK_DETAIL_ROSTER' | translate }}</h3>
+        <span class="bd__count">{{ 'BOOK_OCCUPANTS_COUNT' | translate: { n: activeOccupants.length, cap: roomCapacity } }}</span>
+      </div>
+
+      @if (!occupants.length) {
+      <p class="bd__muted">{{ 'BOOK_DETAIL_NO_OCCUPANTS' | translate }}</p>
+      } @else {
+      <ul class="bd__roster">
+        @for (o of occupants; track o.id) {
+        <li class="bd__roster-item" [class.is-out]="o.status !== 'active'">
+          <div>
+            <strong>{{ occupantName(o) }}</strong>
+            <p>
+              {{ (o.status === 'active' ? 'BOOK_DETAIL_ACTIVE' : 'BOOK_DETAIL_WITHDRAWN') | translate }}
+              · {{ 'BOOK_DETAIL_ADDED_AT' | translate }} {{ formatDateTime(o.joined_at) }}
+              @if (o.left_at) {
+              · {{ 'BOOK_DETAIL_LEFT_AT' | translate }} {{ formatDateTime(o.left_at) }}
+              }
+            </p>
+          </div>
+          @if (canEditOccupants) {
+          @if (o.status === 'active') {
+          <button type="button" class="bd__ghost" [disabled]="occupantBusy" (click)="withdrawPerson(o)">
+            {{ 'BOOK_DETAIL_WITHDRAW' | translate }}
+          </button>
+          } @else if (activeOccupants.length < roomCapacity) {
+          <button type="button" class="bd__ghost" [disabled]="occupantBusy" (click)="reinstatePerson(o)">
+            {{ 'BOOK_DETAIL_REINSTATE' | translate }}
+          </button>
+          }
+          }
+        </li>
+        }
+      </ul>
+      }
+
+      @if (canEditOccupants && activeOccupants.length < roomCapacity) {
+      <div class="bd__add">
+        <label>{{ 'BOOK_DETAIL_ADD_PERSON' | translate }}</label>
+        <input type="search" [(ngModel)]="occupantQuery" name="detailOccupantQuery"
+          [placeholder]="'BOOK_OCCUPANT_PLACEHOLDER' | translate" />
+        @if (occupantHits.length) {
+        <ul class="bd__hits">
+          @for (u of occupantHits; track u.id) {
+          <li>
+            <button type="button" [disabled]="occupantBusy" (click)="addPerson(u)">
+              <strong>{{ u.name }}</strong>
+              <small>{{ u.email || u.mobile }}</small>
+            </button>
+          </li>
+          }
+        </ul>
+        }
+      </div>
+      }
+    </section>
+
+    <section class="bd__section">
       <h3>{{ 'BOOK_DETAIL_UNITS' | translate }}</h3>
       @if (!units.length) {
       <p class="bd__muted">{{ 'BOOK_DETAIL_NO_UNITS' | translate }}</p>
@@ -111,19 +170,29 @@
             <dt>{{ 'BOOK_DETAIL_EXCLUDED_DAYS' | translate }}</dt>
             <dd>{{ excludedWeekdays(p) }}</dd>
           </div>
-          @if (periodGuests(p).length) {
-          <div>
-            <dt>{{ 'BOOK_DETAIL_EXTRA_GUESTS' | translate }}</dt>
-            <dd>
-              @for (g of periodGuests(p); track g.id) {
-              <span class="bd__chip">{{ g.name || ('#' + g.id) }}</span>
-              }
-            </dd>
-          </div>
-          }
         </dl>
       </article>
       }
+      }
+    </section>
+
+    <section class="bd__section">
+      <h3>{{ 'BOOK_DETAIL_TIMELINE' | translate }}</h3>
+      @if (!occupantEvents.length) {
+      <p class="bd__muted">{{ 'BOOK_DETAIL_NO_EVENTS' | translate }}</p>
+      } @else {
+      <ol class="bd__timeline">
+        @for (ev of occupantEvents; track ev.id) {
+        <li>
+          <strong>{{ eventLabel(ev.event) }}</strong>
+          <span>{{ occupantName(ev) }}</span>
+          @if (roomLabelFromMeta(ev.meta); as room) {
+          <span>{{ 'BOOK_DETAIL_ROOM_AT' | translate: { room: room } }}</span>
+          }
+          <time>{{ formatDateTime(ev.occurred_at) }}</time>
+        </li>
+        }
+      </ol>
       }
     </section>
 

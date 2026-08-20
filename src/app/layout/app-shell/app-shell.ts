@@ -35,6 +35,7 @@ type NavIcon =
   | 'reservations'
   | 'room-status'
   | 'holidays'
+  | 'durations'
   | 'facilities'
   | 'reports'
   | 'subjects'
@@ -112,9 +113,9 @@ export class AppShell implements OnInit, OnDestroy {
     @Inject(PLATFORM_ID) private platformId: object,
   ) {
     this.currentLang = this.getLang();
-    this.translate.setFallbackLang('en');
-    this.translate.use(this.currentLang);
-    this.applyLang();
+    this.translate.use(this.currentLang).subscribe(() => {
+      this.applyLang();
+    });
   }
 
   get navSections(): NavSection[] {
@@ -124,6 +125,14 @@ export class AppShell implements OnInit, OnDestroy {
         labelKey: 'NAV_SECTION_OVERVIEW',
         items: [
           { labelKey: 'DASHBOARD', route: '/Dashboard', icon: 'dashboard', visible: true },
+          {
+            labelKey: 'DUR_NAV',
+            route: '/Durations',
+            icon: 'durations',
+            visible:
+              (this.auth.hasModule('property') && this.auth.can('manage bookings')) ||
+              (this.auth.hasModule('education') && this.auth.can('manage education')),
+          },
         ],
       },
       {
@@ -166,6 +175,12 @@ export class AppShell implements OnInit, OnDestroy {
             route: '/Locks',
             icon: 'locks',
             visible: this.canProperty('manage locks'),
+          },
+          {
+            labelKey: 'EDU_COMPOUND_ACCESS',
+            route: '/CompoundAccess',
+            icon: 'locks',
+            visible: this.auth.hasModule('property') && this.canManageCompoundAccess(),
           },
           {
             labelKey: 'REPORTS',
@@ -217,9 +232,9 @@ export class AppShell implements OnInit, OnDestroy {
           },
           {
             labelKey: 'EDU_COMPOUND_ACCESS',
-            route: '/Education/CompoundAccess',
+            route: '/CompoundAccess',
             icon: 'locks',
-            visible: this.auth.hasModule('education') && this.auth.can('manage education'),
+            visible: this.auth.hasModule('education') && this.canManageCompoundAccess(),
           },
           {
             labelKey: 'EDU_REPORTS',
@@ -437,13 +452,20 @@ export class AppShell implements OnInit, OnDestroy {
     });
 
     const matched = pages.filter((page) => pageMatchesNavQuery(page, raw));
-    this.pageHits = matched.map((page) => ({
-      kind: 'page' as const,
-      key: `page:${page.route}`,
-      label: page.label,
-      hint: page.hint,
-      route: [page.route],
-    }));
+    const seenRoutes = new Set<string>();
+    this.pageHits = matched.flatMap((page) => {
+      if (seenRoutes.has(page.route)) {
+        return [];
+      }
+      seenRoutes.add(page.route);
+      return [{
+        kind: 'page' as const,
+        key: `page:${page.route}`,
+        label: page.label,
+        hint: page.hint,
+        route: [page.route],
+      }];
+    });
 
     this.actionHits = [];
     const intent = classifyNavQuery(raw);
@@ -550,6 +572,10 @@ export class AppShell implements OnInit, OnDestroy {
     return this.auth.hasModule('property') && this.auth.canAny(...permissions);
   }
 
+  private canManageCompoundAccess(): boolean {
+    return this.auth.canAny('manage education', 'manage compounds', 'manage locks');
+  }
+
   getLang(): 'ar' | 'en' {
     if (typeof window === 'undefined') return 'en';
     return (localStorage.getItem('lang') as 'ar' | 'en') || 'en';
@@ -575,8 +601,11 @@ export class AppShell implements OnInit, OnDestroy {
   setLang(): void {
     this.currentLang = this.currentLang === 'en' ? 'ar' : 'en';
     localStorage.setItem('lang', this.currentLang);
-    this.translate.use(this.currentLang);
-    this.applyLang();
+    this.translate.use(this.currentLang).subscribe(() => {
+      this.applyLang();
+      this.refreshPageHits(this.searchQuery);
+      this.cdr.detectChanges();
+    });
   }
 
   closeDropdowns(): void {

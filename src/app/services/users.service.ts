@@ -11,6 +11,7 @@ export interface TenantUser {
   nationality?: string | null;
   title?: string | null;
   active?: boolean | number;
+  is_platform_admin?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -138,11 +139,12 @@ export class UsersService {
     };
 
     if (Array.isArray(res.data)) {
+      const data = this.withoutPlatformAdmins(res.data);
       return {
         success: res.success,
         message: res.message,
-        data: res.data,
-        total: res.total ?? res.data.length,
+        data,
+        total: this.adjustedTotal(res.total ?? res.data.length, res.data.length, data.length),
         current_page: res.current_page,
         last_page: res.last_page,
         per_page: res.per_page,
@@ -150,15 +152,24 @@ export class UsersService {
     }
 
     const nested = res.data && typeof res.data === 'object' ? res.data : {};
-    const rows = Array.isArray(nested.data) ? nested.data : [];
+    const rawRows = Array.isArray(nested.data) ? nested.data : [];
+    const data = this.withoutPlatformAdmins(rawRows);
     return {
       success: res.success,
       message: res.message,
-      data: rows,
-      total: nested.total ?? res.total ?? rows.length,
+      data,
+      total: this.adjustedTotal(nested.total ?? res.total ?? rawRows.length, rawRows.length, data.length),
       current_page: res.current_page,
       last_page: res.last_page,
       per_page: res.per_page,
     };
+  }
+
+  private withoutPlatformAdmins(rows: TenantUser[]): TenantUser[] {
+    return rows.filter((u) => !u?.is_platform_admin);
+  }
+
+  private adjustedTotal(reported: number, before: number, after: number): number {
+    return Math.max(0, reported - (before - after));
   }
 }

@@ -601,11 +601,13 @@ export class PropertyConsole implements OnInit {
       case 'floor':
         return [
           { entity: 'suite', labelKey: 'PROP_ADD_SUITE' },
-          { entity: 'room', labelKey: 'PROP_ADD_ROOM' },
+          { entity: 'room', labelKey: 'PROP_ADD_ROOMS' },
           { entity: 'facility', labelKey: 'PROP_ADD_FACILITY' },
         ];
       case 'suite':
-        return [{ entity: 'room', labelKey: 'PROP_ADD_ROOM' }];
+        return [{ entity: 'room', labelKey: 'PROP_ADD_ROOMS' }];
+      case 'room':
+        return [{ entity: 'room', labelKey: 'PROP_ADD_ROOMS' }];
       default:
         return [];
     }
@@ -659,6 +661,11 @@ export class PropertyConsole implements OnInit {
       base.floor_id = Number(r['floor_id']) || undefined;
       base.building_id = Number(r['building_id']) || undefined;
     }
+    if (entity === 'room' && s.type === 'room') {
+      base.floor_id = Number(r['floor_id']) || undefined;
+      base.building_id = Number(r['building_id']) || undefined;
+      base.suite_id = Number(r['suite_id']) || undefined;
+    }
     if ((entity === 'gate' || entity === 'parking') && s.type === 'compound') {
       base.compound_id = s.id;
     }
@@ -696,10 +703,15 @@ export class PropertyConsole implements OnInit {
     const floorId = Number(data.parent?.floor_id || data.item?.['floor_id'] || 0) || null;
     const suites = this.suitesForFloor(floorId);
     const ref = this.dialog.open(PropertyEntityDialog, {
-      panelClass: ['custom-dialog', 'subject-dialog'],
+      panelClass: [
+        'custom-dialog',
+        'subject-dialog',
+        ...(data.entity === 'room' && data.mode === 'add' ? ['rooms-bulk-dialog'] : []),
+      ],
       backdropClass: 'custom-backdrop',
-      width: '480px',
+      width: data.entity === 'room' && data.mode === 'add' ? '640px' : '480px',
       maxWidth: '94vw',
+      autoFocus: false,
       data: {
         ...data,
         roomTypes: this.snapshot?.roomTypes || [],

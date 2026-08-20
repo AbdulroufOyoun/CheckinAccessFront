@@ -89,6 +89,10 @@ export class Apiendpointd {
     return this.extendedBuildings + 'rooms/';
   }
 
+  public static get roomsBatch(): string {
+    return this.rooms + 'batch';
+  }
+
   public static get roomsStatus(): string {
     return this.extendedBuildings + 'rooms/status';
   }
@@ -123,6 +127,22 @@ export class Apiendpointd {
 
   public static islamicHolidayById(id: number | string): string {
     return `${this.islamicHolidays}/${id}`;
+  }
+
+  public static get durations(): string {
+    return this.mianUrl + 'durations';
+  }
+
+  public static durationById(id: number | string): string {
+    return `${this.durations}/${id}`;
+  }
+
+  public static durationActivate(id: number | string): string {
+    return `${this.durations}/${id}/activate`;
+  }
+
+  public static durationInactivate(id: number | string): string {
+    return `${this.durations}/${id}/inactivate`;
   }
 
   public static roomById(id: number | string): string {
@@ -375,6 +395,14 @@ export class Apiendpointd {
     return `${this.bookings}/${id}/remove-locks`;
   }
 
+  public static bookingOccupants(id: number | string): string {
+    return `${this.bookings}/${id}/occupants`;
+  }
+
+  public static bookingOccupantWithdraw(id: number | string, userId: number | string): string {
+    return `${this.bookings}/${id}/occupants/${userId}/withdraw`;
+  }
+
   public static get doorUnlockHistory(): string {
     return this.mianUrl + 'door-unlock-history';
   }
@@ -489,7 +517,7 @@ export class Apiendpointd {
   }
 
   public static get compoundAccess(): string {
-    return this.education + 'compound-access';
+    return this.mianUrl + 'compound-access';
   }
 
   public static get compoundAccessCompounds(): string {

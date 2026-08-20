@@ -51,6 +51,10 @@ export const NAV_SEARCH_PAGE_META: Record<string, NavSearchPageMeta> = {
     aliases: ['holiday', 'holidays', 'عطله', 'عطل', 'اجازه'],
     capabilities: ['add', 'edit'],
   },
+  '/Durations': {
+    aliases: ['duration', 'durations', 'preset', 'presets', 'مدة', 'مدد', 'فترة', 'فترات'],
+    capabilities: ['add', 'edit'],
+  },
   '/Property': {
     aliases: [
       'property',
@@ -99,6 +103,10 @@ export const NAV_SEARCH_PAGE_META: Record<string, NavSearchPageMeta> = {
   '/Education/EnrollmentHistory': {
     aliases: ['history', 'archive', 'سجل', 'ارشيف'],
     capabilities: [],
+  },
+  '/CompoundAccess': {
+    aliases: ['compound', 'access', 'كمباوند', 'مجمع', 'صلاحية', 'اقفال'],
+    capabilities: ['add', 'edit'],
   },
   '/Education/CompoundAccess': {
     aliases: ['compound', 'access', 'كمباوند', 'مجمع', 'صلاحية', 'اقفال'],

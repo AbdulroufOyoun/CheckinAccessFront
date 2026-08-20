@@ -53,4 +53,10 @@ describe('nav search', () => {
     expect(pageMatchesNavQuery(sections, 'إضافة شعبة')).toBe(true);
     expect(pageMatchesNavQuery(users, 'إضافة شعبة')).toBe(false);
   });
+
+  it('finds compound lock access from كمباوند', () => {
+    const access = page('/CompoundAccess', 'صلاحية أقفال الكمباوند', 'عقارات');
+    expect(pageMatchesNavQuery(access, 'كمباوند')).toBe(true);
+    expect(pageMatchesNavQuery(access, 'صلاحية')).toBe(true);
+  });
 });
