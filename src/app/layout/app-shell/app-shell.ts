@@ -18,6 +18,7 @@ import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/rou
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
+import { LocaleService } from '../../services/locale.service';
 import { User } from '../../model/User';
 import { ChangePassword } from '../../dialog/change-password/change-password';
 import { TenantUser, UsersService } from '../../services/users.service';
@@ -80,6 +81,7 @@ export class AppShell implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly usersApi = inject(UsersService);
   private readonly realtime = inject(RealtimeService);
+  private readonly locale = inject(LocaleService);
 
   @ViewChild('navSearchInput') navSearchInput?: ElementRef<HTMLInputElement>;
   @ViewChild('navSearchResults') navSearchResults?: ElementRef<HTMLElement>;
@@ -111,9 +113,7 @@ export class AppShell implements OnInit, OnDestroy {
     private auth: AuthService,
     @Inject(PLATFORM_ID) private platformId: object,
   ) {
-    this.currentLang = this.getLang();
-    this.translate.setFallbackLang('en');
-    this.translate.use(this.currentLang);
+    this.currentLang = this.locale.lang();
     this.applyLang();
   }
 
@@ -550,11 +550,6 @@ export class AppShell implements OnInit, OnDestroy {
     return this.auth.hasModule('property') && this.auth.canAny(...permissions);
   }
 
-  getLang(): 'ar' | 'en' {
-    if (typeof window === 'undefined') return 'en';
-    return (localStorage.getItem('lang') as 'ar' | 'en') || 'en';
-  }
-
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
   }
@@ -573,10 +568,12 @@ export class AppShell implements OnInit, OnDestroy {
   }
 
   setLang(): void {
-    this.currentLang = this.currentLang === 'en' ? 'ar' : 'en';
-    localStorage.setItem('lang', this.currentLang);
-    this.translate.use(this.currentLang);
-    this.applyLang();
+    void this.locale.toggle().then(() => {
+      this.currentLang = this.locale.lang();
+      this.applyLang();
+      this.refreshPageHits(this.searchQuery);
+      this.cdr.detectChanges();
+    });
   }
 
   closeDropdowns(): void {
