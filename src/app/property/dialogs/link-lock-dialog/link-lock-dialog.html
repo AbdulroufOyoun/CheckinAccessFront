@@ -9,8 +9,8 @@
 
   <div class="dialog-body">
     <p class="hint-warn">
-      <strong>⚠</strong>
-      {{ 'LOCKS_MOVE_HINT' | translate  }}
+      <strong>ℹ</strong>
+      {{ 'LOCKS_LINK_PICK_HINT' | translate }}
     </p>
 
     <label class="field">
@@ -27,15 +27,10 @@
               <strong>{{ lock.lockName || lock.lockAlias || ('#' + lock.id) }}</strong>
               <small>{{ lock.lockId || lock.lockMac || '' }}</small>
             </span>
-            @if (isLinkedHere(lock.id)) {
-              <span class="status status--here" title="{{ 'LOCKS_ALREADY_HERE' | translate  }}">
-                ✓ {{ 'LOCKS_STATUS_LINKED_HERE' | translate  }}
-              </span>
-            }
           </label>
         </li>
       } @empty {
-        <li class="empty">{{ 'PROP_NO_LOCKS' | translate }}</li>
+        <li class="empty">{{ 'LOCKS_NONE_TO_ADD' | translate }}</li>
       }
     </ul>
   </div>
