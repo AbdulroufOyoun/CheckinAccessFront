@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DOCUMENT, PLATFORM_ID, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -8,6 +8,7 @@ import { ApiResponse, LoginResponse } from '../../interfaces/api-response';
 import { Apiendpointd } from '../../apiEndpoints';
 import { SnackbarService } from '../../services/snackbar.service';
 import { AuthService } from '../../services/auth.service';
+import { LocaleService } from '../../services/locale.service';
 import { User } from '../../model/User';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -18,8 +19,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   styleUrl: './login.css',
 })
 export class Login {
-  private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly locale = inject(LocaleService);
 
   isLoading = false;
   hasError = false;
@@ -39,12 +40,11 @@ export class Login {
   ) {
     this.title.setTitle('Sign in — CheckinAccess');
     if (isPlatformBrowser(this.platformId)) {
-      const lang = (localStorage.getItem('lang') as 'ar' | 'en') || 'en';
-      this.document.documentElement.lang = lang;
-      this.document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      this.translate.use(lang).subscribe(() => this.cdr.detectChanges());
+      this.currentLang = this.locale.lang();
     }
   }
+
+  currentLang: 'ar' | 'en' = 'en';
 
   private stopLoading(): void {
     this.isLoading = false;
