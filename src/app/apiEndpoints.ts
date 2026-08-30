@@ -1,3 +1,5 @@
+import { resolveTenantApiHostname } from './core/tenant-host';
+
 export class Apiendpointd {
   /**
    * Tenant admin API base.
@@ -5,17 +7,12 @@ export class Apiendpointd {
    * hits its own Laravel host on :8000.
    */
   public static get mianUrl(): string {
-    const hostname =
-      typeof window !== 'undefined' && window.location?.hostname
-        ? window.location.hostname
-        : 'ratco.localhost';
-
-    const apiHost =
-      hostname === 'localhost' || hostname === '127.0.0.1' ? 'ratco.localhost' : hostname;
-
+    const apiHost = resolveTenantApiHostname();
+    if (!apiHost) {
+      throw new Error('Tenant host is required (use e.g. abd.localhost, not plain localhost).');
+    }
     return `http://${apiHost}:8000/api/admins/`;
   }
-
   /** Non-admin tenant API root (`/api/`) for compounds, gates, parkings, elevators, suites. */
   public static get apiRoot(): string {
     return this.mianUrl.replace(/\/api\/admins\/?$/, '/api/');

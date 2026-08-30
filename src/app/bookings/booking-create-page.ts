@@ -84,12 +84,10 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   occupantQuery = '';
   accessExtras: BookingExtraPick[] = [];
 
-  form = {
-    room_id: '' as number | '',
-  };
+  form = {};
 
   availability: RoomPeriodAvailabilityPayload | null = null;
-  selectedRoom: RoomStatusItem | null = null;
+  selectedRooms: RoomStatusItem[] = [];
   blockedCount = 0;
   accessibleDays = 0;
   saveError = '';
@@ -200,11 +198,24 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   }
 
   get canGoStep3(): boolean {
-    return !!this.selectedRoom && this.selectedRoom.status === 'available';
+    return this.selectedRooms.length > 0 && this.selectedRooms.every((r) => r.status === 'available');
   }
 
   get roomCapacity(): number {
-    return Math.max(1, Number(this.selectedRoom?.capacity) || 1);
+    if (!this.selectedRooms.length) return 1;
+    return this.selectedRooms.reduce((sum, room) => sum + Math.max(1, Number(room.capacity) || 1), 0);
+  }
+
+  get selectedRoomCount(): number {
+    return this.selectedRooms.length;
+  }
+
+  isRoomSelected(roomId: number): boolean {
+    return this.selectedRooms.some((r) => r.id === roomId);
+  }
+
+  clearSelectedRooms(): void {
+    this.selectedRooms = [];
   }
 
   get canSave(): boolean {
@@ -444,8 +455,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     }
 
     this.loadingRooms = true;
-    this.selectedRoom = null;
-    this.form.room_id = '';
+    this.clearSelectedRooms();
     this.cdr.detectChanges();
     try {
       const ok = await this.fetchRoomsForCurrentCriteria({ notifyEmpty: true });
@@ -461,8 +471,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   async reloadRooms(): Promise<void> {
     if (this.step !== 2 || this.loadingRooms) return;
     this.loadingRooms = true;
-    this.selectedRoom = null;
-    this.form.room_id = '';
+    this.clearSelectedRooms();
     try {
       await this.loadRoomAvailability();
       this.roomsCacheKey = this.buildRoomsQueryKey();
@@ -503,15 +512,21 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     }, 400);
   }
 
-  selectRoom(room: RoomStatusItem): void {
+  toggleRoom(room: RoomStatusItem): void {
     if (room.status !== 'available') {
       const key = room.blocked_by === 'schedule' ? 'BOOK_ROOM_OCCUPIED_CLASS' : 'BOOK_ROOM_OCCUPIED_HINT';
       this.snackbar.show(this.translate.instant(key), 'error');
       return;
     }
-    this.selectedRoom = room;
-    this.form.room_id = room.id;
-    const cap = Math.max(1, Number(room.capacity) || 1);
+
+    const idx = this.selectedRooms.findIndex((r) => r.id === room.id);
+    if (idx >= 0) {
+      this.selectedRooms = this.selectedRooms.filter((r) => r.id !== room.id);
+    } else {
+      this.selectedRooms = [...this.selectedRooms, room];
+    }
+
+    const cap = this.roomCapacity;
     if (this.occupants.length > cap) {
       this.occupants = this.occupants.slice(0, cap);
     }
@@ -519,7 +534,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   goConfirm(): void {
     if (!this.canGoStep3) {
-      this.snackbar.show(this.translate.instant('BOOK_PICK_ROOM'), 'error');
+      this.snackbar.show(this.translate.instant('BOOK_PICK_ROOMS'), 'error');
       return;
     }
     this.step = 3;
@@ -565,12 +580,12 @@ export class BookingCreatePage implements OnInit, OnDestroy {
       return;
     }
 
-    const roomUnit = {
-      unit_type: 'room',
-      unit_id: Number(this.form.room_id),
+    const roomUnits = this.selectedRooms.map((room) => ({
+      unit_type: 'room' as const,
+      unit_id: room.id,
       sequential: false,
       sub_units_included: false,
-    };
+    }));
     const extraUnits = this.accessExtras.map((x) => ({
       unit_type: x.unit_type,
       unit_id: x.unit_id,
@@ -578,7 +593,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
       sub_units_included: false,
     }));
     const bookingPeriods = this.periods.map((period) =>
-      this.toPeriodPayload(period, [roomUnit, ...extraUnits]),
+      this.toPeriodPayload(period, [...roomUnits, ...extraUnits]),
     );
 
     this.saveError = '';
@@ -681,29 +696,26 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   private async refreshRoomsFromOccupancy(): Promise<void> {
     if (!this.canGoStep2) return;
-    const selectedId = typeof this.form.room_id === 'number' ? this.form.room_id : null;
+    const selectedIds = this.selectedRooms.map((r) => r.id);
     this.roomsCacheKey = null;
     const ok = await this.fetchRoomsForCurrentCriteria({
       notifyEmpty: false,
       background: this.step !== 2,
-      preserveSelection: selectedId,
+      preserveSelection: selectedIds.length ? selectedIds : null,
     });
-    if (!ok || selectedId == null) return;
-    const room = this.availability?.rooms?.find((r) => r.id === selectedId) || null;
-    if (room?.status === 'available') {
-      this.selectedRoom = room;
-      this.form.room_id = selectedId;
-    } else {
-      this.selectedRoom = null;
-      this.form.room_id = '';
-    }
+    if (!ok || !selectedIds.length) return;
+
+    const kept = (this.availability?.rooms || []).filter(
+      (r) => selectedIds.includes(r.id) && r.status === 'available',
+    );
+    this.selectedRooms = kept;
     this.cdr.detectChanges();
   }
 
   private async fetchRoomsForCurrentCriteria(options: {
     notifyEmpty: boolean;
     background?: boolean;
-    preserveSelection?: number | null;
+    preserveSelection?: number[] | null;
   }): Promise<boolean> {
     const key = this.buildRoomsQueryKey();
     if (this.roomsCacheKey === key && this.availability && this.accessibleDays > 0) {
@@ -718,9 +730,8 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
     const run = async (): Promise<boolean> => {
       try {
-        if (options.preserveSelection == null) {
-          this.selectedRoom = null;
-          this.form.room_id = '';
+        if (!options.preserveSelection?.length) {
+          this.clearSelectedRooms();
         }
 
         const blocked = new Set<string>();

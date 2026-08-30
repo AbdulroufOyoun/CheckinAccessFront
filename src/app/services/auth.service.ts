@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
 import { Apiendpointd } from '../apiEndpoints';
+import { currentTenantHost } from '../core/tenant-host';
 import { TenantModuleName, User } from '../model/User';
 import { ApiResponse } from '../interfaces/api-response';
 
@@ -26,6 +27,26 @@ export class AuthService {
 
   private static readonly ME_BOOTSTRAP_KEY = 'ca_admin_me_bootstrapped';
   private static readonly ME_AT_KEY = 'ca_admin_me_at';
+  private static readonly TENANT_HOST_KEY = 'ca_admin_tenant_host';
+
+  /** Clear session if admin token was issued on a different tenant host. */
+  ensureTenantHostBinding(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    const host = currentTenantHost();
+    if (!host) {
+      return;
+    }
+    const stored = sessionStorage.getItem(AuthService.TENANT_HOST_KEY);
+    if (stored && stored !== host && this.getToken()) {
+      this.logout();
+      return;
+    }
+    if (this.getToken()) {
+      sessionStorage.setItem(AuthService.TENANT_HOST_KEY, host);
+    }
+  }
 
   saveUser(token: string, user: User): void {
     this.storage?.setItem('token', token);
@@ -34,6 +55,10 @@ export class AuthService {
     this.meCachedAt = Date.now();
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.setItem(AuthService.ME_AT_KEY, String(this.meCachedAt));
+      const host = currentTenantHost();
+      if (host) {
+        sessionStorage.setItem(AuthService.TENANT_HOST_KEY, host);
+      }
     }
   }
 
@@ -171,6 +196,7 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.removeItem(AuthService.ME_BOOTSTRAP_KEY);
       sessionStorage.removeItem(AuthService.ME_AT_KEY);
+      sessionStorage.removeItem(AuthService.TENANT_HOST_KEY);
     }
     void this.router.navigate(['/Login']);
   }

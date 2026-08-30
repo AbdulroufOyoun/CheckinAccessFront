@@ -7,10 +7,11 @@ import {
   AcademicTerm,
   EducationService,
   EduEnrollmentRow,
-  EduFacilityOption,
   EduSubject,
 } from '../../services/education.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { BookingAccessExtras } from '../../bookings/booking-access-extras/booking-access-extras';
+import { BookingExtraPick } from '../../bookings/booking-extra-unit';
 
 export interface EnrollmentDetailDialogData {
   userId: number;
@@ -21,7 +22,7 @@ export interface EnrollmentDetailDialogData {
 @Component({
   selector: 'app-enrollment-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, BookingAccessExtras],
   templateUrl: './enrollment-detail.html',
   styleUrls: ['../add-subject/add-subject.css', '../add-enrollment/add-enrollment.css', './enrollment-detail.css'],
 })
@@ -35,11 +36,10 @@ export class EnrollmentDetail implements OnInit {
 
   isRTL = false;
   saving = false;
-  loadingFacilities = false;
+  loadingAccessExtras = false;
   changed = false;
   rows: EduEnrollmentRow[] = [];
-  facilities: EduFacilityOption[] = [];
-  selectedFacilityIds = new Set<number>();
+  accessExtras: BookingExtraPick[] = [];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: EnrollmentDetailDialogData) {
     this.rows = [...(data.rows || [])];
@@ -49,7 +49,7 @@ export class EnrollmentDetail implements OnInit {
     this.isRTL =
       this.document.documentElement.getAttribute('dir') === 'rtl' ||
       this.translate.getCurrentLang() === 'ar';
-    void this.loadFacilities();
+    void this.loadAccessExtras();
   }
 
   get studentName(): string {
@@ -92,16 +92,8 @@ export class EnrollmentDetail implements OnInit {
     return 'ENR_STATUS_' + (status || '').toUpperCase();
   }
 
-  isFacilityChecked(id: number): boolean {
-    return this.selectedFacilityIds.has(id);
-  }
-
-  toggleFacility(id: number): void {
-    if (this.selectedFacilityIds.has(id)) {
-      this.selectedFacilityIds.delete(id);
-    } else {
-      this.selectedFacilityIds.add(id);
-    }
+  onAccessExtrasChange(picks: BookingExtraPick[]): void {
+    this.accessExtras = picks;
     this.cdr.detectChanges();
   }
 
@@ -141,10 +133,13 @@ export class EnrollmentDetail implements OnInit {
     }
   }
 
-  async saveFacilities(): Promise<void> {
+  async saveAccessExtras(): Promise<void> {
     this.saving = true;
     try {
-      await this.edu.syncStudentFacilityAccess(this.data.userId, Array.from(this.selectedFacilityIds));
+      await this.edu.syncStudentFacilityAccess(
+        this.data.userId,
+        this.accessExtras.map((p) => ({ unit_type: p.unit_type, unit_id: p.unit_id })),
+      );
       this.changed = true;
       this.snackbar.show(this.translate.instant('ENR_FACILITIES_SAVED'), 'success');
       this.close();
@@ -156,16 +151,26 @@ export class EnrollmentDetail implements OnInit {
     }
   }
 
-  private async loadFacilities(): Promise<void> {
-    this.loadingFacilities = true;
+  private async loadAccessExtras(): Promise<void> {
+    this.loadingAccessExtras = true;
     try {
       const res = await this.edu.getStudentFacilityAccess(this.data.userId);
-      this.facilities = res.data?.facilities || [];
-      this.selectedFacilityIds = new Set(res.data?.linked_facility_ids || []);
+      const linked = res.data?.linked_units || [];
+      if (linked.length) {
+        this.accessExtras = linked.map((u) => ({
+          unit_type: u.unit_type,
+          unit_id: u.unit_id,
+        }));
+      } else {
+        this.accessExtras = (res.data?.linked_facility_ids || []).map((id) => ({
+          unit_type: 'facility' as const,
+          unit_id: id,
+        }));
+      }
     } catch {
-      this.facilities = [];
+      this.accessExtras = [];
     } finally {
-      this.loadingFacilities = false;
+      this.loadingAccessExtras = false;
       this.cdr.detectChanges();
     }
   }

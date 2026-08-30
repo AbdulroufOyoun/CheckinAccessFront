@@ -246,6 +246,7 @@ export class EducationService {
     section_ids?: number[];
     status?: string;
     facility_ids?: number[];
+    access_units?: Array<{ unit_type: 'gate' | 'facility' | 'parking'; unit_id: number }>;
   }): Promise<ApiResponse<unknown>> {
     return this.mutate(this.api.post(Apiendpointd.enrollments, body));
   }
@@ -257,16 +258,21 @@ export class EducationService {
   getStudentFacilityAccess(userId: number): Promise<ApiResponse<{
     facilities: EduFacilityOption[];
     linked_facility_ids: number[];
+    linked_units?: Array<{ unit_type: 'gate' | 'facility' | 'parking'; unit_id: number }>;
   }>> {
     return this.api.get(Apiendpointd.studentFacilityAccess(userId));
   }
 
-  syncStudentFacilityAccess(userId: number, facilityIds: number[]): Promise<ApiResponse<{
+  syncStudentFacilityAccess(
+    userId: number,
+    accessUnits: Array<{ unit_type: 'gate' | 'facility' | 'parking'; unit_id: number }>,
+  ): Promise<ApiResponse<{
     facilities: EduFacilityOption[];
     linked_facility_ids: number[];
+    linked_units?: Array<{ unit_type: 'gate' | 'facility' | 'parking'; unit_id: number }>;
   }>> {
     return this.mutate(this.api.put(Apiendpointd.studentFacilityAccess(userId), {
-      facility_ids: facilityIds,
+      access_units: accessUnits,
     }));
   }
 

@@ -1,0 +1,16 @@
+<div class="tenant-required">
+  <main class="tenant-required__card">
+    <div class="tenant-required__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 21h18" />
+        <path d="M5 21V7l7-4 7 4v14" />
+        <path d="M9 21v-6h6v6" />
+      </svg>
+    </div>
+    <h1>{{ 'TENANT_REQUIRED_TITLE' | translate }}</h1>
+    <p>{{ 'TENANT_REQUIRED_BODY' | translate }}</p>
+    <p class="tenant-required__hint">{{ 'TENANT_REQUIRED_HINT' | translate }}</p>
+    <code class="tenant-required__url" dir="ltr">{{ exampleUrl }}</code>
+  </main>
+</div>

@@ -6,12 +6,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   AcademicTerm,
   EducationService,
-  EduFacilityOption,
   EduSection,
   EduSectionTime,
   EduSubject,
 } from '../../services/education.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { BookingAccessExtras } from '../../bookings/booking-access-extras/booking-access-extras';
+import { BookingExtraPick } from '../../bookings/booking-extra-unit';
 
 export interface EnrollUserOption {
   id: number;
@@ -22,14 +23,13 @@ export interface EnrollUserOption {
 export interface AddEnrollmentDialogData {
   users: EnrollUserOption[];
   terms?: AcademicTerm[];
-  facilities?: EduFacilityOption[];
   userId?: number;
 }
 
 @Component({
   selector: 'app-add-enrollment',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, BookingAccessExtras],
   templateUrl: './add-enrollment.html',
   styleUrls: ['../add-subject/add-subject.css', './add-enrollment.css'],
 })
@@ -54,8 +54,8 @@ export class AddEnrollment implements OnInit {
   selectedFacilityIds = new Set<number>();
   conflictBySectionId = new Map<number, string>();
   enrolledSections: EduSection[] = [];
-  facilities: EduFacilityOption[] = [];
-  loadingFacilities = false;
+  accessExtras: BookingExtraPick[] = [];
+  loadingAccessExtras = false;
 
   form = {
     user_id: '' as number | '',
@@ -68,7 +68,6 @@ export class AddEnrollment implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: AddEnrollmentDialogData) {
     this.users = data?.users || [];
     this.terms = data?.terms || [];
-    this.facilities = data?.facilities || [];
   }
 
   async ngOnInit(): Promise<void> {
@@ -76,9 +75,6 @@ export class AddEnrollment implements OnInit {
       || this.translate.getCurrentLang() === 'ar';
     if (!this.terms.length) {
       await this.loadTerms();
-    }
-    if (!this.facilities.length) {
-      void this.loadFacilities();
     }
     if (this.data?.userId) {
       this.form.user_id = this.data.userId;
@@ -168,7 +164,7 @@ export class AddEnrollment implements OnInit {
 
   async onStudentChange(): Promise<void> {
     this.selectedSectionIds.clear();
-    this.selectedFacilityIds.clear();
+    this.accessExtras = [];
     this.conflictBySectionId.clear();
     this.enrolledSections = [];
     this.editing = false;
@@ -183,7 +179,7 @@ export class AddEnrollment implements OnInit {
     }
     await Promise.all([
       this.loadStudentSchedule(Number(this.form.user_id)),
-      this.loadStudentFacilities(Number(this.form.user_id)),
+      this.loadStudentAccessExtras(Number(this.form.user_id)),
     ]);
     const termId = this.inferEnrolledTermId();
     if (termId) {
@@ -244,16 +240,8 @@ export class AddEnrollment implements OnInit {
     this.dialogRef.close(saved);
   }
 
-  isFacilityChecked(id: number): boolean {
-    return this.selectedFacilityIds.has(id);
-  }
-
-  toggleFacility(id: number): void {
-    if (this.selectedFacilityIds.has(id)) {
-      this.selectedFacilityIds.delete(id);
-    } else {
-      this.selectedFacilityIds.add(id);
-    }
+  onAccessExtrasChange(picks: BookingExtraPick[]): void {
+    this.accessExtras = picks;
     this.cdr.detectChanges();
   }
 
@@ -279,7 +267,10 @@ export class AddEnrollment implements OnInit {
         academic_term_id: Number(this.form.academic_term_id),
         section_ids: Array.from(this.selectedSectionIds),
         status: this.form.status,
-        facility_ids: Array.from(this.selectedFacilityIds),
+        access_units: this.accessExtras.map((p) => ({
+          unit_type: p.unit_type,
+          unit_id: p.unit_id,
+        })),
       });
       this.snackbar.show(
         this.translate.instant(this.editing ? 'ENR_UPDATED' : 'ENR_CREATED'),
@@ -309,17 +300,27 @@ export class AddEnrollment implements OnInit {
     }
   }
 
-  private async loadFacilities(): Promise<void> {
-    this.loadingFacilities = true;
-    this.cdr.detectChanges();
+  private async loadStudentAccessExtras(userId: number): Promise<void> {
+    this.loadingAccessExtras = true;
     try {
-      const res = await this.edu.getEducationFacilities();
-      this.facilities = res.data?.facilities || [];
+      const res = await this.edu.getStudentFacilityAccess(userId);
+      const linked = res.data?.linked_units || [];
+      if (linked.length) {
+        this.accessExtras = linked.map((u) => ({
+          unit_type: u.unit_type as BookingExtraPick['unit_type'],
+          unit_id: u.unit_id,
+        }));
+      } else {
+        const facilityIds = res.data?.linked_facility_ids || [];
+        this.accessExtras = facilityIds.map((id) => ({
+          unit_type: 'facility' as const,
+          unit_id: id,
+        }));
+      }
     } catch {
-      this.facilities = [];
+      this.accessExtras = [];
     } finally {
-      this.loadingFacilities = false;
-      this.cdr.detectChanges();
+      this.loadingAccessExtras = false;
     }
   }
 
@@ -360,21 +361,6 @@ export class AddEnrollment implements OnInit {
       this.enrolledSections = [];
     } finally {
       this.loadingSchedule = false;
-    }
-  }
-
-  private async loadStudentFacilities(userId: number): Promise<void> {
-    this.loadingFacilities = true;
-    try {
-      const res = await this.edu.getStudentFacilityAccess(userId);
-      if (res.data?.facilities?.length) {
-        this.facilities = res.data.facilities;
-      }
-      this.selectedFacilityIds = new Set(res.data?.linked_facility_ids || []);
-    } catch {
-      this.selectedFacilityIds.clear();
-    } finally {
-      this.loadingFacilities = false;
     }
   }
 
