@@ -1,14 +1,20 @@
 import { Routes } from '@angular/router';
 import { Login } from './auth/login/login';
-import { authGuard, guestGuard, moduleGuard, moduleGuardAny, permissionGuard } from './guards/auth.guard';
+import { authGuard, guestGuard, moduleGuard, moduleGuardAny, permissionGuard, tenantGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
+  {
+    path: 'TenantRequired',
+    loadComponent: () =>
+      import('./auth/tenant-required/tenant-required').then((m) => m.TenantRequired),
+  },
+
   { path: '', redirectTo: 'Login', pathMatch: 'full' },
 
-  { path: 'Login', component: Login, canActivate: [guestGuard] },
+  { path: 'Login', component: Login, canActivate: [tenantGuard, guestGuard] },
   {
     path: 'OtpVerification',
-    canActivate: [guestGuard],
+    canActivate: [tenantGuard, guestGuard],
     loadComponent: () =>
       import('./auth/otp-verification/otp-verification').then((m) => m.OtpVerification),
   },
@@ -16,7 +22,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./layout/app-shell/app-shell').then((m) => m.AppShell),
-    canActivate: [authGuard],
+    canActivate: [tenantGuard, authGuard],
     children: [
       {
         path: 'Dashboard',

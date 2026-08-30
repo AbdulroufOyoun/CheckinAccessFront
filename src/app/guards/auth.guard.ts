@@ -3,10 +3,24 @@ import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { TenantModuleName } from '../model/User';
+import { hasTenantHost } from '../core/tenant-host';
 
 function browserOnly(): boolean {
   return isPlatformBrowser(inject(PLATFORM_ID));
 }
+
+/** Block tenant admin UI on bare localhost — require a tenant subdomain in the URL. */
+export const tenantGuard: CanActivateFn = () => {
+  if (!browserOnly()) {
+    return true;
+  }
+  if (hasTenantHost()) {
+    const auth = inject(AuthService);
+    auth.ensureTenantHostBinding();
+    return true;
+  }
+  return inject(Router).createUrlTree(['/TenantRequired']);
+};
 
 export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
@@ -14,7 +28,11 @@ export const authGuard: CanActivateFn = () => {
   if (!browserOnly()) {
     return router.createUrlTree(['/Login']);
   }
+  if (!hasTenantHost()) {
+    return router.createUrlTree(['/TenantRequired']);
+  }
   const auth = inject(AuthService);
+  auth.ensureTenantHostBinding();
   if (auth.isLoggedIn()) {
     return true;
   }
@@ -25,8 +43,12 @@ export const guestGuard: CanActivateFn = () => {
   if (!browserOnly()) {
     return true;
   }
+  if (!hasTenantHost()) {
+    return inject(Router).createUrlTree(['/TenantRequired']);
+  }
   const auth = inject(AuthService);
   const router = inject(Router);
+  auth.ensureTenantHostBinding();
   if (!auth.isLoggedIn()) {
     return true;
   }

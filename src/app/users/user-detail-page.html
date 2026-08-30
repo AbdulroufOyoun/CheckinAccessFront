@@ -125,9 +125,21 @@
       <div class="ud-card__head">
         <h2>{{ 'USR_DETAIL_BOOKINGS' | translate }}
           @if (!bookingsLoading) {
-          <span class="ud-card__count">({{ bookings.length }})</span>
+          <span class="ud-card__count">({{ filteredBookings.length }}{{ bookingFilter !== 'all' ? ' / ' + bookings.length : '' }})</span>
           }
         </h2>
+        @if (!bookingsLoading && bookings.length) {
+        <div class="ud-filters" role="tablist" [attr.aria-label]="'USR_DETAIL_BOOKINGS' | translate">
+          <button type="button" class="ud-filter" [class.ud-filter--active]="bookingFilter === 'all'"
+            (click)="setBookingFilter('all')">{{ 'USR_DETAIL_FILTER_ALL' | translate }}</button>
+          <button type="button" class="ud-filter" [class.ud-filter--active]="bookingFilter === 'active'"
+            (click)="setBookingFilter('active')">{{ 'USR_DETAIL_FILTER_ACTIVE' | translate }}</button>
+          <button type="button" class="ud-filter" [class.ud-filter--active]="bookingFilter === 'ended'"
+            (click)="setBookingFilter('ended')">{{ 'USR_DETAIL_FILTER_ENDED' | translate }}</button>
+          <button type="button" class="ud-filter" [class.ud-filter--active]="bookingFilter === 'cancelled'"
+            (click)="setBookingFilter('cancelled')">{{ 'USR_DETAIL_FILTER_CANCELLED' | translate }}</button>
+        </div>
+        }
       </div>
 
       @if (bookingsLoading) {
@@ -136,7 +148,7 @@
         <div class="ud-bookings-skel__row"></div>
         <div class="ud-bookings-skel__row"></div>
       </div>
-      } @else if (!bookings.length) {
+      } @else if (!filteredBookings.length) {
       <div class="ud-muted-box">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -145,13 +157,14 @@
           <line x1="8" y1="2" x2="8" y2="6" />
           <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
-        <p>{{ 'USR_DETAIL_NO_BOOKINGS' | translate }}</p>
+        <p>{{ bookings.length ? ('USR_DETAIL_NO_BOOKINGS_FILTER' | translate) : ('USR_DETAIL_NO_BOOKINGS' | translate) }}</p>
       </div>
       } @else {
       <ul class="ud-booking-list">
-        @for (b of bookings; track b.id) {
+        @for (b of filteredBookings; track b.id) {
         <li class="ud-booking ud-booking--clickable" [class.ud-booking--cancelled]="b.status === 'cancelled'"
-          [class.ud-booking--hold]="b.status === 'on_hold'" (click)="openBookingDetails(b)"
+          [class.ud-booking--hold]="b.status === 'on_hold'"
+          [class.ud-booking--ended]="b.status === 'ended'" (click)="openBookingDetails(b)"
           (keydown.enter)="openBookingDetails(b)" tabindex="0" role="button"
           [attr.aria-label]="'BOOK_DETAIL_OPEN' | translate: { id: b.id }">
           <div class="ud-booking__room">{{ b.room }}</div>
@@ -160,6 +173,50 @@
             <span class="ud-booking__dates" dir="ltr">{{ b.checkIn }} → {{ b.checkOut }}</span>
           </div>
           <span class="ud-booking__status">{{ b.statusKey | translate }}</span>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+    }
+
+    @if (canSeeEnrollments) {
+    <section class="ud-card ud-card--enrollments">
+      <div class="ud-card__head">
+        <h2>{{ 'USR_DETAIL_ENROLLMENTS' | translate }}
+          @if (!enrollmentsLoading) {
+          <span class="ud-card__count">({{ enrollments.length }})</span>
+          }
+        </h2>
+        @if (!enrollmentsLoading && enrollments.length) {
+        <button type="button" class="ud__link-btn" (click)="openEnrollmentDetails()">
+          {{ 'ENR_DETAILS' | translate }}
+        </button>
+        }
+      </div>
+
+      @if (enrollmentsLoading) {
+      <div class="ud-bookings-skel" aria-hidden="true">
+        <div class="ud-bookings-skel__row"></div>
+        <div class="ud-bookings-skel__row"></div>
+      </div>
+      } @else if (!enrollments.length) {
+      <div class="ud-muted-box">
+        <p>{{ 'USR_DETAIL_NO_ENROLLMENTS' | translate }}</p>
+      </div>
+      } @else {
+      <ul class="ud-enrollment-list">
+        @for (e of enrollments; track e.id) {
+        <li class="ud-enrollment" (click)="openEnrollmentDetails()" (keydown.enter)="openEnrollmentDetails()"
+          tabindex="0" role="button">
+          <div class="ud-enrollment__main">
+            <strong>{{ e.subject }}</strong>
+            <span>{{ 'ENR_COL_SECTION' | translate }} {{ e.section }} · {{ e.room }}</span>
+          </div>
+          <div class="ud-enrollment__meta">
+            <span class="ud-enrollment__term">{{ e.term }}</span>
+            <span class="ud-enrollment__status">{{ e.statusKey | translate }}</span>
+          </div>
         </li>
         }
       </ul>

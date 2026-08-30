@@ -26,6 +26,14 @@ export interface UsersPage {
   message?: string;
 }
 
+export interface PaginatedPayload<T> {
+  data?: T[];
+  current_page?: number;
+  last_page?: number;
+  per_page?: number;
+  total?: number;
+}
+
 export interface UserFormPayload {
   name: string;
   email: string;
@@ -118,8 +126,46 @@ export class UsersService {
     });
   }
 
-  userBookings(userId: number): Promise<ApiResponse<{ data?: unknown[] } | unknown[]>> {
-    return this.api.get(Apiendpointd.userBookings(userId));
+  userBookings(
+    userId: number,
+    page = 1,
+    perPage = 50,
+  ): Promise<ApiResponse<PaginatedPayload<unknown>>> {
+    const qs = new URLSearchParams({
+      page: String(page),
+      per_page: String(perPage),
+    });
+    return this.api.get(`${Apiendpointd.userBookings(userId)}?${qs}`);
+  }
+
+  async userBookingsAll(userId: number, perPage = 50): Promise<unknown[]> {
+    const all: unknown[] = [];
+    let page = 1;
+    let lastPage = 1;
+
+    do {
+      const res = await this.userBookings(userId, page, perPage);
+      const payload = this.unwrapPaginator(res.data);
+      all.push(...payload.rows);
+      lastPage = payload.lastPage;
+      page += 1;
+    } while (page <= lastPage);
+
+    return all;
+  }
+
+  private unwrapPaginator(raw: unknown): { rows: unknown[]; lastPage: number } {
+    if (Array.isArray(raw)) {
+      return { rows: raw, lastPage: 1 };
+    }
+
+    const payload = (raw || {}) as PaginatedPayload<unknown>;
+    const rows = Array.isArray(payload.data) ? payload.data : [];
+
+    return {
+      rows,
+      lastPage: Math.max(1, Number(payload.last_page ?? 1)),
+    };
   }
 
   private invalidateShowCache(): void {

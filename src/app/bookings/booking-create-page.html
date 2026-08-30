@@ -284,6 +284,17 @@
       <div class="bc-kpi"><span>{{ 'BOOK_BLOCKED_COUNT' | translate }}</span><strong>{{ blockedCount }}</strong></div>
     </div>
 
+    <p class="bc-help bc-help--rooms">{{ 'BOOK_MULTI_ROOM_HINT' | translate }}</p>
+
+    @if (selectedRoomCount) {
+    <div class="bc-selected-rooms">
+      <span>{{ 'BOOK_ROOMS_SELECTED' | translate: { n: selectedRoomCount } }}</span>
+      <button type="button" class="bc-selected-rooms__clear" (click)="clearSelectedRooms()">
+        {{ 'BOOK_ROOMS_CLEAR' | translate }}
+      </button>
+    </div>
+    }
+
     @if (!filteredRooms.length) {
     <p class="bc-muted">{{ 'BOOK_NO_ROOMS' | translate }}</p>
     } @else {
@@ -317,9 +328,9 @@
               <div class="bc-room-grid">
                 @for (room of floor.standalone; track room.id) {
                 <button type="button" class="bc-room-card bc-room-card--{{ room.status }}"
-                  [class.is-selected]="selectedRoom?.id === room.id"
+                  [class.is-selected]="isRoomSelected(room.id)"
                   [disabled]="room.status !== 'available'"
-                  (click)="selectRoom(room)">
+                  (click)="toggleRoom(room)">
                   <ng-container *ngTemplateOutlet="bookingRoomCard; context: { $implicit: room }"></ng-container>
                 </button>
                 }
@@ -349,9 +360,9 @@
               <div class="rsl-suite__grid">
                 @for (room of suite.rooms; track room.id) {
                 <button type="button" class="bc-room-card bc-room-card--{{ room.status }} bc-room-card--in-suite rsl-room--in-suite"
-                  [class.is-selected]="selectedRoom?.id === room.id"
+                  [class.is-selected]="isRoomSelected(room.id)"
                   [disabled]="room.status !== 'available'"
-                  (click)="selectRoom(room)">
+                  (click)="toggleRoom(room)">
                   <ng-container *ngTemplateOutlet="bookingRoomCard; context: { $implicit: room, inSuite: true }"></ng-container>
                 </button>
                 }
@@ -421,18 +432,25 @@
       </section>
 
       <div class="bc-confirm__hero">
-        <div class="bc-confirm__room">
-          <span class="bc-confirm__room-label">{{ 'BOOK_ROOM' | translate }}</span>
-          <strong>{{ selectedRoom?.number || '—' }}</strong>
-          <small>
-            {{ selectedRoom?.room_type?.name || selectedRoom?.name || '—' }}
-            @if (selectedRoom?.suite) {
-              · {{ 'ROOM_STATUS_SUITE' | translate }}: {{ selectedRoom?.suite?.name || selectedRoom?.suite?.number }}
+        <div class="bc-confirm__rooms">
+          <span class="bc-confirm__room-label">{{ 'BOOK_ROOMS' | translate }} ({{ selectedRoomCount }})</span>
+          <ul class="bc-confirm__room-list">
+            @for (room of selectedRooms; track room.id) {
+            <li class="bc-confirm__room-item">
+              <strong>{{ room.number || '—' }}</strong>
+              <small>
+                {{ room.room_type?.name || room.name || '—' }}
+                @if (room.suite) {
+                  · {{ 'ROOM_STATUS_SUITE' | translate }}: {{ room.suite?.name || room.suite?.number }}
+                }
+                · {{ room.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}
+                · {{ 'BOOK_ROOM_CAPACITY' | translate: { n: room.capacity || 1 } }}
+              </small>
+            </li>
             }
-            ·
-            {{ selectedRoom?.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}
-            ·
-            {{ 'BOOK_ROOM_CAPACITY' | translate: { n: roomCapacity } }}
+          </ul>
+          <small class="bc-confirm__room-total">
+            {{ 'BOOK_ROOMS_TOTAL_CAPACITY' | translate: { n: roomCapacity } }}
           </small>
         </div>
         <div class="bc-confirm__stats">

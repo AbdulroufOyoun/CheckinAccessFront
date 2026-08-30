@@ -50,26 +50,15 @@
     </section>
 
     <section class="as__section">
-      <h3 class="as__section-title">{{ 'ENR_FACILITIES' | translate }}</h3>
-      <p class="enr-hint">{{ 'ENR_FACILITIES_HINT' | translate }}</p>
-      @if (loadingFacilities) {
+      <h3 class="as__section-title">{{ 'ENR_ACCESS_EXTRAS' | translate }}</h3>
+      <p class="enr-hint">{{ 'ENR_ACCESS_EXTRAS_HINT' | translate }}</p>
+      @if (loadingAccessExtras) {
         <p class="enr-empty">{{ 'LOADING' | translate }}</p>
-      } @else if (!facilities.length) {
-        <p class="enr-empty">{{ 'ENR_NO_FACILITIES' | translate }}</p>
       } @else {
-        <div class="enr-list" role="group">
-          @for (f of facilities; track f.id) {
-            <label class="enr-item" [class.enr-item--checked]="isFacilityChecked(f.id)">
-              <input type="checkbox"
-                [checked]="isFacilityChecked(f.id)"
-                (change)="toggleFacility(f.id)" />
-              <span class="enr-item__body">
-                <strong>{{ f.name }}</strong>
-                <small>{{ 'ENR_FACILITY_LOCKS' | translate: { n: f.locks_count || 0 } }}</small>
-              </span>
-            </label>
-          }
-        </div>
+        <app-booking-access-extras
+          [compact]="true"
+          [selected]="accessExtras"
+          (selectedChange)="onAccessExtrasChange($event)" />
       }
     </section>
   </div>
@@ -81,12 +70,12 @@
     <button class="as__btn as__btn--ghost" type="button" (click)="editEnrollment()" [disabled]="saving">
       {{ 'ENR_EDIT' | translate }}
     </button>
-    <button class="as__btn as__btn--primary" type="button" (click)="saveFacilities()"
-      [disabled]="saving || loadingFacilities">
+    <button class="as__btn as__btn--primary" type="button" (click)="saveAccessExtras()"
+      [disabled]="saving || loadingAccessExtras">
       @if (saving) {
         <span class="as__spinner"></span> {{ 'SAVING' | translate }}
       } @else {
-        {{ 'ENR_SAVE_FACILITIES' | translate }}
+        {{ 'ENR_SAVE_ACCESS' | translate }}
       }
     </button>
   </div>

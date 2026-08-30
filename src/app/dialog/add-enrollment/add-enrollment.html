@@ -104,26 +104,15 @@
       </div>
 
       <div class="as__field">
-        <span class="as__label">{{ 'ENR_FACILITIES' | translate }}</span>
-        <p class="enr-hint">{{ 'ENR_FACILITIES_HINT' | translate }}</p>
-        @if (loadingFacilities) {
+        <span class="as__label">{{ 'ENR_ACCESS_EXTRAS' | translate }}</span>
+        <p class="enr-hint">{{ 'ENR_ACCESS_EXTRAS_HINT' | translate }}</p>
+        @if (loadingAccessExtras) {
         <p class="enr-empty">{{ 'LOADING' | translate }}</p>
-        } @else if (!facilities.length) {
-        <p class="enr-empty">{{ 'ENR_NO_FACILITIES' | translate }}</p>
         } @else {
-        <div class="enr-list" role="group" [attr.aria-label]="'ENR_FACILITIES' | translate">
-          @for (f of facilities; track f.id) {
-          <label class="enr-item" [class.enr-item--checked]="isFacilityChecked(f.id)">
-            <input type="checkbox"
-              [checked]="isFacilityChecked(f.id)"
-              (change)="toggleFacility(f.id)" />
-            <span class="enr-item__body">
-              <strong>{{ f.name }}</strong>
-              <small>{{ 'ENR_FACILITY_LOCKS' | translate: { n: f.locks_count || 0 } }}</small>
-            </span>
-          </label>
-          }
-        </div>
+        <app-booking-access-extras
+          [compact]="true"
+          [selected]="accessExtras"
+          (selectedChange)="onAccessExtrasChange($event)" />
         }
       </div>
 
