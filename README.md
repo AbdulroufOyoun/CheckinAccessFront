@@ -2,7 +2,9 @@
 
 Angular tenant-admin SPA for **CheckinAccess**.
 
-Use this app against a **tenant domain** API (example: `http://ratco.localhost:8000/api/admins/...`).  
+**Full stack install, Reverb, and deployment:** [`../README.md`](../README.md)
+
+Use this app against a **tenant domain** API (example: `http://ratco.localhost:8000/api/admins/...`).
 Platform owners should use **CheckinAccessPlatform** against the central API instead.
 
 ## Stack
@@ -19,7 +21,7 @@ Platform owners should use **CheckinAccessPlatform** against the central API ins
 | Node.js | 20+ recommended |
 | npm | Comes with Node |
 | Backend | [CheckinAccess](https://github.com/AbdulroufOyoun/CheckinAccess) HTTP API on port **8000** |
-| Reverb | Same backend: `php artisan reverb:start` on port **8081** (required for live room occupancy; 8080 is Herd nginx) |
+| Reverb | Same backend: `php artisan reverb:start` on port **8081** (required for live room occupancy; 8080 is Herd nginx). See [`../README.md`](../README.md#realtime-laravel-reverb--setup--verify). |
 | Hosts | `127.0.0.1 ratco.localhost` (or your tenant domain) |
 
 ## First-time install
