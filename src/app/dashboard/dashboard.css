@@ -311,6 +311,27 @@
   }
 }
 
+@media (max-width: 900px) {
+  .dashboard {
+    gap: 16px;
+  }
+
+  .dash-hero {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 16px;
+  }
+
+  .dash-hero__actions {
+    width: 100%;
+  }
+
+  .dash-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 640px) {
   .dash-hero {
     padding: 18px 16px;

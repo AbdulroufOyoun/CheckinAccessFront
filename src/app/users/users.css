@@ -188,6 +188,23 @@
   gap: 16px;
 }
 
+@media (max-width: 900px) {
+  .users-page {
+    gap: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-add-user {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 1024px) {
   .users-grid {
     grid-template-columns: repeat(2, 1fr);

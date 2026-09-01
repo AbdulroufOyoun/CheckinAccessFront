@@ -43,10 +43,6 @@ export const NAV_SEARCH_PAGE_META: Record<string, NavSearchPageMeta> = {
     capabilities: ['add', 'edit'],
     addRoute: '/Reservations/New',
   },
-  '/Reservations/Deleted': {
-    aliases: ['deleted', 'removed', 'trash', 'archive', 'محذوف', 'محذوفة', 'حذف', 'أرشيف'],
-    capabilities: [],
-  },
   '/RoomStatus': {
     aliases: ['occupancy', 'rooms', 'status', 'غرف', 'حالة', 'اشغال'],
     capabilities: [],
@@ -109,6 +105,10 @@ export const NAV_SEARCH_PAGE_META: Record<string, NavSearchPageMeta> = {
     capabilities: [],
   },
   '/CompoundAccess': {
+    aliases: ['compound', 'access', 'كمباوند', 'مجمع', 'صلاحية', 'اقفال'],
+    capabilities: ['add', 'edit'],
+  },
+  '/Education/CompoundAccess': {
     aliases: ['compound', 'access', 'كمباوند', 'مجمع', 'صلاحية', 'اقفال'],
     capabilities: ['add', 'edit'],
   },

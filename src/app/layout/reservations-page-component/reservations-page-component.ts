@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogMobileService } from '../../services/dialog-mobile.service';
 import { Subject, takeUntil } from 'rxjs';
 import {
   Booking,
@@ -59,7 +59,7 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogMobile = inject(DialogMobileService);
   private readonly realtime = inject(RealtimeService);
   private readonly destroy$ = new Subject<void>();
 
@@ -204,13 +204,11 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
 
   openDetails(row: ReservationRow, event?: Event): void {
     event?.stopPropagation();
-    this.dialog.open(BookingDetailDialog, {
+    this.dialogMobile.open(BookingDetailDialog, {
       panelClass: ['custom-dialog'],
-      backdropClass: 'custom-backdrop',
       width: '560px',
       maxWidth: '96vw',
       maxHeight: '92vh',
-      autoFocus: false,
       data: { bookingId: row.id, preview: row.raw },
     });
   }
@@ -260,14 +258,12 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   openAssignLocks(row: ReservationRow): void {
-    this.dialog
+    this.dialogMobile
       .open(AssignBookingLocksDialog, {
         panelClass: ['custom-dialog'],
-        backdropClass: 'custom-backdrop',
         width: '480px',
         maxWidth: '94vw',
         maxHeight: '90vh',
-        autoFocus: false,
         data: { bookingId: row.id, guestName: row.guestName },
       })
       .afterClosed()
@@ -346,12 +342,10 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   private async openCancelConfirm(row: ReservationRow): Promise<boolean> {
-    const ref = this.dialog.open(ConfirmDialog, {
+    const ref = this.dialogMobile.open(ConfirmDialog, {
       panelClass: ['custom-dialog', 'subject-dialog'],
-      backdropClass: 'custom-backdrop',
       width: '440px',
       maxWidth: '94vw',
-      autoFocus: false,
       data: {
         variant: 'danger',
         titleKey: 'BOOK_CANCEL_DIALOG_TITLE',
@@ -372,12 +366,10 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   private async openDeleteConfirm(row: ReservationRow): Promise<boolean> {
-    const ref = this.dialog.open(ConfirmDialog, {
+    const ref = this.dialogMobile.open(ConfirmDialog, {
       panelClass: ['custom-dialog', 'subject-dialog'],
-      backdropClass: 'custom-backdrop',
       width: '440px',
       maxWidth: '94vw',
-      autoFocus: false,
       data: {
         variant: 'warning',
         titleKey: 'BOOK_DELETE_DIALOG_TITLE',

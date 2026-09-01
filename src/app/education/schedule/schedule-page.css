@@ -434,6 +434,65 @@
   display: none;
 }
 
+/* Mobile: simplified day list (≤900px) */
+.sched__mobile-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.sched__mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 14px 16px;
+}
+
+.sched__mobile-day-title {
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: var(--gray-800, #1F2937);
+}
+
+.sched__mobile-event {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gray-200, #E5E7EB);
+  background: #f8fafc;
+  margin-bottom: 8px;
+}
+
+.sched__mobile-event--lab {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.sched__mobile-empty {
+  margin: 0 0 8px;
+  color: var(--gray-400, #9CA3AF);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .sched__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sched__filter {
+    width: 100%;
+  }
+}
+
 @media (max-width: 720px) {
   .sched__header {
     align-items: stretch;

@@ -28,7 +28,7 @@
       }
     </div>
   } @else {
-    <div class="table-container reveal">
+    <div class="table-container reveal desktop-only">
       <table>
         <thead>
           <tr>
@@ -64,6 +64,28 @@
           }
         </tbody>
       </table>
+    </div>
+
+    <div class="mobile-card-list mobile-only-block reveal">
+      @for (row of filteredRows; track row.user_id) {
+      <article class="mobile-card">
+        <div class="mobile-card__head">
+          <span class="mobile-card__title">{{ row.user?.name || ('#' + row.user_id) }}</span>
+        </div>
+        <div class="mobile-card__meta">{{ contactLabel(row.user) }}</div>
+        <div class="mobile-card__row ca-chips">
+          @for (compound of row.compounds; track compound.id) {
+          <span class="mobile-card__chip edu-ui__badge edu-ui__badge--on">{{ compoundLabel(compound) }}</span>
+          }
+        </div>
+        <div class="mobile-card__actions">
+          <button type="button" class="edu-ui__btn" (click)="openEdit(row)">{{ 'EDU_CA_EDIT' | translate }}</button>
+          <button type="button" class="edu-ui__btn edu-ui__btn--danger" (click)="revoke(row)" [disabled]="saving">
+            {{ 'EDU_CA_REVOKE' | translate }}
+          </button>
+        </div>
+      </article>
+      }
     </div>
   }
 </div>

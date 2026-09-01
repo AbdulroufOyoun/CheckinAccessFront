@@ -1,3 +1,6 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import './app/shared/mobile/mobile.css';
+
 /* styles.css — Global resets + fonts (loaded asynchronously from index.html) */
 
 *,
@@ -62,6 +65,21 @@
   --sidebar-bg: linear-gradient(180deg, #0C1A3A 0%, #0F2354 60%, #0E2247 100%);
   --sidebar-width-open: 240px;
   --sidebar-width-collapsed: 72px;
+
+  /* Mobile layout tokens (aligned with Platform) */
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 900px;
+  --bp-xl: 1024px;
+  --touch-min: 44px;
+  --page-px: clamp(12px, 3vw, 24px);
+  --header-h: 56px;
+  --bottom-nav-h: 64px;
+
+  /* Bootstrap brand overrides */
+  --bs-primary: #2563eb;
+  --bs-body-font-family: var(--font-en);
+  --bs-border-radius: 10px;
 
   /* Shadows */
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.07);

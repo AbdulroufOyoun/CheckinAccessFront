@@ -175,7 +175,7 @@
     @if (!bookings.length) {
     <p class="rd-muted">{{ 'ROOM_DETAIL_NO_BOOKINGS' | translate }}</p>
     } @else {
-    <div class="rd-table-wrap">
+    <div class="rd-table-wrap desktop-only">
       <table class="rd-table">
         <thead>
           <tr>
@@ -206,6 +206,27 @@
           }
         </tbody>
       </table>
+    </div>
+
+    <div class="mobile-card-list mobile-only-block">
+      @for (b of bookings; track b.id) {
+      <article class="mobile-card" (click)="openReservation(b.id)" (keydown.enter)="openReservation(b.id)"
+        tabindex="0" role="button">
+        <div class="mobile-card__head">
+          <span class="mobile-card__title">{{ b.guest }}</span>
+          <span class="mobile-card__chip rd-pill rd-pill--{{ b.status }}">{{ b.statusKey | translate }}</span>
+        </div>
+        <div class="mobile-card__meta">#{{ b.id }}</div>
+        <div class="mobile-card__row">
+          <span>{{ b.mobile }}</span>
+          <span>{{ b.email }}</span>
+        </div>
+        <div class="mobile-card__row" dir="ltr">
+          <span>{{ b.checkIn }} → {{ b.checkOut }}</span>
+        </div>
+        <div class="mobile-card__meta">{{ b.schedule }}</div>
+      </article>
+      }
     </div>
     }
   </section>

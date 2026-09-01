@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogMobileService } from '../../services/dialog-mobile.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 import { SnackbarService } from '../../services/snackbar.service';
@@ -52,7 +52,7 @@ type DetailTab = 'overview' | 'locks' | 'catalogs';
 export class PropertyConsole implements OnInit {
   private readonly api = inject(PropertyApiService);
   private readonly treeCache = inject(PropertyTreeCache);
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogMobile = inject(DialogMobileService);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -702,7 +702,7 @@ export class PropertyConsole implements OnInit {
     }));
     const floorId = Number(data.parent?.floor_id || data.item?.['floor_id'] || 0) || null;
     const suites = this.suitesForFloor(floorId);
-    const ref = this.dialog.open(PropertyEntityDialog, {
+    const ref = this.dialogMobile.open(PropertyEntityDialog, {
       panelClass: [
         'custom-dialog',
         'subject-dialog',
@@ -838,7 +838,7 @@ export class PropertyConsole implements OnInit {
     if (!this.selected || !this.canLinkLocks) return;
     const type = this.selected.type as LockableType;
     const open = (available: PropLock[], linked: PropLock[]) => {
-      const ref = this.dialog.open(LinkLockDialog, {
+      const ref = this.dialogMobile.open(LinkLockDialog, {
         panelClass: ['custom-dialog', 'subject-dialog'],
         backdropClass: 'custom-backdrop',
         width: '480px',
