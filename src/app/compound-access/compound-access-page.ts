@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, DestroyRef, ElementRef, HostListener, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogMobileService } from '../services/dialog-mobile.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
@@ -28,7 +28,7 @@ export class CompoundAccessPage implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogMobile = inject(DialogMobileService);
 
   @ViewChild('studentInput') private studentInput?: ElementRef<HTMLInputElement>;
 
@@ -397,12 +397,10 @@ export class CompoundAccessPage implements OnInit {
     const studentName = row.user?.name || `#${row.user_id}`;
     const compounds = row.compounds.map((c) => this.compoundLabel(c)).join(' · ');
 
-    const ref = this.dialog.open(ConfirmDialog, {
+    const ref = this.dialogMobile.open(ConfirmDialog, {
       panelClass: ['custom-dialog', 'subject-dialog'],
-      backdropClass: 'custom-backdrop',
       width: '440px',
       maxWidth: '94vw',
-      autoFocus: false,
       data: {
         variant: 'danger',
         titleKey: 'EDU_CA_REVOKE_DIALOG_TITLE',

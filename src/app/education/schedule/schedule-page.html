@@ -90,7 +90,9 @@
     </div>
     }
 
-    <div class="sched__table-wrap">
+    <p class="sched__mobile-note mobile-only-block">{{ 'SCHED_PAGE_HINT' | translate }}</p>
+
+    <div class="sched__table-wrap desktop-only">
       <div
         class="sched__week"
         [style.--day-count]="days.length"
@@ -147,6 +149,28 @@
           }
         </div>
       </div>
+    </div>
+
+    <div class="sched__mobile-list mobile-only-block">
+      @for (track of dayTracks; track track.day.id) {
+      <section class="sched__mobile-day">
+        <h3 class="sched__mobile-day-title">{{ dayLabel(track.day) }}</h3>
+        @if (!track.events.length) {
+        <p class="sched__mobile-empty">—</p>
+        } @else {
+        @for (ev of track.events; track ev.id) {
+        <article class="sched__mobile-event" [class.sched__mobile-event--lab]="ev.practical">
+          <div class="mobile-card__head">
+            <strong>{{ ev.subject }}</strong>
+            <span class="mobile-card__chip">{{ 'SCHED_SECTION' | translate: { n: ev.sectionNumber } }}</span>
+          </div>
+          <div class="mobile-card__row">{{ ev.timeLabel }}</div>
+          <div class="mobile-card__meta">{{ ev.doctor }} · {{ ev.room }}</div>
+        </article>
+        }
+        }
+      </section>
+      }
     </div>
 
     <div class="sched__print-foot print-only">

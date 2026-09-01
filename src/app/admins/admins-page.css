@@ -328,3 +328,16 @@
 }
 
 .edu-ui__table { min-width: 780px; }
+
+@media (max-width: 900px) {
+  .adm-page .mobile-card__head .adm-page__person {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .adm-page .mobile-card__head .adm-page__avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.7rem;
+  }
+}

@@ -345,7 +345,8 @@
 }
 
 /* ─── NAVBAR ────────────────────────────────────────────── */
-.navbar {
+.navbar,
+header.navbar.desktop-only {
   display: flex;
   align-items: center;
   justify-content: space-between;

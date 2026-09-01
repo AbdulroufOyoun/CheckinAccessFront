@@ -53,7 +53,7 @@
     <p>{{ (hasFilters ? 'BOOK_EMPTY_SEARCH_HINT' : 'BOOK_DELETED_EMPTY_HINT') | translate }}</p>
   </div>
   } @else {
-  <div class="rp-table-wrap reveal">
+  <div class="rp-table-wrap reveal desktop-only">
     <table class="rp-table">
       <colgroup>
         <col class="rp-table__col-id" />
@@ -101,6 +101,32 @@
         }
       </tbody>
     </table>
+  </div>
+
+  <div class="mobile-card-list mobile-only-block reveal">
+    @for (res of reservations; track res.id) {
+    <article class="mobile-card" (click)="openDetails(res)" (keydown.enter)="openDetails(res)" tabindex="0"
+      role="button" [attr.aria-label]="'BOOK_DETAIL_OPEN' | translate: { id: res.id }">
+      <div class="mobile-card__head">
+        <span class="mobile-card__title">#{{ res.id }} · {{ res.guestName }}</span>
+        <span class="mobile-card__chip rp-status rp-status--deleted">{{ 'BOOK_DELETED_BADGE' | translate }}</span>
+      </div>
+      <div class="mobile-card__row">
+        <span>{{ res.unitLabel }}</span>
+        @if (res.building !== '—') {
+        <span>{{ res.building }}</span>
+        }
+      </div>
+      <div class="mobile-card__row" dir="ltr">
+        <span>{{ formatDate(res.checkIn) }} → {{ formatDate(res.checkOut) }}</span>
+      </div>
+      <div class="mobile-card__meta">{{ res.scheduleLabel }}</div>
+      <div class="mobile-card__row">
+        <span>{{ res.statusKey | translate }}</span>
+        <span>{{ formatDateTime(res.deletedAt) }}</span>
+      </div>
+    </article>
+    }
   </div>
 
   @if (lastPage > 1) {

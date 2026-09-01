@@ -42,7 +42,7 @@
     }
   </div>
   } @else {
-  <div class="edu-ui__table-wrap reveal">
+  <div class="edu-ui__table-wrap reveal desktop-only">
     <table class="edu-ui__table">
       <thead>
         <tr>
@@ -102,6 +102,49 @@
         }
       </tbody>
     </table>
+  </div>
+
+  <div class="mobile-card-list mobile-only-block reveal">
+    @for (a of filtered; track a.id; let i = $index) {
+    <article class="mobile-card reveal-item" [style.--reveal-i]="i < 12 ? i : 12">
+      <div class="mobile-card__head">
+        <div class="adm-page__person">
+          <div class="adm-page__avatar">{{ initials(a) }}</div>
+          <div>
+            <span class="mobile-card__title">{{ a.name }}</span>
+            <span class="mobile-card__meta">#{{ a.id }}</span>
+          </div>
+        </div>
+        <span class="mobile-card__chip edu-ui__badge"
+          [class.edu-ui__badge--on]="isActive(a)"
+          [class.edu-ui__badge--off]="!isActive(a)">
+          {{ (isActive(a) ? 'ACTIVE' : 'INACTIVE') | translate }}
+        </span>
+      </div>
+      <div class="mobile-card__row">
+        <span>{{ a.mobile || '—' }}</span>
+        <span>{{ a.email || '—' }}</span>
+      </div>
+      <div class="mobile-card__row">
+        @for (r of a.roles || []; track r.id) {
+        <span class="mobile-card__chip edu-ui__badge edu-ui__badge--lab">{{ r.name }}</span>
+        } @empty {
+        <span class="mobile-card__meta">{{ 'ADM_NO_ROLES' | translate }}</span>
+        }
+      </div>
+      <div class="mobile-card__actions">
+        <button type="button" class="edu-ui__btn" (click)="openEdit(a)">{{ 'EDIT' | translate }}</button>
+        <button type="button" class="edu-ui__btn" (click)="openResetPassword(a)">
+          {{ 'ADM_CHANGE_PASSWORD' | translate }}
+        </button>
+        <button type="button" class="edu-ui__btn"
+          [class.edu-ui__btn--danger]="isActive(a)"
+          (click)="toggleActive(a)">
+          {{ (isActive(a) ? 'ADM_DEACTIVATE' : 'ADM_ACTIVATE') | translate }}
+        </button>
+      </div>
+    </article>
+    }
   </div>
   }
 </div>

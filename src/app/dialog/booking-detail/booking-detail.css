@@ -536,3 +536,38 @@
   color: var(--bd-muted);
   font-size: 0.78rem;
 }
+
+:host-context(.dialog--fullscreen) .bd {
+  max-height: 100dvh;
+  min-width: 0;
+  height: 100%;
+}
+
+:host-context(.dialog--fullscreen) .bd__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+}
+
+:host-context(.dialog--fullscreen) .bd__body {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Mobile fullscreen: header X is enough — hide bulky footer close bar */
+:host-context(.dialog--fullscreen) .bd__foot {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .bd__head {
+    padding-inline: 16px;
+  }
+
+  .bd__body {
+    padding-inline: 16px;
+  }
+}

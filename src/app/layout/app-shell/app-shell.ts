@@ -16,7 +16,6 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { LocaleService } from '../../services/locale.service';
 import { User } from '../../model/User';
@@ -30,6 +29,8 @@ import {
   pageMatchesNavQuery,
   type NavSearchPage,
 } from './nav-search';
+import { MobileLayoutService } from '../mobile-layout.service';
+import { DialogMobileService } from '../../services/dialog-mobile.service';
 
 type NavIcon =
   | 'dashboard'
@@ -78,13 +79,14 @@ interface NavSearchHit {
   selector: 'app-app-shell',
   imports: [RouterOutlet, CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule],
   templateUrl: './app-shell.html',
-  styleUrl: './app-shell.css',
+  styleUrls: ['./app-shell.css', './app-shell-mobile.css'],
 })
 export class AppShell implements OnInit, OnDestroy {
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogMobile = inject(DialogMobileService);
   private readonly usersApi = inject(UsersService);
   private readonly realtime = inject(RealtimeService);
   private readonly locale = inject(LocaleService);
+  readonly mobileLayout = inject(MobileLayoutService);
 
   @ViewChild('navSearchInput') navSearchInput?: ElementRef<HTMLInputElement>;
   @ViewChild('navSearchResults') navSearchResults?: ElementRef<HTMLElement>;
@@ -435,6 +437,12 @@ export class AppShell implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   onGlobalKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      if (this.mobileLayout.drawerOpen() || this.mobileLayout.moreSheetOpen() || this.mobileLayout.searchSheetOpen()) {
+        this.mobileLayout.closeAllOverlays();
+        return;
+      }
+    }
     if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return;
     const tag = (event.target as HTMLElement | null)?.tagName;
     if (tag === 'TEXTAREA') return;
@@ -592,7 +600,30 @@ export class AppShell implements OnInit, OnDestroy {
   }
 
   toggleSidebar(): void {
+    if (this.mobileLayout.isMobile()) {
+      this.mobileLayout.toggleDrawer();
+      return;
+    }
     this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  onMobileNavClick(labelKey: string): void {
+    this.currentPage(labelKey);
+    this.mobileLayout.closeAllOverlays();
+  }
+
+  openMobileSearch(): void {
+    this.mobileLayout.openSearchSheet();
+    setTimeout(() => this.navSearchInput?.nativeElement.focus(), 50);
+  }
+
+  toggleMore(): void {
+    this.closeDropdowns();
+    this.mobileLayout.toggleMore();
+  }
+
+  closeMore(): void {
+    this.mobileLayout.closeMore();
   }
 
   applyLang(): void {
@@ -620,6 +651,7 @@ export class AppShell implements OnInit, OnDestroy {
   closeDropdowns(): void {
     this.userMenuOpen = false;
     this.closeSearch();
+    this.mobileLayout.closeAllOverlays();
   }
 
   toggleUserMenu(): void {
@@ -630,17 +662,37 @@ export class AppShell implements OnInit, OnDestroy {
   currentPage(pageName: string): void {
     this.activePage = this.translate.instant(pageName);
     this.document.title = `${this.activePage} - CheckinAccess`;
+    if (this.mobileLayout.isMobile()) {
+      this.mobileLayout.closeDrawer();
+    }
+  }
+
+  showReservationsTab(): boolean {
+    return this.canProperty('manage bookings');
+  }
+
+  showPropertyTab(): boolean {
+    return this.canProperty(
+      'manage buildings',
+      'view buildings',
+      'manage rooms',
+      'view rooms',
+      'manage compounds',
+      'view compounds',
+    );
+  }
+
+  showEducationTab(): boolean {
+    return this.auth.hasModule('education');
   }
 
   openChangePassword(): void {
     this.closeDropdowns();
-    this.dialog.open(ChangePassword, {
+    this.dialogMobile.open(ChangePassword, {
       panelClass: ['custom-dialog', 'subject-dialog'],
-      backdropClass: 'custom-backdrop',
       width: '480px',
       maxWidth: '94vw',
       maxHeight: '90vh',
-      autoFocus: false,
       data: { mode: 'self' },
     });
   }

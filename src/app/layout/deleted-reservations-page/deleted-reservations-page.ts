@@ -3,7 +3,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogMobileService } from '../../services/dialog-mobile.service';
 import {
   Booking,
   BookingPeriod,
@@ -44,7 +44,7 @@ export class DeletedReservationsPageComponent implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogMobile = inject(DialogMobileService);
 
   readonly perPage = 20;
 
@@ -126,13 +126,11 @@ export class DeletedReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   openDetails(row: DeletedReservationRow): void {
-    this.dialog.open(BookingDetailDialog, {
+    this.dialogMobile.open(BookingDetailDialog, {
       panelClass: ['custom-dialog'],
-      backdropClass: 'custom-backdrop',
       width: '560px',
       maxWidth: '96vw',
       maxHeight: '92vh',
-      autoFocus: false,
       data: { bookingId: row.id, preview: row.raw },
     });
   }

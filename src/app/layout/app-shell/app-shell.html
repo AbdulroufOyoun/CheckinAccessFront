@@ -1,6 +1,9 @@
-<div class="shell" [class.shell--rtl]="isRTL">
-  <!-- SIDEBAR — always mounted; never skeleton on page navigation -->
-  <aside class="sidebar" [class.sidebar--open]="sidebarOpen" [class.sidebar--collapsed]="!sidebarOpen">
+<div class="shell" [class.shell--rtl]="isRTL"
+  [class.shell--mobile]="mobileLayout.isMobile()"
+  [class.shell--drawer-open]="mobileLayout.drawerOpen()"
+  [class.shell--more-open]="mobileLayout.moreSheetOpen()">
+  <!-- SIDEBAR — off-canvas drawer on mobile -->
+  <aside id="mobile-sidebar" class="sidebar" [class.sidebar--open]="sidebarOpen || mobileLayout.drawerOpen()" [class.sidebar--collapsed]="!sidebarOpen && !mobileLayout.isMobile()">
     <div class="sidebar__logo">
       <div class="sidebar__logo-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white"
@@ -25,7 +28,7 @@
         <div class="sidebar__nav-group">
           @for (item of section.items; track item.route) {
           <a class="sidebar__nav-link" [routerLink]="item.route" routerLinkActive="sidebar__nav-item--active"
-            [routerLinkActiveOptions]="{ exact: item.route === '/Dashboard' || item.route === '/Reservations' }" (click)="currentPage(item.labelKey)">
+            [routerLinkActiveOptions]="{ exact: item.route === '/Dashboard' || item.route === '/Reservations' }" (click)="onMobileNavClick(item.labelKey)">
             <div class="sidebar__nav-item">
               <svg class="sidebar__nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -195,7 +198,7 @@
   </aside>
 
   <div class="main-area">
-    <header class="navbar">
+    <header class="navbar desktop-only">
       <div class="navbar__left">
         <button class="navbar__toggle-btn" (click)="toggleSidebar()">
           @if (sidebarOpen) {
@@ -403,12 +406,165 @@
       </div>
     </header>
 
+    <header class="mobile-top mobile-only" [attr.aria-label]="activePage">
+      <button type="button" class="mobile-top__menu" (click)="toggleSidebar()"
+        [attr.aria-expanded]="mobileLayout.drawerOpen()" aria-controls="mobile-sidebar"
+        [attr.aria-label]="'NAV_MENU' | translate">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+      <div class="mobile-top__title">
+        <span class="mobile-top__eyebrow">Accommodtion System</span>
+        <strong>{{ activePage }}</strong>
+      </div>
+      <div class="mobile-top__actions">
+        <button type="button" class="mobile-top__icon" (click)="openMobileSearch()" [attr.aria-label]="'NAV_SEARCH' | translate">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </button>
+        <button type="button" class="mobile-top__avatar" (click)="toggleMore()" [attr.aria-label]="'NAV_MORE' | translate">
+          {{ user?.initials || '?' }}
+        </button>
+      </div>
+    </header>
+
     <main class="page-content" id="main">
       <router-outlet></router-outlet>
     </main>
   </div>
 
-  @if (userMenuOpen) {
-  <div class="shell__overlay" (click)="closeDropdowns()"></div>
+  <nav class="bottom-nav mobile-only" [attr.aria-label]="'NAV_SECTION_OVERVIEW' | translate">
+    <a routerLink="/Dashboard" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }"
+      class="bottom-tab" (click)="onMobileNavClick('DASHBOARD')">
+      <svg class="bottom-ico" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+      </svg>
+      <span class="bottom-label">{{ 'DASHBOARD' | translate }}</span>
+    </a>
+    @if (showReservationsTab()) {
+    <a routerLink="/Reservations" routerLinkActive="is-active" class="bottom-tab"
+      (click)="onMobileNavClick('RESERVATIONS')">
+      <svg class="bottom-ico" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+      <span class="bottom-label">{{ 'RESERVATIONS' | translate }}</span>
+    </a>
+    }
+    @if (showPropertyTab()) {
+    <a routerLink="/Property" routerLinkActive="is-active" class="bottom-tab" (click)="onMobileNavClick('PROP_NAV')">
+      <svg class="bottom-ico" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 21h18" />
+        <path d="M5 21V7l7-4 7 4v14" />
+        <path d="M9 21v-6h6v6" />
+      </svg>
+      <span class="bottom-label">{{ 'PROP_NAV' | translate }}</span>
+    </a>
+    }
+    @if (showEducationTab()) {
+    <a routerLink="/Education/Subjects" routerLinkActive="is-active" class="bottom-tab"
+      (click)="onMobileNavClick('EDU_SUBJECTS')">
+      <svg class="bottom-ico" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+      <span class="bottom-label">{{ 'EDU_SUBJECTS' | translate }}</span>
+    </a>
+    }
+    <button type="button" class="bottom-tab" [class.is-active]="mobileLayout.moreSheetOpen()" (click)="toggleMore()"
+      [attr.aria-expanded]="mobileLayout.moreSheetOpen()" aria-controls="more-sheet">
+      <svg class="bottom-ico" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+        <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
+      </svg>
+      <span class="bottom-label">{{ 'NAV_MORE' | translate }}</span>
+    </button>
+  </nav>
+
+  @if (mobileLayout.moreSheetOpen()) {
+  <div class="more-backdrop mobile-only" (click)="closeMore()" aria-hidden="true"></div>
+  <div class="more-sheet mobile-only" id="more-sheet" role="dialog" aria-modal="true"
+    [attr.aria-label]="'NAV_MORE' | translate">
+    <div class="more-handle" aria-hidden="true"></div>
+    <div class="more-user">
+      <div class="sidebar__user-avatar">{{ user?.initials || '?' }}</div>
+      <div>
+        <p class="sidebar__user-name">{{ user?.name || 'Admin' }}</p>
+        <p class="sidebar__user-email">{{ user?.email || '' }}</p>
+      </div>
+    </div>
+    <div class="more-links">
+      @for (section of navSections; track section.id) {
+      <div class="more-section">
+        <p class="more-section-label">{{ section.labelKey | translate }}</p>
+        @for (item of section.items; track item.route) {
+        <a [routerLink]="item.route" class="more-link" routerLinkActive="more-link--active"
+          [routerLinkActiveOptions]="{ exact: item.route === '/Dashboard' || item.route === '/Reservations' }"
+          (click)="onMobileNavClick(item.labelKey)">
+          {{ item.labelKey | translate }}
+        </a>
+        }
+      </div>
+      }
+      <div class="more-section">
+        <p class="more-section-label">{{ 'SETTINGS' | translate }}</p>
+        <a routerLink="/Settings" class="more-link" routerLinkActive="more-link--active"
+          (click)="onMobileNavClick('SETTINGS')">
+          {{ 'SETTINGS' | translate }}
+        </a>
+      </div>
+    </div>
+    <button type="button" class="navbar__lang-btn more-lang" (click)="setLang()">
+      {{ currentLang === 'ar' ? 'English' : 'عربي' }}
+    </button>
+    <button type="button" class="sidebar__logout-btn more-logout" (click)="logOut()">{{ 'LOGOUT' | translate }}</button>
+  </div>
+  }
+
+  @if (mobileLayout.searchSheetOpen()) {
+  <div class="search-sheet-backdrop mobile-only" (click)="mobileLayout.closeSearchSheet()" aria-hidden="true"></div>
+  <div class="search-sheet mobile-only" role="dialog" aria-modal="true" [attr.aria-label]="'NAV_SEARCH' | translate">
+    <div class="search-sheet__head">
+      <strong>{{ 'NAV_SEARCH' | translate }}</strong>
+      <button type="button" class="search-sheet__close" (click)="mobileLayout.closeSearchSheet()">×</button>
+    </div>
+    <div class="navbar__search-field search-sheet__field">
+      <input #navSearchInput class="navbar__search-input" type="search" [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchQueryChange()" (keydown)="onSearchKeydown($event)"
+        [placeholder]="'NAV_SEARCH_PLACEHOLDER' | translate" [attr.aria-label]="'NAV_SEARCH_PLACEHOLDER' | translate" />
+    </div>
+    @if (searchOpen) {
+    <div class="search-sheet__results" role="listbox">
+      @for (hit of searchHits; track hit.key) {
+      <button type="button" class="navbar__search-item" (click)="goToHit(hit)">{{ hit.label }}</button>
+      }
+      @if (searchHasQuery && !searchLoading && !searchHits.length) {
+      <p class="navbar__search-empty">{{ 'NAV_SEARCH_NO_RESULTS' | translate }}</p>
+      }
+    </div>
+    }
+  </div>
+  }
+
+  @if (userMenuOpen || mobileLayout.drawerOpen()) {
+  <div class="shell__overlay" (click)="closeDropdowns()" aria-hidden="true"></div>
   }
 </div>

@@ -45,7 +45,7 @@
     }
   </div>
   } @else {
-  <div class="subj-table-wrap reveal">
+  <div class="subj-table-wrap reveal desktop-only">
     <table class="subj-table">
       <colgroup>
         <col class="subj-col-name" />
@@ -111,6 +111,40 @@
         }
       </tbody>
     </table>
+  </div>
+
+  <div class="mobile-card-list mobile-only-block reveal">
+    @for (s of filtered; track s.id; let i = $index) {
+    <article class="mobile-card reveal-item mb-2" [style.--reveal-i]="i < 12 ? i : 12" role="link" tabindex="0"
+      (click)="openSections(s)" (keydown.enter)="openSections(s)">
+      <div class="mobile-card__head">
+        <span class="mobile-card__title">{{ displayName(s) }}</span>
+        <span class="mobile-card__chip subj-badge" [class.subj-badge--on]="s.active !== false"
+          [class.subj-badge--off]="s.active === false">
+          {{ (s.active === false ? 'INACTIVE' : 'ACTIVE') | translate }}
+        </span>
+      </div>
+      @if (secondaryName(s)) {
+      <div class="mobile-card__meta">{{ secondaryName(s) }}</div>
+      }
+      <div class="mobile-card__row">
+        <span class="subj-code">{{ s.short_name || '—' }}</span>
+        <span class="subj-chip">{{ 'SUBJ_HOURS_UNIT' | translate: { hours: s.hours ?? 0 } }}</span>
+      </div>
+      <div class="mobile-card__row">
+        <span>{{ 'SUBJ_COL_PREREQ' | translate }}: {{ s.required_subject ? displayName(s.required_subject) : '—' }}</span>
+      </div>
+      @if (s.has_practical) {
+      <div class="mobile-card__row">
+        <span class="mobile-card__chip subj-badge subj-badge--lab">{{ 'SUBJ_PRACTICAL' | translate }}</span>
+      </div>
+      }
+      <div class="mobile-card__actions" (click)="$event.stopPropagation()">
+        <button type="button" class="subj-icon-btn" (click)="openEdit(s, $event)">{{ 'EDIT' | translate }}</button>
+        <button type="button" class="subj-icon-btn subj-icon-btn--danger" (click)="remove(s, $event)">{{ 'DELETE' | translate }}</button>
+      </div>
+    </article>
+    }
   </div>
   }
 </div>

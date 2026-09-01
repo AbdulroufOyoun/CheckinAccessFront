@@ -625,75 +625,6 @@
   border-color: #3b82f6;
 }
 
-.bc-help--rooms {
-  margin: 0 0 8px;
-}
-
-.bc-selected-rooms {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  margin-bottom: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1d4ed8;
-}
-
-.bc-selected-rooms__clear {
-  border: 0;
-  background: transparent;
-  color: #1d4ed8;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.bc-confirm__rooms {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.bc-confirm__room-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.bc-confirm__room-item {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid var(--bc-line, #e2e8f0);
-}
-
-.bc-confirm__room-item strong {
-  display: block;
-  font-size: 15px;
-}
-
-.bc-confirm__room-item small {
-  display: block;
-  margin-top: 4px;
-  color: var(--bc-muted, #64748b);
-  line-height: 1.4;
-}
-
-.bc-confirm__room-total {
-  color: var(--bc-muted, #64748b);
-}
-
 .bc-confirm {
   display: flex;
   flex-direction: column;
@@ -1328,9 +1259,14 @@
 }
 
 @media (max-width: 900px) {
+  .bc {
+    padding: 4px 0 20px;
+  }
+
   .bc__hero {
     flex-direction: column;
     align-items: stretch;
+    padding: 18px 16px;
   }
 
   .bc-steps {
