@@ -4,7 +4,7 @@ import { CommonModule, DOCUMENT, Location } from '@angular/common';
 
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import { DialogMobileService } from '../services/dialog-mobile.service';
+import { MatDialog } from '@angular/material/dialog';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -148,7 +148,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
   private readonly snackbar = inject(SnackbarService);
 
-  private readonly dialogMobile = inject(DialogMobileService);
+  private readonly dialog = inject(MatDialog);
 
   private readonly translate = inject(TranslateService);
 
@@ -352,7 +352,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
     if (!this.user) return;
 
-    const ref = this.dialogMobile.open(AddUser, {
+    const ref = this.dialog.open(AddUser, {
 
       panelClass: ['custom-dialog', 'subject-dialog'],
 
@@ -380,7 +380,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
     event?.stopPropagation();
 
-    this.dialogMobile.open(BookingDetailDialog, {
+    this.dialog.open(BookingDetailDialog, {
 
       panelClass: ['custom-dialog'],
 
@@ -406,7 +406,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
     if (!this.enrollmentRowsRaw.length) return;
 
-    this.dialogMobile.open(EnrollmentDetail, {
+    this.dialog.open(EnrollmentDetail, {
 
       panelClass: ['custom-dialog', 'subject-dialog'],
 
