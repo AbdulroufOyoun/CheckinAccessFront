@@ -8,12 +8,14 @@ import {
   EventAudienceMode,
   EventRoomOption,
   EventsService,
+  EventStatus,
   EventUserRef,
 } from '../../services/events.service';
 import { EducationService, CompoundAccessStudent } from '../../services/education.service';
 import { UsersService, TenantUser } from '../../services/users.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { TimePicker } from '../../shared/time-picker/time-picker';
+import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 
 type WizardStep = 1 | 2 | 3 | 4;
 
@@ -25,7 +27,7 @@ interface WeekdayOption {
 @Component({
   selector: 'app-event-create-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TimePicker],
+  imports: [CommonModule, FormsModule, TranslateModule, TimePicker, PageSkeleton],
   templateUrl: './event-create-page.html',
   styleUrls: ['../education-shared.css', './event-create-page.css'],
 })
@@ -43,9 +45,12 @@ export class EventCreatePage implements OnInit {
   isRTL = false;
   saving = false;
   loadingRooms = false;
+  initialLoading = false;
   step: WizardStep = 1;
   today = '';
   editId: number | null = null;
+  existingStatus: EventStatus | null = null;
+  loadedName = '';
 
   form = {
     name: '',
@@ -86,14 +91,47 @@ export class EventCreatePage implements OnInit {
       this.document.documentElement.getAttribute('dir') === 'rtl' ||
       this.translate.getCurrentLang() === 'ar';
     this.today = this.localIsoDate();
-    this.form.start_date = this.today;
-    this.form.end_date = this.today;
 
-    const id = Number(this.route.snapshot.queryParamMap.get('id'));
+    const paramId = Number(this.route.snapshot.paramMap.get('id'));
+    const queryId = Number(this.route.snapshot.queryParamMap.get('id'));
+    const id = paramId > 0 ? paramId : queryId;
+
     if (id > 0) {
       this.editId = id;
+      this.initialLoading = true;
       void this.loadExisting(id);
+      return;
     }
+
+    this.form.start_date = this.today;
+    this.form.end_date = this.today;
+  }
+
+  get isEditMode(): boolean {
+    return this.editId != null && this.editId > 0;
+  }
+
+  get isReadonly(): boolean {
+    return this.existingStatus === 'cancelled';
+  }
+
+  get statusLabelKey(): string {
+    const map: Record<EventStatus, string> = {
+      draft: 'EVT_STATUS_DRAFT',
+      active: 'EVT_STATUS_ACTIVE',
+      cancelled: 'EVT_STATUS_CANCELLED',
+    };
+    return this.existingStatus ? map[this.existingStatus] : 'EVT_STATUS_DRAFT';
+  }
+
+  get primarySaveLabelKey(): string {
+    if (!this.isEditMode) return 'EVT_SAVE_ACTIVATE';
+    if (this.existingStatus === 'active') return 'EVT_SAVE_CHANGES';
+    return 'EVT_UPDATE_ACTIVATE';
+  }
+
+  get draftSaveLabelKey(): string {
+    return this.isEditMode ? 'EVT_UPDATE_DRAFT' : 'EVT_SAVE_DRAFT';
   }
 
   get canGoStep2(): boolean {
@@ -194,6 +232,14 @@ export class EventCreatePage implements OnInit {
 
   back(): void {
     if (this.step > 1) this.step = (this.step - 1) as WizardStep;
+  }
+
+  async refreshRooms(): Promise<void> {
+    if (!this.canGoStep2) {
+      this.snackbar.show(this.translate.instant('EVT_REQUIRED'), 'error');
+      return;
+    }
+    await this.loadRooms();
   }
 
   cancel(): void {
@@ -309,10 +355,21 @@ export class EventCreatePage implements OnInit {
   }
 
   private async loadExisting(id: number): Promise<void> {
+    this.initialLoading = true;
+    this.cdr.detectChanges();
     try {
       const res = await this.eventsApi.get(id);
       const row = res.data as EduEvent;
       if (!row) return;
+
+      if (row.status === 'cancelled') {
+        this.snackbar.show(this.translate.instant('EVT_EDIT_READONLY'), 'error');
+        void this.router.navigate(['/Education/Events']);
+        return;
+      }
+
+      this.existingStatus = row.status;
+      this.loadedName = row.name;
       this.form.name = row.name;
       this.form.description = row.description || '';
       this.form.start_date = row.start_date;
@@ -331,10 +388,14 @@ export class EventCreatePage implements OnInit {
       this.selectedRoomIds = new Set((row.rooms || []).map((r) => r.id));
       this.attendees = [...(row.attendees || [])];
       this.supervisors = [...(row.supervisors || [])];
+      await this.loadRooms();
     } catch {
       this.snackbar.show(this.translate.instant('REQUEST_FAILED'), 'error');
+      void this.router.navigate(['/Education/Events']);
+    } finally {
+      this.initialLoading = false;
+      this.cdr.detectChanges();
     }
-    this.cdr.detectChanges();
   }
 
   private async persist(status: 'draft' | 'active'): Promise<void> {
@@ -362,7 +423,7 @@ export class EventCreatePage implements OnInit {
         room_ids: [...this.selectedRoomIds],
         attendee_user_ids: this.form.audience_mode === 'selected_students' ? this.attendees.map((u) => u.id) : [],
         supervisor_user_ids: this.supervisors.map((u) => u.id),
-        status: 'draft' as const,
+        status: (this.existingStatus === 'active' ? 'active' : 'draft') as 'draft' | 'active',
       };
 
       let saved: EduEvent;
@@ -376,13 +437,13 @@ export class EventCreatePage implements OnInit {
       }
 
       if (status === 'active') {
-        await this.eventsApi.activate(saved.id);
+        if (this.existingStatus !== 'active') {
+          await this.eventsApi.activate(saved.id);
+        }
       }
 
-      this.snackbar.show(
-        this.translate.instant(status === 'active' ? 'EVT_SAVED_ACTIVE' : 'EVT_SAVED_DRAFT'),
-        'success',
-      );
+      const msgKey = this.resolveSuccessKey(status);
+      this.snackbar.show(this.translate.instant(msgKey), 'success');
       void this.router.navigate(['/Education/Events']);
     } catch (e: unknown) {
       const body = (e as { error?: { message?: string } })?.error;
@@ -394,6 +455,16 @@ export class EventCreatePage implements OnInit {
       this.saving = false;
       this.cdr.detectChanges();
     }
+  }
+
+  private resolveSuccessKey(status: 'draft' | 'active'): string {
+    if (!this.isEditMode) {
+      return status === 'active' ? 'EVT_SAVED_ACTIVE' : 'EVT_SAVED_DRAFT';
+    }
+    if (status === 'active') {
+      return this.existingStatus === 'active' ? 'EVT_UPDATED' : 'EVT_SAVED_ACTIVE';
+    }
+    return 'EVT_UPDATED_DRAFT';
   }
 
   private localIsoDate(date = new Date()): string {

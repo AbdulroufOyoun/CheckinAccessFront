@@ -62,6 +62,9 @@
     <section class="as__section">
       <h3 class="as__section-title">{{ 'ADM_SECTION_ROLES' | translate }}</h3>
       <div class="adm-dlg__roles">
+        @if (loadingRoles) {
+        <p class="adm-dlg__hint">{{ 'LOADING' | translate }}</p>
+        } @else {
         @for (r of roles; track r.id) {
         <button type="button" class="adm-dlg__role" [class.adm-dlg__role--on]="hasRole(r.name)"
           (click)="toggleRole(r.name)">
@@ -73,6 +76,7 @@
           <p class="adm-dlg__hint">{{ 'ADM_NO_ROLES_AVAILABLE' | translate }}</p>
           <p class="adm-dlg__hint-sub">{{ 'ADM_NO_ROLES_AVAILABLE_HINT' | translate }}</p>
         </div>
+        }
         }
       </div>
     </section>

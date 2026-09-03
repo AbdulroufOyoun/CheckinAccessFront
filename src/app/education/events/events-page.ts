@@ -119,7 +119,7 @@ export class EventsPage implements OnInit {
   }
 
   edit(row: EduEvent): void {
-    void this.router.navigate(['/Education/Events/New'], { queryParams: { id: row.id } });
+    void this.router.navigate(['/Education/Events/Edit', row.id]);
   }
 
   private err(e: unknown): string {

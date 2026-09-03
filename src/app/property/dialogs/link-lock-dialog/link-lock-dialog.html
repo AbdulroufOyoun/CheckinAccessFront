@@ -1,44 +1,64 @@
-<div class="dialog-shell" [class.rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
-  <header class="dialog-head">
-    <div>
-      <p class="eyebrow">{{ 'PROP_MODULE' | translate }}</p>
-      <h2>{{ 'PROP_LINK_LOCKS' | translate }}</h2>
-    </div>
-    <button type="button" class="icon-btn" (click)="close()" [disabled]="saving">×</button>
-  </header>
-
-  <div class="dialog-body">
-    <p class="hint-warn">
-      <strong>ℹ</strong>
-      {{ 'LOCKS_LINK_PICK_HINT' | translate }}
-    </p>
-
-    <label class="field">
-      <span>{{ 'SEARCH' | translate }}</span>
-      <input [(ngModel)]="search" name="search" [placeholder]="'PROP_SEARCH_LOCKS' | translate" />
-    </label>
-
-    <ul class="lock-list">
-      @for (lock of filtered; track lock.id) {
-        <li>
-          <label class="lock-row">
-            <input type="checkbox" [checked]="isChecked(lock.id)" (change)="toggle(lock.id)" />
-            <span class="lock-meta">
-              <strong>{{ lock.lockName || lock.lockAlias || ('#' + lock.id) }}</strong>
-              <small>{{ lock.lockId || lock.lockMac || '' }}</small>
-            </span>
-          </label>
-        </li>
-      } @empty {
-        <li class="empty">{{ 'LOCKS_NONE_TO_ADD' | translate }}</li>
-      }
-    </ul>
-  </div>
-
-  <footer class="dialog-foot">
-    <button type="button" class="btn ghost" (click)="close()" [disabled]="saving">{{ 'CANCEL' | translate }}</button>
-    <button type="button" class="btn primary" (click)="save()" [disabled]="saving">
-      {{ saving ? ('SAVING' | translate) : ('SAVE' | translate) }}
-    </button>
-  </footer>
-</div>
+<div class="dialog-shell" [class.rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="dialog-head">
+    <div>
+      <p class="eyebrow">{{ 'PROP_MODULE' | translate }}</p>
+      <h2>{{ 'PROP_LINK_LOCKS' | translate }}</h2>
+    </div>
+    <button type="button" class="icon-btn" (click)="close()" [disabled]="saving">×</button>
+  </header>
+
+  <div class="dialog-body">
+    <p class="hint-warn">
+      <strong>ℹ</strong>
+      {{ 'LOCKS_LINK_PICK_HINT' | translate }}
+    </p>
+
+    @if (loading) {
+      <div class="link-lock-skel" role="status" [attr.aria-label]="'PROP_LOCKS_LOADING' | translate">
+        <p class="link-lock-skel__status">
+          <span class="link-lock-skel__dot" aria-hidden="true"></span>
+          {{ 'PROP_LOCKS_LOADING' | translate }}
+        </p>
+        <div class="link-lock-skel__search" aria-hidden="true"></div>
+        @for (row of skelRows; track row) {
+          <div class="link-lock-skel__row" [style.--skel-i]="row">
+            <span class="link-lock-skel__check"></span>
+            <span class="link-lock-skel__lines">
+              <span class="link-lock-skel__bone link-lock-skel__bone--title"></span>
+              <span class="link-lock-skel__bone link-lock-skel__bone--sub"></span>
+            </span>
+          </div>
+        }
+      </div>
+    } @else {
+      <label class="field">
+        <span>{{ 'SEARCH' | translate }}</span>
+        <input [(ngModel)]="search" name="search" [placeholder]="'PROP_SEARCH_LOCKS' | translate" />
+      </label>
+
+      <ul class="lock-list lock-list--ready">
+        @for (lock of filtered; track lock.id) {
+          <li>
+            <label class="lock-row">
+              <input type="checkbox" [checked]="isChecked(lock.id)" (change)="toggle(lock.id)" />
+              <span class="lock-meta">
+                <strong>{{ lock.lockName || lock.lockAlias || ('#' + lock.id) }}</strong>
+                <small>{{ lock.lockId || lock.lockMac || '' }}</small>
+              </span>
+            </label>
+          </li>
+        } @empty {
+          <li class="empty">{{ 'LOCKS_NONE_TO_ADD' | translate }}</li>
+        }
+      </ul>
+    }
+  </div>
+
+  <footer class="dialog-foot">
+    <button type="button" class="btn ghost" (click)="close()" [disabled]="saving">{{ 'CANCEL' | translate }}</button>
+    <button type="button" class="btn primary" (click)="save()" [disabled]="saving || loading">
+      {{ saving ? ('SAVING' | translate) : ('SAVE' | translate) }}
+    </button>
+  </footer>
+</div>
+

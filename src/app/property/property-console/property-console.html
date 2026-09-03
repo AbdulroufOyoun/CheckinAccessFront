@@ -307,18 +307,47 @@
           }
 
           @if (detailTab === 'locks') {
-            <div class="prop-locks">
+            <div class="prop-locks" [class.prop-locks--loading]="locksLoading">
               <div class="prop-locks__head">
                 <div>
                   <h3>{{ 'PROP_LINKED_LOCKS' | translate }}</h3>
-                  <p class="prop-meta">{{ linkedLocks.length }} {{ 'PROP_LOCKS_COUNT' | translate }}</p>
+                  @if (locksLoading) {
+                    <p class="prop-meta prop-meta--loading">
+                      <span class="prop-locks__status-dot" aria-hidden="true"></span>
+                      {{ 'PROP_LOCKS_LOADING' | translate }}
+                    </p>
+                  } @else {
+                    <p class="prop-meta">{{ linkedLocks.length }} {{ 'PROP_LOCKS_COUNT' | translate }}</p>
+                  }
                 </div>
-                <button type="button" class="prop-btn prop-btn--primary" (click)="openLinkLocks()">
+                <button type="button" class="prop-btn prop-btn--primary" (click)="openLinkLocks()"
+                  [disabled]="locksLoading">
                   {{ 'PROP_LINK_LOCKS' | translate }}
                 </button>
               </div>
               @if (locksLoading) {
-                <p class="muted">{{ 'LOADING' | translate }}</p>
+                <div class="prop-locks-skel" role="status" [attr.aria-live]="'polite'"
+                  [attr.aria-label]="'PROP_LOCKS_LOADING' | translate">
+                  <div class="prop-locks-skel__hero" aria-hidden="true">
+                    <span class="prop-locks-skel__icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                      </svg>
+                    </span>
+                  </div>
+                  @for (row of locksSkelRows; track row) {
+                    <div class="prop-locks-skel__row" [style.--skel-i]="row">
+                      <div class="prop-locks-skel__lock" aria-hidden="true"></div>
+                      <div class="prop-locks-skel__text">
+                        <span class="prop-locks-skel__bone prop-locks-skel__bone--title"></span>
+                        <span class="prop-locks-skel__bone prop-locks-skel__bone--sub"></span>
+                      </div>
+                      <span class="prop-locks-skel__bone prop-locks-skel__bone--btn"></span>
+                    </div>
+                  }
+                </div>
               } @else if (!linkedLocks.length) {
                 <div class="prop-empty prop-empty--sm">
                   <p>{{ 'PROP_NO_LINKED_LOCKS' | translate }}</p>
@@ -327,7 +356,7 @@
                   </button>
                 </div>
               } @else {
-                <ul class="prop-lock-list">
+                <ul class="prop-lock-list prop-lock-list--ready">
                   @for (lock of linkedLocks; track lock.id) {
                     <li [class.is-highlight]="highlightLockId === lock.id">
                       <div>

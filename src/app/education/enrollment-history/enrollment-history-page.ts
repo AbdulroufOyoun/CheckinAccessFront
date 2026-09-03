@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -8,7 +8,8 @@ import {
   EducationService,
   EduEnrollmentArchiveRow,
 } from '../../services/education.service';
-import { EducationReferenceCache } from '../../services/education-reference-cache.service';
+import { Apiendpointd } from '../../apiEndpoints';
+import { ApiService } from '../../services/api.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 
@@ -25,19 +26,19 @@ interface SimpleUser {
   templateUrl: './enrollment-history-page.html',
   styleUrls: ['../education-shared.css', '../enrollments/enrollments-page.css', './enrollment-history-page.css'],
 })
-export class EnrollmentHistoryPage implements OnInit {
+export class EnrollmentHistoryPage implements OnInit, OnDestroy {
   private readonly edu = inject(EducationService);
-  private readonly historyCache = inject(EducationReferenceCache);
+  private readonly api = inject(ApiService);
   private readonly snackbar = inject(SnackbarService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly document = inject(DOCUMENT);
 
+  readonly perPage = 25;
   loading = false;
   initialLoad = true;
   isRTL = false;
   rows: EduEnrollmentArchiveRow[] = [];
-  filtered: EduEnrollmentArchiveRow[] = [];
   terms: AcademicTerm[] = [];
   users: SimpleUser[] = [];
 
@@ -45,6 +46,15 @@ export class EnrollmentHistoryPage implements OnInit {
   statusFilter = '';
   termFilter: number | null = null;
   userFilter: number | null = null;
+
+  currentPage = 1;
+  lastPage = 1;
+  total = 0;
+  pageFrom = 0;
+  pageTo = 0;
+
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  private usersPromise: Promise<SimpleUser[]> | null = null;
 
   statuses = ['', 'enrolled', 'dropped', 'completed'] as const;
 
@@ -55,25 +65,52 @@ export class EnrollmentHistoryPage implements OnInit {
   ngOnInit(): void {
     this.isRTL = this.document.documentElement.getAttribute('dir') === 'rtl'
       || this.translate.getCurrentLang() === 'ar';
-    const cached = this.historyCache.peekEnrollmentHistoryBundle();
-    if (cached) {
-      this.applyBundle(cached);
-      this.initialLoad = false;
-    }
-    void this.bootstrap();
+    void this.loadUserOptions();
+    void this.load();
   }
 
-  async bootstrap(force = false): Promise<void> {
+  ngOnDestroy(): void {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+  }
+
+  onFiltersChange(): void {
+    this.currentPage = 1;
+    void this.load();
+  }
+
+  onSearchChange(): void {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.onFiltersChange(), 300);
+  }
+
+  goToPage(page: number): void {
+    const next = Math.min(Math.max(page, 1), this.lastPage || 1);
+    if (next === this.currentPage) return;
+    this.currentPage = next;
+    void this.load();
+  }
+
+  async load(): Promise<void> {
     const hadData = this.rows.length > 0;
     if (!hadData) {
       this.loading = true;
     }
     try {
-      const bundle = await this.historyCache.getEnrollmentHistoryBundle({
-        force,
-        allowStale: !force,
+      const res = await this.edu.getEnrollmentHistoryPage({
+        page: this.currentPage,
+        per_page: this.perPage,
+        q: this.search.trim() || undefined,
+        status: this.statusFilter || undefined,
+        academic_term_id: this.termFilter,
+        user_id: this.userFilter,
       });
-      this.applyBundle(bundle);
+      this.rows = res.data;
+      this.terms = res.terms;
+      this.total = res.total;
+      this.currentPage = res.current_page;
+      this.lastPage = Math.max(res.last_page, 1);
+      this.pageFrom = res.from ?? (this.rows.length ? (this.currentPage - 1) * this.perPage + 1 : 0);
+      this.pageTo = res.to ?? this.pageFrom + this.rows.length - (this.rows.length ? 1 : 0);
     } catch (e: unknown) {
       this.snackbar.show(this.err(e), 'error');
     } finally {
@@ -81,49 +118,6 @@ export class EnrollmentHistoryPage implements OnInit {
       this.initialLoad = false;
       this.cdr.detectChanges();
     }
-  }
-
-  private applyBundle(bundle: { archives?: EduEnrollmentArchiveRow[]; terms?: AcademicTerm[] }): void {
-    this.rows = bundle.archives || [];
-    this.terms = bundle.terms || [];
-    this.syncUserFilterOptions();
-    this.applyFilter();
-  }
-
-  private syncUserFilterOptions(): void {
-    const byId = new Map<number, SimpleUser>();
-    for (const row of this.rows) {
-      const id = row.user?.id ?? row.archive.user_id;
-      if (!id || byId.has(id)) continue;
-      byId.set(id, {
-        id,
-        name: row.user?.name,
-        email: row.user?.email,
-      });
-    }
-    this.users = [...byId.values()].sort((a, b) => {
-      const an = (a.name || a.email || '').toLowerCase();
-      const bn = (b.name || b.email || '').toLowerCase();
-      return an.localeCompare(bn);
-    });
-  }
-
-  applyFilter(): void {
-    const q = this.search.trim().toLowerCase();
-    this.filtered = this.rows.filter((row) => {
-      const a = row.archive;
-      const student = (row.user?.name || row.user?.email || '').toLowerCase();
-      const subject = this.subjectLabel(row).toLowerCase();
-      const matchSearch = !q
-        || student.includes(q)
-        || subject.includes(q)
-        || String(a.section_number || '').toLowerCase().includes(q)
-        || String(a.user_id).includes(q);
-      const matchStatus = !this.statusFilter || a.status === this.statusFilter;
-      const matchTerm = !this.termFilter || a.academic_term_id === this.termFilter;
-      const matchUser = !this.userFilter || a.user_id === this.userFilter;
-      return matchSearch && matchStatus && matchTerm && matchUser;
-    });
   }
 
   subjectLabel(row: EduEnrollmentArchiveRow): string {
@@ -150,10 +144,32 @@ export class EnrollmentHistoryPage implements OnInit {
         this.translate.instant('ENR_HIST_ARCHIVED', { n: res.data?.archived_count ?? 0 }),
         'success',
       );
-      await this.bootstrap(true);
+      this.currentPage = 1;
+      await this.load();
     } catch (e: unknown) {
       this.snackbar.show(this.err(e), 'error');
     }
+  }
+
+  private async loadUserOptions(): Promise<void> {
+    if (this.users.length) return;
+    if (this.usersPromise) {
+      this.users = await this.usersPromise;
+      return;
+    }
+    this.usersPromise = this.api
+      .get<{ data: SimpleUser[] }>(`${Apiendpointd.users}?per_page=100`)
+      .then((result) => {
+        const list = Array.isArray(result.data) ? result.data : [];
+        this.usersPromise = null;
+        return list;
+      })
+      .catch(() => {
+        this.usersPromise = null;
+        return [] as SimpleUser[];
+      });
+    this.users = await this.usersPromise;
+    this.cdr.detectChanges();
   }
 
   private err(e: unknown): string {

@@ -8,7 +8,8 @@ import {
 
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { authInterceptor } from './interceptors/auth.interceptor';
@@ -21,7 +22,18 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideAnimationsAsync(),
+    provideAnimations(),
+    {
+      provide: MAT_DIALOG_DEFAULT_OPTIONS,
+      useValue: {
+        autoFocus: false,
+        restoreFocus: false,
+        enterAnimationDuration: '0ms',
+        exitAnimationDuration: '120ms',
+        panelClass: 'custom-dialog',
+        backdropClass: 'custom-backdrop',
+      },
+    },
     provideHttpClient(withInterceptors([authInterceptor, apiErrorInterceptor])),
     provideTranslateService({
       loader: provideTranslateLoader(StaticTranslateLoader),

@@ -163,13 +163,13 @@ body {
 }
 
 .custom-backdrop {
-  background: rgba(0, 0, 0, 0.4) !important;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.45) !important;
+  transition: opacity 120ms ease-out !important;
 }
 
 .custom-dialog .mat-mdc-dialog-container {
-  animation: dialogPop 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: dialogPop 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
 }
 
 .subject-dialog .mdc-dialog__surface {
@@ -200,7 +200,7 @@ body {
 @keyframes dialogPop {
   from {
     opacity: 0;
-    transform: scale(0.92) translateY(20px);
+    transform: scale(0.96) translateY(10px);
   }
 
   to {

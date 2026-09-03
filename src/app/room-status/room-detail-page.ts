@@ -170,6 +170,10 @@ export class RoomDetailPage implements OnInit, OnDestroy {
 
   get occupancyPct(): number {
     const cap = Number(this.room?.capacity || this.statusSnapshot?.capacity || 0);
+    const used = this.statusSnapshot?.used_capacity;
+    if (cap > 0 && used != null) {
+      return Math.min(100, Math.round((used / cap) * 100));
+    }
     if (!cap) return this.activeBookings > 0 ? 100 : 0;
     return Math.min(100, Math.round((this.activeBookings / cap) * 100));
   }

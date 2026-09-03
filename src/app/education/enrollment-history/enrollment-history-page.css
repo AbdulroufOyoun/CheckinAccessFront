@@ -46,3 +46,47 @@
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.875rem;
 }
+
+.hist-table--loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.hist-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 0 4px;
+}
+
+.hist-pager__btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #0f172a;
+}
+
+.hist-pager__btn:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.hist-pager__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.hist-pager__info {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 600;
+  min-width: 9rem;
+  text-align: center;
+}

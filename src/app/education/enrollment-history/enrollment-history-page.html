@@ -3,7 +3,11 @@
     <div>
       <h1 class="edu-ui__title">{{ 'ENR_HIST_TITLE' | translate }}</h1>
       <p class="edu-ui__subtitle">
-        {{ 'ENR_HIST_COUNT' | translate: { filtered: filtered.length, total: rows.length } }}
+        @if (total) {
+          {{ 'ENR_HIST_PAGE_RANGE' | translate: { from: pageFrom, to: pageTo, total: total } }}
+        } @else {
+          {{ 'ENR_HIST_COUNT' | translate: { filtered: 0, total: 0 } }}
+        }
       </p>
     </div>
     <div class="hist-actions">
@@ -15,20 +19,20 @@
   <div class="edu-ui__toolbar hist-toolbar">
     <div class="edu-ui__search">
       <input type="text" [placeholder]="'ENR_HIST_SEARCH' | translate" [(ngModel)]="search"
-        (ngModelChange)="applyFilter()" />
+        (ngModelChange)="onSearchChange()" />
     </div>
-    <select [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
+    <select [(ngModel)]="statusFilter" (ngModelChange)="onFiltersChange()">
       @for (st of statuses; track st) {
       <option [ngValue]="st">{{ (st ? statusKey(st) : 'ENR_FILTER_ALL') | translate }}</option>
       }
     </select>
-    <select [(ngModel)]="termFilter" (ngModelChange)="applyFilter()">
+    <select [(ngModel)]="termFilter" (ngModelChange)="onFiltersChange()">
       <option [ngValue]="null">{{ 'ENR_HIST_ALL_TERMS' | translate }}</option>
       @for (t of terms; track t.id) {
       <option [ngValue]="t.id">{{ isRTL ? (t.name_ar || t.name) : t.name }}</option>
       }
     </select>
-    <select [(ngModel)]="userFilter" (ngModelChange)="applyFilter()">
+    <select [(ngModel)]="userFilter" (ngModelChange)="onFiltersChange()">
       <option [ngValue]="null">{{ 'ENR_HIST_ALL_STUDENTS' | translate }}</option>
       @for (u of users; track u.id) {
       <option [ngValue]="u.id">{{ u.name || u.email || ('#' + u.id) }}</option>
@@ -38,12 +42,12 @@
 
   @if (showSkeleton) {
   <app-page-skeleton variant="table" [rows]="7" [cols]="6" />
-  } @else if (!filtered.length) {
+  } @else if (!rows.length) {
   <div class="edu-ui__empty">
-    <p>{{ (rows.length ? 'ENR_HIST_EMPTY_SEARCH' : 'ENR_HIST_EMPTY') | translate }}</p>
+    <p>{{ (total || search || statusFilter || termFilter || userFilter ? 'ENR_HIST_EMPTY_SEARCH' : 'ENR_HIST_EMPTY') | translate }}</p>
   </div>
   } @else {
-  <div class="table-container">
+  <div class="table-container" [class.hist-table--loading]="loading">
     <table>
       <thead>
         <tr>
@@ -56,7 +60,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (row of filtered; track row.archive.id) {
+        @for (row of rows; track row.archive.id) {
         <tr>
           <td>{{ row.user?.name || row.user?.email || ('#' + row.archive.user_id) }}</td>
           <td>{{ subjectLabel(row) || '—' }}</td>
@@ -69,5 +73,21 @@
       </tbody>
     </table>
   </div>
+
+  @if (lastPage > 1) {
+  <nav class="hist-pager" [attr.aria-label]="'PAG_NAV' | translate">
+    <button type="button" class="hist-pager__btn" (click)="goToPage(currentPage - 1)"
+      [disabled]="currentPage <= 1 || loading">
+      {{ 'PAG_PREV' | translate }}
+    </button>
+    <span class="hist-pager__info">
+      {{ 'PAG_PAGE' | translate: { page: currentPage, last: lastPage } }}
+    </span>
+    <button type="button" class="hist-pager__btn" (click)="goToPage(currentPage + 1)"
+      [disabled]="currentPage >= lastPage || loading">
+      {{ 'PAG_NEXT' | translate }}
+    </button>
+  </nav>
+  }
   }
 </div>

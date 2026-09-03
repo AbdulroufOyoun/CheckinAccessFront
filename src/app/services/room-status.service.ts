@@ -47,6 +47,8 @@ export interface RoomStatusItem {
   number: string;
   name?: string | null;
   capacity?: number;
+  used_capacity?: number;
+  remaining_capacity?: number;
   active: boolean;
   status: RoomOccupancyStatus;
   room_type?: { id: number; name: string } | null;
@@ -90,6 +92,7 @@ export interface RoomPeriodAvailabilityQuery {
   compound_id?: number | null;
   building_id?: number | null;
   floor_id?: number | null;
+  requested_occupants?: number;
 }
 
 export interface RoomPeriodAvailabilityPayload {

@@ -218,6 +218,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./education/events/event-create-page').then((m) => m.EventCreatePage),
       },
+      {
+        path: 'Education/Events/Edit/:id',
+        canActivate: [moduleGuard('education'), permissionGuard('manage events')],
+        loadComponent: () =>
+          import('./education/events/event-create-page').then((m) => m.EventCreatePage),
+      },
     ],
   },
 ];

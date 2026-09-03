@@ -141,6 +141,17 @@ export interface EduReports {
   archives_total?: number;
 }
 
+export interface EnrollmentHistoryPageResult {
+  data: EduEnrollmentArchiveRow[];
+  terms: AcademicTerm[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from?: number | null;
+  to?: number | null;
+}
+
 export type {
   CompoundAccessCompound,
   CompoundAccessRow,
@@ -324,6 +335,42 @@ export class EducationService {
 
   assignSectionsToTerm(id: number, sectionIds: number[]): Promise<ApiResponse<unknown>> {
     return this.mutate(this.api.post(Apiendpointd.academicTermAssignSections(id), { section_ids: sectionIds }));
+  }
+
+  getEnrollmentHistoryPage(params?: {
+    page?: number;
+    per_page?: number;
+    q?: string;
+    status?: string;
+    academic_term_id?: number | null;
+    user_id?: number | null;
+  }): Promise<EnrollmentHistoryPageResult> {
+    const qs = new URLSearchParams();
+    qs.set('page', String(params?.page ?? 1));
+    qs.set('per_page', String(params?.per_page ?? 25));
+    if (params?.q?.trim()) qs.set('q', params.q.trim());
+    if (params?.status) qs.set('status', params.status);
+    if (params?.academic_term_id) qs.set('academic_term_id', String(params.academic_term_id));
+    if (params?.user_id) qs.set('user_id', String(params.user_id));
+
+    return this.api
+      .get<ApiResponse<EnrollmentHistoryPageResult & { data?: EduEnrollmentArchiveRow[] }>>(
+        `${Apiendpointd.enrollmentHistory}?${qs.toString()}`,
+      )
+      .then((res) => {
+        const page = res?.data;
+        const rows = Array.isArray(page?.data) ? page.data : [];
+        return {
+          data: rows,
+          terms: page?.terms ?? [],
+          current_page: page?.current_page ?? params?.page ?? 1,
+          last_page: page?.last_page ?? 1,
+          per_page: page?.per_page ?? params?.per_page ?? 25,
+          total: page?.total ?? rows.length,
+          from: page?.from ?? null,
+          to: page?.to ?? null,
+        };
+      });
   }
 
   getEnrollmentArchives(params?: {
