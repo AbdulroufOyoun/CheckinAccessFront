@@ -93,14 +93,7 @@ export class AdminsPage implements OnInit {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
-  async openCreate(): Promise<void> {
-    if (!this.roles.length) {
-      await this.load();
-    }
-    if (!this.roles.length) {
-      this.snackbar.show(this.translate.instant('ADM_NO_ROLES_AVAILABLE_HINT'), 'error');
-      return;
-    }
+  openCreate(): void {
     const ref = this.dialog.open(AddAdmin, {
       panelClass: ['custom-dialog', 'subject-dialog'],
       backdropClass: 'custom-backdrop',

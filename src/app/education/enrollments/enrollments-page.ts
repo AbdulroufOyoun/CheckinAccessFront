@@ -176,25 +176,14 @@ export class EnrollmentsPage implements OnInit {
     this.applyFilter();
   }
 
-  async openCreate(userId?: number): Promise<void> {
-    const users = await this.loadUserOptions();
-    let terms = this.terms;
-    if (!terms.length) {
-      try {
-        const res = await this.edu.getAcademicTerms('open');
-        terms = res.data || [];
-        this.terms = terms;
-      } catch {
-        terms = [];
-      }
-    }
-
+  openCreate(userId?: number): void {
+    void this.loadUserOptions();
     const ref = this.dialog.open(AddEnrollment, {
       panelClass: ['custom-dialog', 'subject-dialog'],
       backdropClass: 'custom-backdrop',
       width: '640px',
       maxWidth: '94vw',
-      data: { users, terms, userId },
+      data: { users: this.users, terms: this.terms, userId },
     });
     ref.afterClosed().subscribe((saved) => {
       if (saved) void this.bootstrap(true);

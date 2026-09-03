@@ -77,7 +77,7 @@ export const NAV_SEARCH_PAGE_META: Record<string, NavSearchPageMeta> = {
     capabilities: ['add', 'edit'],
   },
   '/Reports': {
-    aliases: ['report', 'reports', 'تقرير', 'تقارير'],
+    aliases: ['report', 'reports', 'door unlock', 'تقرير', 'تقارير', 'تقرير فتح الأبواب', 'فتح الابواب'],
     capabilities: [],
   },
   '/Education/Subjects': {

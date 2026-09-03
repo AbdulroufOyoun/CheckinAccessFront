@@ -77,6 +77,9 @@ export class PropertyConsole implements OnInit {
   linkedLocks: PropLock[] = [];
   allLocks: PropLock[] = [];
   locksLoading = false;
+  private allLocksPrefetching = false;
+  private allLocksLoaded = false;
+  readonly locksSkelRows = [0, 1, 2];
 
   get showSkeleton(): boolean {
     return this.initialLoad && !this.snapshot;
@@ -524,7 +527,28 @@ export class PropertyConsole implements OnInit {
     this.view = 'tree';
     this.detailTab = 'overview';
     this.linkedLocks = [];
+    if (this.canLinkLocksFor(node.type)) {
+      this.prefetchAllLocks();
+    }
     this.cdr.detectChanges();
+  }
+
+  private canLinkLocksFor(type: PropNodeType): boolean {
+    return ['building', 'floor', 'suite', 'room', 'facility', 'gate', 'parking', 'elevator'].includes(type);
+  }
+
+  private prefetchAllLocks(): void {
+    if (this.allLocksLoaded || this.allLocksPrefetching) return;
+    this.allLocksPrefetching = true;
+    void this.api
+      .listLocks()
+      .then((locks) => {
+        this.allLocks = locks;
+        this.allLocksLoaded = true;
+      })
+      .finally(() => {
+        this.allLocksPrefetching = false;
+      });
   }
 
   showCatalogs(): void {
@@ -818,6 +842,8 @@ export class PropertyConsole implements OnInit {
   async loadLocksForSelected(): Promise<void> {
     if (!this.selected || !this.canLinkLocks) return;
     this.locksLoading = true;
+    this.linkedLocks = [];
+    this.cdr.detectChanges();
     try {
       const type = this.selected.type as LockableType;
       const [linked, all] = await Promise.all([
@@ -826,6 +852,7 @@ export class PropertyConsole implements OnInit {
       ]);
       this.linkedLocks = linked;
       this.allLocks = all;
+      this.allLocksLoaded = true;
     } catch (e: unknown) {
       this.snackbar.show(this.err(e), 'error');
     } finally {
@@ -837,35 +864,22 @@ export class PropertyConsole implements OnInit {
   openLinkLocks(): void {
     if (!this.selected || !this.canLinkLocks) return;
     const type = this.selected.type as LockableType;
-    const open = (available: PropLock[], linked: PropLock[]) => {
-      const ref = this.dialogMobile.open(LinkLockDialog, {
-        panelClass: ['custom-dialog', 'subject-dialog'],
-        backdropClass: 'custom-backdrop',
-        width: '480px',
-        maxWidth: '94vw',
-        data: {
-          propertyType: type,
-          propertyId: this.selected!.id,
-          linked,
-          available,
-        },
-      });
-      ref.afterClosed().subscribe((saved) => {
-        if (saved) void this.loadLocksForSelected();
-      });
-    };
-
-    void (async () => {
-      try {
-        if (!this.allLocks.length) this.allLocks = await this.api.listLocks();
-        if (!this.linkedLocks.length) {
-          this.linkedLocks = await this.api.getPropertyLocks(type, this.selected!.id);
-        }
-        open(this.allLocks, this.linkedLocks);
-      } catch (e: unknown) {
-        this.snackbar.show(this.err(e), 'error');
-      }
-    })();
+    this.prefetchAllLocks();
+    const ref = this.dialogMobile.open(LinkLockDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      backdropClass: 'custom-backdrop',
+      width: '480px',
+      maxWidth: '94vw',
+      data: {
+        propertyType: type,
+        propertyId: this.selected.id,
+        linked: this.linkedLocks,
+        available: this.allLocksLoaded ? this.allLocks : undefined,
+      },
+    });
+    ref.afterClosed().subscribe((saved) => {
+      if (saved) void this.loadLocksForSelected();
+    });
   }
 
   async unlinkOne(lock: PropLock): Promise<void> {

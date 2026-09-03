@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminsService, TenantAdmin } from '../../services/admins.service';
-import { SpatieRole } from '../../services/roles.service';
+import { RolesService, SpatieRole } from '../../services/roles.service';
 import { SnackbarService } from '../../services/snackbar.service';
 
 export interface AddAdminDialogData {
@@ -23,12 +23,14 @@ export interface AddAdminDialogData {
 export class AddAdmin implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<AddAdmin>);
   private readonly adminsApi = inject(AdminsService);
+  private readonly rolesApi = inject(RolesService);
   private readonly snackbar = inject(SnackbarService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly document = inject(DOCUMENT);
 
   saving = false;
+  loadingRoles = false;
   isRTL = false;
   mode: 'add' | 'edit' = 'add';
   roles: SpatieRole[] = [];
@@ -59,6 +61,10 @@ export class AddAdmin implements OnInit {
   ngOnInit(): void {
     this.isRTL = this.document.documentElement.getAttribute('dir') === 'rtl'
       || this.translate.getCurrentLang() === 'ar';
+
+    if (!this.roles.length) {
+      void this.loadRoles();
+    }
 
     if (this.mode === 'edit' && this.data.admin) {
       const a = this.data.admin;
@@ -99,6 +105,21 @@ export class AddAdmin implements OnInit {
 
   close(saved = false): void {
     this.dialogRef.close(saved);
+  }
+
+  private async loadRoles(): Promise<void> {
+    this.loadingRoles = true;
+    this.cdr.detectChanges();
+    try {
+      const bundle = await this.rolesApi.getRolesPage({ allowStale: true });
+      this.roles = (bundle.roles || []).filter((r) => r.name !== 'Super Admin');
+    } catch {
+      this.roles = [];
+      this.snackbar.show(this.translate.instant('ADM_NO_ROLES_AVAILABLE_HINT'), 'error');
+    } finally {
+      this.loadingRoles = false;
+      this.cdr.detectChanges();
+    }
   }
 
   async save(): Promise<void> {

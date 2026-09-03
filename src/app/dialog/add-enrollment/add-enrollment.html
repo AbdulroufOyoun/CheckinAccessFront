@@ -25,7 +25,9 @@
 
       <label class="as__field">
         <span class="as__label">{{ 'ENR_STUDENT' | translate }} <i>*</i></span>
-        @if (users.length) {
+        @if (loadingUsers) {
+        <div class="as__input as__input--loading" role="status">{{ 'LOADING' | translate }}</div>
+        } @else if (users.length) {
         <div class="as__select-wrap">
           <select class="as__input as__select" name="user_id" [(ngModel)]="form.user_id"
             (ngModelChange)="onStudentChange()">

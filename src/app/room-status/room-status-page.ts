@@ -250,6 +250,12 @@ export class RoomStatusPage implements OnInit, OnDestroy {
     });
   }
 
+  roomOccupancyLabel(room: RoomStatusItem): string {
+    const cap = Math.max(1, Number(room.capacity) || 1);
+    const used = room.used_capacity ?? 0;
+    return this.translate.instant('ROOM_STATUS_OCCUPANCY', { used, cap });
+  }
+
   openRoom(room: RoomStatusItem): void {
     void this.router.navigate(['/RoomStatus', room.id], {
       queryParams: { date: this.date, time: this.time },

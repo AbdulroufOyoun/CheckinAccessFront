@@ -258,7 +258,9 @@
       </small>
     </div>
   }
-  @if (!room.booking && !room.schedule && room.capacity) {
+  @if (room.used_capacity != null && room.capacity) {
+    <p class="rs-card__cap">{{ roomOccupancyLabel(room) }}</p>
+  } @else if (!room.booking && !room.schedule && room.capacity) {
     <p class="rs-card__cap">{{ 'ROOM_STATUS_CAPACITY' | translate: { n: room.capacity } }}</p>
   }
   <span class="rs-card__hint">{{ 'ROOM_STATUS_OPEN_DETAIL' | translate }}</span>

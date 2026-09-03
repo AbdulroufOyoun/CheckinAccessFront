@@ -597,6 +597,9 @@
   <small>{{ room.building?.name || ('ROOM_STATUS_UNKNOWN_BUILDING' | translate) }}</small>
   }
   <small>{{ 'BOOK_ROOM_CAPACITY' | translate: { n: room.capacity || 1 } }}</small>
+  @if (room.remaining_capacity != null || room.used_capacity != null) {
+  <small>{{ roomRemainingLabel(room) }}</small>
+  }
   @if (room.schedule) {
     <small>{{ 'ROOM_STATUS_CLASS' | translate }}
       {{ isRTL ? (room.schedule.subject_ar || room.schedule.subject) : (room.schedule.subject || room.schedule.subject_ar) }}

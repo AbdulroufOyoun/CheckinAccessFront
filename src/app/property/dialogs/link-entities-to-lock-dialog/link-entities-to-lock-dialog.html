@@ -8,6 +8,24 @@
   </header>
 
   <div class="dialog-body">
+    @if (loading) {
+      <div class="link-lock-skel" role="status" [attr.aria-label]="'LOADING' | translate">
+        <p class="link-lock-skel__status">
+          <span class="link-lock-skel__dot" aria-hidden="true"></span>
+          {{ 'LOADING' | translate }}
+        </p>
+        <div class="link-lock-skel__search" aria-hidden="true"></div>
+        @for (row of skelRows; track row) {
+          <div class="link-lock-skel__row" [style.--skel-i]="row">
+            <span class="link-lock-skel__check"></span>
+            <span class="link-lock-skel__lines">
+              <span class="link-lock-skel__bone link-lock-skel__bone--title"></span>
+              <span class="link-lock-skel__bone link-lock-skel__bone--sub"></span>
+            </span>
+          </div>
+        }
+      </div>
+    } @else {
     <p class="hint-warn">
       <strong>⚠</strong>
       {{ 'LOCKS_UNLINK_FIRST_HINT' | translate }}
@@ -99,6 +117,7 @@
           <li class="empty">{{ 'LOCKS_NO_FACILITIES' | translate }}</li>
         }
       </ul>
+    }
     }
   </div>
 

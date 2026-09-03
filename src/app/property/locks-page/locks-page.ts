@@ -412,37 +412,22 @@ export class LocksPage implements OnInit {
   openLinkEntities(): void {
     if (!this.selected) return;
     const lockId = this.selected.id;
-    const open = async () => {
-      try {
-        const tree = await this.api.loadTree({ allowStale: true });
-        const fullLock = await this.api.getLock(lockId);
-        const ref = this.dialog.open(LinkEntitiesToLockDialog, {
-          panelClass: ['custom-dialog', 'subject-dialog'],
-          backdropClass: 'custom-backdrop',
-          width: '520px',
-          maxWidth: '94vw',
-          data: {
-            lockId,
-            tree,
-            linkedBuildings: (fullLock.buildings || []).map((x) => x.id),
-            linkedRooms: (fullLock.rooms || []).map((x) => x.id),
-            linkedFacilities: (fullLock.facilities || []).map((x) => x.id),
-          },
-        });
-        ref.afterClosed().subscribe((saved) => {
-          if (!saved) return;
-          void this.load(true).then(() => {
-            if (this.selected?.id === lockId) {
-              this.linkedEntities = [];
-              void this.loadLinkedForSelected();
-            }
-          });
-        });
-      } catch (e: unknown) {
-        this.snackbar.show(this.err(e), 'error');
-      }
-    };
-    void open();
+    const ref = this.dialog.open(LinkEntitiesToLockDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      backdropClass: 'custom-backdrop',
+      width: '520px',
+      maxWidth: '94vw',
+      data: { lockId },
+    });
+    ref.afterClosed().subscribe((saved) => {
+      if (!saved) return;
+      void this.load(true).then(() => {
+        if (this.selected?.id === lockId) {
+          this.linkedEntities = [];
+          void this.loadLinkedForSelected();
+        }
+      });
+    });
   }
 
   async unlinkEntity(entity: { type: LockableType; id: number }): Promise<void> {

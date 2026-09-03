@@ -1,35 +1,77 @@
-<section class="edu-page evt-page" [class.evt-page--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
-  <header class="edu-page__hero">
-    <div>
-      <p class="edu-page__eyebrow">{{ 'EVT_EYEBROW' | translate }}</p>
-      <h1>{{ 'EVT_TITLE' | translate }}</h1>
-      <p class="edu-page__subtitle">{{ 'EVT_SUBTITLE' | translate }}</p>
+<section class="evt-page" [class.evt-page--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="evt-page__header">
+    <div class="evt-page__intro">
+      <p class="evt-page__eyebrow">{{ 'EVT_EYEBROW' | translate }}</p>
+      <h1 class="evt-page__title">{{ 'EVT_TITLE' | translate }}</h1>
+      <p class="evt-page__subtitle">
+        @if (!initialLoad) {
+          {{ 'EVT_PAGE_COUNT' | translate: { filtered: filteredRows.length, total: rows.length } }}
+        } @else {
+          {{ 'EVT_SUBTITLE' | translate }}
+        }
+      </p>
     </div>
-    <div class="evt-page__actions">
-      <button type="button" class="edu-btn edu-btn--ghost" (click)="load()" [disabled]="loading">
-        {{ loading ? ('LOADING' | translate) : ('EVT_REFRESH' | translate) }}
-      </button>
-      <a routerLink="/Education/Events/New" class="edu-btn edu-btn--primary">{{ 'EVT_NEW' | translate }}</a>
-    </div>
+    <a routerLink="/Education/Events/New" class="evt-page__add">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      {{ 'EVT_NEW' | translate }}
+    </a>
   </header>
 
   @if (showSkeleton) {
     <app-page-skeleton variant="table" />
   } @else {
     <div class="evt-toolbar">
-      <input type="search" [(ngModel)]="search" [placeholder]="'EVT_SEARCH' | translate" />
-      <select [(ngModel)]="statusFilter">
-        <option value="">{{ 'EVT_FILTER_ALL' | translate }}</option>
-        <option value="draft">{{ 'EVT_STATUS_DRAFT' | translate }}</option>
-        <option value="active">{{ 'EVT_STATUS_ACTIVE' | translate }}</option>
-        <option value="cancelled">{{ 'EVT_STATUS_CANCELLED' | translate }}</option>
-      </select>
+      <label class="evt-toolbar__search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+          stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="search" [(ngModel)]="search" [placeholder]="'EVT_SEARCH' | translate" />
+      </label>
+
+      <label class="evt-toolbar__filter">
+        <span class="evt-toolbar__filter-label">{{ 'ENR_COL_STATUS' | translate }}</span>
+        <select [(ngModel)]="statusFilter">
+          <option value="">{{ 'EVT_FILTER_ALL' | translate }}</option>
+          <option value="draft">{{ 'EVT_STATUS_DRAFT' | translate }}</option>
+          <option value="active">{{ 'EVT_STATUS_ACTIVE' | translate }}</option>
+          <option value="cancelled">{{ 'EVT_STATUS_CANCELLED' | translate }}</option>
+        </select>
+      </label>
+
+      <button type="button" class="evt-toolbar__refresh" (click)="load()" [disabled]="loading"
+        [attr.aria-label]="'EVT_REFRESH' | translate" [title]="'EVT_REFRESH' | translate">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          [class.evt-toolbar__refresh-spin]="loading" aria-hidden="true">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+          <path d="M21 3v6h-6" />
+        </svg>
+        <span class="evt-toolbar__refresh-text">{{ loading ? ('LOADING' | translate) : ('EVT_REFRESH' | translate) }}</span>
+      </button>
     </div>
 
     @if (!filteredRows.length) {
       <div class="evt-empty">
+        <div class="evt-empty__icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+            stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        </div>
         <strong>{{ 'EVT_EMPTY' | translate }}</strong>
-        <p>{{ 'EVT_EMPTY_HINT' | translate }}</p>
+        <p>{{ (rows.length ? 'EVT_EMPTY_FILTER' : 'EVT_EMPTY_HINT') | translate }}</p>
+        @if (!rows.length) {
+          <a routerLink="/Education/Events/New" class="evt-page__add evt-page__add--inline">{{ 'EVT_NEW' | translate }}</a>
+        }
       </div>
     } @else {
       <div class="evt-grid">

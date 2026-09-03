@@ -15,10 +15,10 @@ import { SnackbarService } from '../../../services/snackbar.service';
 
 export interface LinkEntitiesToLockDialogData {
   lockId: number;
-  tree: PropTreeSnapshot;
-  linkedBuildings: number[];
-  linkedRooms: number[];
-  linkedFacilities: number[];
+  tree?: PropTreeSnapshot;
+  linkedBuildings?: number[];
+  linkedRooms?: number[];
+  linkedFacilities?: number[];
 }
 
 interface EntityOption {
@@ -50,14 +50,21 @@ export class LinkEntitiesToLockDialog implements OnInit {
 
   isRTL = false;
   saving = false;
+  loading = false;
   search = '';
   selectedTab: 'buildings' | 'rooms' | 'facilities' = 'buildings';
+
+  private tree!: PropTreeSnapshot;
+  private linkedBuildings: number[] = [];
+  private linkedRooms: number[] = [];
+  private linkedFacilities: number[] = [];
 
   buildings: EntityOption[] = [];
   rooms: EntityOption[] = [];
   facilities: EntityOption[] = [];
 
   selected: SingleSelection | null = null;
+  readonly skelRows = [0, 1, 2, 3, 4];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: LinkEntitiesToLockDialogData) {}
 
@@ -65,21 +72,62 @@ export class LinkEntitiesToLockDialog implements OnInit {
     this.isRTL =
       this.document.documentElement.getAttribute('dir') === 'rtl' ||
       this.translate.getCurrentLang() === 'ar';
-    if (this.data.linkedBuildings?.length) {
-      this.selected = { type: 'building', id: this.data.linkedBuildings[0] };
+
+    if (this.data.tree) {
+      this.tree = this.data.tree;
+      this.linkedBuildings = this.data.linkedBuildings || [];
+      this.linkedRooms = this.data.linkedRooms || [];
+      this.linkedFacilities = this.data.linkedFacilities || [];
+      this.applyInitialSelection();
+      this.buildEntityLists();
+      return;
+    }
+
+    void this.loadData();
+  }
+
+  private async loadData(): Promise<void> {
+    this.loading = true;
+    this.cdr.detectChanges();
+    try {
+      const [tree, fullLock] = await Promise.all([
+        this.api.loadTree({ allowStale: true }),
+        this.api.getLock(this.data.lockId),
+      ]);
+      this.tree = tree;
+      this.linkedBuildings = (fullLock.buildings || []).map((x) => x.id);
+      this.linkedRooms = (fullLock.rooms || []).map((x) => x.id);
+      this.linkedFacilities = (fullLock.facilities || []).map((x) => x.id);
+      this.applyInitialSelection();
+      this.buildEntityLists();
+    } catch (e: unknown) {
+      const m = (e as { error?: { message?: string } })?.error?.message;
+      this.snackbar.show(
+        typeof m === 'string' ? m : this.translate.instant('REQUEST_FAILED'),
+        'error',
+      );
+      this.dialogRef.close(false);
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private applyInitialSelection(): void {
+    if (this.linkedBuildings.length) {
+      this.selected = { type: 'building', id: this.linkedBuildings[0] };
       this.selectedTab = 'buildings';
-    } else if (this.data.linkedRooms?.length) {
-      this.selected = { type: 'room', id: this.data.linkedRooms[0] };
+    } else if (this.linkedRooms.length) {
+      this.selected = { type: 'room', id: this.linkedRooms[0] };
       this.selectedTab = 'rooms';
-    } else if (this.data.linkedFacilities?.length) {
-      this.selected = { type: 'facility', id: this.data.linkedFacilities[0] };
+    } else if (this.linkedFacilities.length) {
+      this.selected = { type: 'facility', id: this.linkedFacilities[0] };
       this.selectedTab = 'facilities';
     }
-    this.buildEntityLists();
   }
 
   private buildEntityLists(): void {
-    const tree = this.data.tree;
+    const tree = this.tree;
 
     this.buildings = (tree.buildings || []).map((b: PropBuilding) => ({
       type: 'building',
@@ -155,14 +203,14 @@ export class LinkEntitiesToLockDialog implements OnInit {
   }
 
   private get existingLink(): SingleSelection | null {
-    if (this.data.linkedBuildings?.length) {
-      return { type: 'building', id: this.data.linkedBuildings[0] };
+    if (this.linkedBuildings.length) {
+      return { type: 'building', id: this.linkedBuildings[0] };
     }
-    if (this.data.linkedRooms?.length) {
-      return { type: 'room', id: this.data.linkedRooms[0] };
+    if (this.linkedRooms.length) {
+      return { type: 'room', id: this.linkedRooms[0] };
     }
-    if (this.data.linkedFacilities?.length) {
-      return { type: 'facility', id: this.data.linkedFacilities[0] };
+    if (this.linkedFacilities.length) {
+      return { type: 'facility', id: this.linkedFacilities[0] };
     }
     return null;
   }
@@ -191,9 +239,9 @@ export class LinkEntitiesToLockDialog implements OnInit {
     try {
       const lockId = this.data.lockId;
       const prev: Array<{ type: LockableType; id: number }> = [];
-      (this.data.linkedBuildings || []).forEach((id) => prev.push({ type: 'building', id }));
-      (this.data.linkedRooms || []).forEach((id) => prev.push({ type: 'room', id }));
-      (this.data.linkedFacilities || []).forEach((id) => prev.push({ type: 'facility', id }));
+      this.linkedBuildings.forEach((id) => prev.push({ type: 'building', id }));
+      this.linkedRooms.forEach((id) => prev.push({ type: 'room', id }));
+      this.linkedFacilities.forEach((id) => prev.push({ type: 'facility', id }));
 
       if (
         prev.length &&

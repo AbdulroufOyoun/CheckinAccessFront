@@ -95,7 +95,7 @@ describe('BookingCreatePage', () => {
     expect(component.isRoomSelected(1)).toBe(true);
     expect(component.isRoomSelected(2)).toBe(true);
     expect(component.canGoStep3).toBe(true);
-    expect(component.roomCapacity).toBe(4);
+    expect(component.roomCapacity).toBe(2);
   });
 
   it('deselects a room when toggled again', () => {

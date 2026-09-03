@@ -11,6 +11,8 @@ import {
   EduSubject,
 } from '../../services/education.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { ApiService } from '../../services/api.service';
+import { Apiendpointd } from '../../apiEndpoints';
 import { BookingAccessExtras } from '../../bookings/booking-access-extras/booking-access-extras';
 import { BookingExtraPick } from '../../bookings/booking-extra-unit';
 
@@ -40,8 +42,10 @@ export class AddEnrollment implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly document = inject(DOCUMENT);
+  private readonly api = inject(ApiService);
 
   saving = false;
+  loadingUsers = false;
   loadingSections = false;
   loadingSchedule = false;
   isRTL = false;
@@ -73,6 +77,9 @@ export class AddEnrollment implements OnInit {
   async ngOnInit(): Promise<void> {
     this.isRTL = this.document.documentElement.getAttribute('dir') === 'rtl'
       || this.translate.getCurrentLang() === 'ar';
+    if (!this.users.length) {
+      await this.loadUsers();
+    }
     if (!this.terms.length) {
       await this.loadTerms();
     }
@@ -285,6 +292,22 @@ export class AddEnrollment implements OnInit {
       );
     } finally {
       this.saving = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private async loadUsers(): Promise<void> {
+    this.loadingUsers = true;
+    this.cdr.detectChanges();
+    try {
+      const result = await this.api.get<{ data: EnrollUserOption[] }>(
+        `${Apiendpointd.users}?per_page=100`,
+      );
+      this.users = Array.isArray(result.data) ? result.data : [];
+    } catch {
+      this.users = [];
+    } finally {
+      this.loadingUsers = false;
       this.cdr.detectChanges();
     }
   }

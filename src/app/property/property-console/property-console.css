@@ -630,6 +630,152 @@
   margin-bottom: 12px;
 }
 
+.prop-meta--loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--prop-accent);
+  font-weight: 650;
+}
+
+.prop-locks__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--prop-accent);
+  flex-shrink: 0;
+  animation: propLocksPulse 1.1s ease-in-out infinite;
+}
+
+.prop-locks--loading .prop-btn--primary {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.prop-locks-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0 2px;
+}
+
+.prop-locks-skel__hero {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 4px;
+}
+
+.prop-locks-skel__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  color: var(--prop-accent);
+  background: var(--prop-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--prop-accent) 18%, white);
+  animation: propLocksIconFloat 2.4s ease-in-out infinite;
+}
+
+.prop-locks-skel__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--prop-line);
+  border-radius: 14px;
+  background: var(--prop-panel);
+  animation: propLocksRowIn 0.45s ease both;
+  animation-delay: calc(var(--skel-i, 0) * 0.08s);
+}
+
+.prop-locks-skel__lock {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.prop-locks-skel__text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prop-locks-skel__bone {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e2e8f0;
+}
+
+.prop-locks-skel__bone::after,
+.prop-locks-skel__lock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.72),
+    transparent
+  );
+  animation: propLocksShimmer 1.35s ease-in-out infinite;
+  animation-delay: calc(var(--skel-i, 0) * 0.12s);
+}
+
+.prop-locks-skel__bone--title {
+  height: 13px;
+  width: 58%;
+}
+
+.prop-locks-skel__bone--sub {
+  height: 10px;
+  width: 42%;
+}
+
+.prop-locks-skel__bone--btn {
+  width: 68px;
+  height: 30px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.prop-lock-list--ready {
+  animation: propLocksListIn 0.35s ease;
+}
+
+@keyframes propLocksPulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes propLocksIconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes propLocksShimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes propLocksRowIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes propLocksListIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
 .prop-lock-list {
   list-style: none;
   margin: 0;

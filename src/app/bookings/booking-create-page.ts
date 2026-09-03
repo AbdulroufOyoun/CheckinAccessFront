@@ -203,7 +203,18 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   get roomCapacity(): number {
     if (!this.selectedRooms.length) return 1;
-    return this.selectedRooms.reduce((sum, room) => sum + Math.max(1, Number(room.capacity) || 1), 0);
+    return this.selectedRooms.reduce((min, room) => {
+      const cap =
+        room.remaining_capacity ?? Math.max(1, Number(room.capacity) || 1);
+      return Math.min(min, Math.max(1, cap));
+    }, Number.POSITIVE_INFINITY);
+  }
+
+  roomRemainingLabel(room: RoomStatusItem): string {
+    const cap = Math.max(1, Number(room.capacity) || 1);
+    const remaining =
+      room.remaining_capacity ?? Math.max(0, cap - (room.used_capacity ?? 0));
+    return this.translate.instant('BOOK_ROOM_REMAINING', { n: remaining, cap });
   }
 
   get selectedRoomCount(): number {
@@ -225,6 +236,16 @@ export class BookingCreatePage implements OnInit, OnDestroy {
       this.occupants.length >= 1 &&
       this.occupants.length <= this.roomCapacity
     );
+  }
+
+  saveBlockedReason(): string {
+    if (this.occupants.length < 1) {
+      return this.translate.instant('BOOK_OCCUPANT_REQUIRED');
+    }
+    if (this.occupants.length > this.roomCapacity) {
+      return this.translate.instant('BOOK_CAPACITY_EXCEEDED');
+    }
+    return this.translate.instant('BOOK_REQUIRED');
   }
 
   get occupantHits(): TenantUser[] {
@@ -399,7 +420,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     if (this.occupants.some((u) => u.id === user.id)) return;
     if (this.occupants.length >= this.roomCapacity) {
       this.snackbar.show(
-        this.translate.instant('BOOK_OCCUPANT_FULL', { n: this.roomCapacity }),
+        this.translate.instant('BOOK_CAPACITY_EXCEEDED'),
         'error',
       );
       return;
@@ -572,11 +593,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   async save(): Promise<void> {
     if (!this.canSave || this.saving) {
-      this.showSaveError(
-        this.occupants.length < 1
-          ? this.translate.instant('BOOK_OCCUPANT_REQUIRED')
-          : this.translate.instant('BOOK_REQUIRED'),
-      );
+      this.showSaveError(this.saveBlockedReason());
       return;
     }
 
@@ -623,6 +640,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
         time_scheduled: period.time_scheduled,
         period_times: period.period_times,
         units: period.units,
+        requested_occupants: this.occupants.length,
       });
 
       if (!availability.data?.available) {
@@ -750,6 +768,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
             period_times: timed
               ? [{ start_time: this.toHms(period.start_time), end_time: this.toHms(period.end_time) }]
               : undefined,
+            requested_occupants: 1,
           });
 
           if (token !== this.prefetchToken) return false;
@@ -832,6 +851,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
         ? [{ start_time: this.toHms(period.start_time), end_time: this.toHms(period.end_time) }]
         : undefined,
       building_id: this.buildingFilter,
+      requested_occupants: 1,
     };
   }
 

@@ -14,6 +14,10 @@ export class DialogMobileService {
   ): MatDialogRef<T, R> {
     const mobile = this.mobileLayout.isDialogMobile();
     const merged: MatDialogConfig<D> = {
+      enterAnimationDuration: '0ms',
+      exitAnimationDuration: '120ms',
+      restoreFocus: false,
+      autoFocus: false,
       ...config,
       maxWidth: mobile ? '100vw' : (config?.maxWidth ?? '640px'),
       width: mobile ? '100vw' : (config?.width ?? '640px'),
@@ -23,7 +27,6 @@ export class DialogMobileService {
         ? ['dialog--fullscreen', ...(Array.isArray(config?.panelClass) ? config.panelClass : config?.panelClass ? [config.panelClass] : [])]
         : config?.panelClass ?? ['custom-dialog'],
       backdropClass: config?.backdropClass ?? 'custom-backdrop',
-      autoFocus: config?.autoFocus ?? false,
     };
     return this.dialog.open(component, merged);
   }
