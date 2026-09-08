@@ -66,6 +66,7 @@ export interface PropRoom {
   suite_id?: number | null;
   building_id?: number | null;
   room_type_id?: number | null;
+  purpose?: 'accommodation' | 'lecture' | 'both';
   active?: boolean;
   room_type?: { id: number; name: string } | null;
   roomType?: { id: number; name: string } | null;
@@ -345,6 +346,7 @@ export class PropertyApiService {
       name?: string | null;
       capacity: number;
       room_type_id: number;
+      purpose: 'accommodation' | 'lecture' | 'both';
       suite_id?: number | null;
     }>;
   }) {

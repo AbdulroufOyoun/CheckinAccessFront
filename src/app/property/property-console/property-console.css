@@ -473,6 +473,36 @@
   font-size: 0.84rem;
 }
 
+.prop-purpose-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.prop-purpose-pill--housing {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.prop-purpose-pill--education {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.prop-purpose-pill--shared {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.prop-tree__row .prop-purpose-pill {
+  flex-shrink: 0;
+}
+
 .prop-detail__actions {
   display: flex;
   flex-wrap: wrap;

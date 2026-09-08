@@ -249,6 +249,16 @@
                     <dd>{{ field('capacity') }}</dd>
                   </div>
                 }
+                @if (selected?.type === 'room' && field('purpose')) {
+                  <div class="prop-field-card">
+                    <dt>{{ 'PROP_ROOM_PURPOSE' | translate }}</dt>
+                    <dd>
+                      <span class="prop-purpose-pill prop-purpose-pill--{{ roomPurposeTone(field('purpose')) }}">
+                        {{ roomPurposeLabel(field('purpose')) }}
+                      </span>
+                    </dd>
+                  </div>
+                }
                 @if (field('direction') != null) {
                   <div class="prop-field-card">
                     <dt>{{ 'PROP_DIRECTION' | translate }}</dt>
@@ -397,6 +407,11 @@
         <span class="prop-type-pill prop-type-pill--{{ typeTone(node.type) }} prop-type-pill--sm">
           {{ typeLabel(node.type) }}
         </span>
+        @if (node.type === 'room' && node.raw['purpose']) {
+          <span class="prop-purpose-pill prop-purpose-pill--{{ roomPurposeTone(node.raw['purpose']) }}">
+            {{ roomPurposeLabel(node.raw['purpose']) }}
+          </span>
+        }
         <span class="prop-tree__label">{{ node.label }}</span>
         @if (node.children?.length) {
           <span class="prop-tree__count">{{ node.children.length }}</span>

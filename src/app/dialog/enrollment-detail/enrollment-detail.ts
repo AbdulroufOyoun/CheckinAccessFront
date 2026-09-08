@@ -3,6 +3,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 import {
   AcademicTerm,
   EducationService,
@@ -10,6 +11,8 @@ import {
   EduSubject,
 } from '../../services/education.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { DialogMobileService } from '../../services/dialog-mobile.service';
+import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
 import { BookingAccessExtras } from '../../bookings/booking-access-extras/booking-access-extras';
 import { BookingExtraPick } from '../../bookings/booking-extra-unit';
 
@@ -33,6 +36,7 @@ export class EnrollmentDetail implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly document = inject(DOCUMENT);
+  private readonly dialogMobile = inject(DialogMobileService);
 
   isRTL = false;
   saving = false;
@@ -118,9 +122,7 @@ export class EnrollmentDetail implements OnInit {
   }
 
   async remove(row: EduEnrollmentRow): Promise<void> {
-    const ok = confirm(
-      this.translate.instant('ENR_DELETE_CONFIRM', { name: this.enrollmentLabel(row) }),
-    );
+    const ok = await this.openRemoveConfirm(row);
     if (!ok) return;
     try {
       await this.edu.removeEnrollment(row.enrollment.id);
@@ -131,6 +133,51 @@ export class EnrollmentDetail implements OnInit {
     } catch (e: unknown) {
       this.snackbar.show(this.err(e), 'error');
     }
+  }
+
+  private async openRemoveConfirm(row: EduEnrollmentRow): Promise<boolean> {
+    const section = row.enrollment.section?.number || row.enrollment.section_id;
+    const ref = this.dialogMobile.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      width: '440px',
+      maxWidth: '94vw',
+      data: {
+        variant: 'danger',
+        titleKey: 'ENR_DELETE_DIALOG_TITLE',
+        hintKey: 'ENR_DELETE_DIALOG_HINT',
+        confirmKey: 'ENR_DELETE_DIALOG_CONFIRM',
+        preview: {
+          initials: this.subjectInitials(row),
+          title: this.enrollmentLabel(row),
+          subtitle: this.studentName,
+          meta: [
+            {
+              labelKey: 'ENR_COL_SECTION',
+              value: String(section ?? '—'),
+            },
+            {
+              labelKey: 'ENR_LABEL_TERM',
+              value: this.termLabel(this.termOf(row)) || this.translate.instant('ENR_NO_TERM'),
+            },
+            {
+              labelKey: 'ENR_STATUS',
+              value: this.translate.instant(this.statusKey(row.enrollment.status)),
+            },
+          ],
+        },
+      },
+    });
+    return (await firstValueFrom(ref.afterClosed())) === true;
+  }
+
+  private subjectInitials(row: EduEnrollmentRow): string {
+    const subject = this.subjectLabel(row.enrollment.section?.subject);
+    if (!subject) return 'S';
+    const parts = subject.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+    return subject.slice(0, 2).toUpperCase();
   }
 
   async saveAccessExtras(): Promise<void> {

@@ -542,9 +542,9 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
     const idx = this.selectedRooms.findIndex((r) => r.id === room.id);
     if (idx >= 0) {
-      this.selectedRooms = this.selectedRooms.filter((r) => r.id !== room.id);
+      this.selectedRooms = [];
     } else {
-      this.selectedRooms = [...this.selectedRooms, room];
+      this.selectedRooms = [room];
     }
 
     const cap = this.roomCapacity;
@@ -555,7 +555,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   goConfirm(): void {
     if (!this.canGoStep3) {
-      this.snackbar.show(this.translate.instant('BOOK_PICK_ROOMS'), 'error');
+      this.snackbar.show(this.translate.instant('BOOK_PICK_ROOM'), 'error');
       return;
     }
     this.step = 3;

@@ -11,6 +11,12 @@ import {
 import { SnackbarService } from '../../../services/snackbar.service';
 import { ApiResponse } from '../../../interfaces/api-response';
 import { incrementRoomNumber, RoomDraft } from './room-number';
+import {
+  ROOM_PURPOSE_HINT_I18N,
+  ROOM_PURPOSE_I18N,
+  ROOM_PURPOSE_OPTIONS,
+  RoomPurpose,
+} from '../../../shared/room-purpose';
 
 export interface PropertyEntityDialogData {
   entity: PropNodeType;
@@ -59,6 +65,9 @@ export class PropertyEntityDialog implements OnInit {
   roomDrafts: RoomDraft[] = [];
   roomCount = 1;
   readonly maxRoomCount = 40;
+  readonly roomPurposeOptions = ROOM_PURPOSE_OPTIONS;
+  readonly roomPurposeLabels = ROOM_PURPOSE_I18N;
+  readonly roomPurposeHints = ROOM_PURPOSE_HINT_I18N;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: PropertyEntityDialogData) {}
 
@@ -89,6 +98,9 @@ export class PropertyEntityDialog implements OnInit {
     }
     if (this.addingRooms && this.form['capacity'] == null) {
       this.form['capacity'] = 1;
+    }
+    if (this.data.entity === 'room' && !this.form['purpose']) {
+      this.form['purpose'] = this.data.mode === 'edit' ? 'both' : 'accommodation';
     }
     if (this.addingRooms) {
       this.roomCount = 1;
@@ -146,7 +158,7 @@ export class PropertyEntityDialog implements OnInit {
     this.rebuildRoomDrafts('count');
   }
 
-  rebuildRoomDrafts(kind: 'count' | 'start' | 'type' | 'capacity' | 'suite'): void {
+  rebuildRoomDrafts(kind: 'count' | 'start' | 'type' | 'capacity' | 'suite' | 'purpose'): void {
     if (!this.isAddRoom) return;
     const count = Math.min(this.maxRoomCount, Math.max(1, Math.floor(Number(this.roomCount) || 1)));
     this.roomCount = count;
@@ -156,6 +168,7 @@ export class PropertyEntityDialog implements OnInit {
     const typeId = this.form['room_type_id'] ? Number(this.form['room_type_id']) : null;
     const cap = Number(this.form['capacity']) || 1;
     const suite = this.form['suite_id'] ? Number(this.form['suite_id']) : null;
+    const purpose = (this.form['purpose'] as RoomPurpose) || 'accommodation';
     const prev = this.roomDrafts;
 
     this.roomDrafts = Array.from({ length: count }, (_, i) => {
@@ -167,9 +180,22 @@ export class PropertyEntityDialog implements OnInit {
         capacity: kind === 'capacity' ? cap : (existing?.capacity ?? cap),
         suite_id: kind === 'suite' ? suite : (existing?.suite_id ?? suite),
         room_type_id: kind === 'type' ? typeId : (existing?.room_type_id ?? typeId),
+        purpose: kind === 'purpose' ? purpose : (existing?.purpose ?? purpose),
       };
     });
     this.syncDialogSize();
+  }
+
+  setRoomPurpose(purpose: RoomPurpose): void {
+    this.form['purpose'] = purpose;
+    if (this.isAddRoom) {
+      this.rebuildRoomDrafts('purpose');
+    }
+  }
+
+  selectedPurposeHint(): string {
+    const purpose = (this.form['purpose'] as RoomPurpose) || 'accommodation';
+    return this.roomPurposeHints[purpose];
   }
 
   private syncDialogSize(): void {
@@ -284,10 +310,16 @@ export class PropertyEntityDialog implements OnInit {
       if (!this.validateRoomDrafts()) {
         return;
       }
-    } else if (this.data.entity === 'room' && !this.form['room_type_id']) {
-      this.snackbar.show(this.translate.instant('PROP_ROOM_TYPE_REQUIRED'), 'error');
-      this.showNewRoomType = true;
-      return;
+    } else if (this.data.entity === 'room') {
+      if (!this.form['room_type_id']) {
+        this.snackbar.show(this.translate.instant('PROP_ROOM_TYPE_REQUIRED'), 'error');
+        this.showNewRoomType = true;
+        return;
+      }
+      if (!this.form['purpose']) {
+        this.snackbar.show(this.translate.instant('PROP_ROOM_PURPOSE_REQUIRED'), 'error');
+        return;
+      }
     }
     if (this.data.entity === 'facility' && !this.form['facilitie_type_id']) {
       this.snackbar.show(this.translate.instant('PROP_FACILITY_TYPE_REQUIRED'), 'error');
@@ -379,6 +411,7 @@ export class PropertyEntityDialog implements OnInit {
               name: d.name.trim() || null,
               capacity: Number(d.capacity) || 1,
               room_type_id: Number(d.room_type_id),
+              purpose: d.purpose,
               suite_id: d.suite_id ? Number(d.suite_id) : null,
             })),
           });
@@ -389,6 +422,7 @@ export class PropertyEntityDialog implements OnInit {
           name: this.form['name'] || null,
           capacity: Number(this.form['capacity']) || 1,
           room_type_id: Number(this.form['room_type_id']),
+          purpose: this.form['purpose'],
           floor_id: this.form['floor_id'] ? Number(this.form['floor_id']) : null,
           suite_id: this.form['suite_id'] ? Number(this.form['suite_id']) : null,
           building_id: this.form['building_id'] ? Number(this.form['building_id']) : null,
