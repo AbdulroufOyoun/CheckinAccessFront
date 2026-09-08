@@ -24,6 +24,11 @@ import {
   PropertyApiService,
 } from '../services/property-api.service';
 import {
+  ROOM_PURPOSE_I18N,
+  RoomPurpose,
+  roomPurposeTone,
+} from '../../shared/room-purpose';
+import {
   PropertyEntityDialog,
   PropertyEntityDialogData,
 } from '../dialogs/property-entity-dialog/property-entity-dialog';
@@ -438,12 +443,15 @@ export class PropertyConsole implements OnInit {
     suite?: PropSuite,
   ): TreeNode {
     const typeName = room.room_type?.name || room.roomType?.name;
+    const purpose = room.purpose as RoomPurpose | undefined;
+    const purposeLabel = purpose ? this.t(ROOM_PURPOSE_I18N[purpose]) : '';
+    const metaParts = [purposeLabel, typeName || `#${room.number}`].filter(Boolean);
     return {
       key: `room-${room.id}`,
       type: 'room',
       id: room.id,
       label: room.name || `${this.t('PROP_ROOM')} ${room.number}`,
-      meta: typeName || `#${room.number}`,
+      meta: metaParts.join(' · '),
       active: room.active,
       raw: {
         ...room,
@@ -929,6 +937,15 @@ export class PropertyConsole implements OnInit {
 
   field(key: string): unknown {
     return this.selected?.raw?.[key];
+  }
+
+  roomPurposeLabel(purpose: unknown): string {
+    const key = ROOM_PURPOSE_I18N[purpose as RoomPurpose];
+    return key ? this.t(key) : '—';
+  }
+
+  roomPurposeTone(purpose: unknown): string {
+    return roomPurposeTone(purpose as RoomPurpose);
   }
 
   private err(e: unknown): string {

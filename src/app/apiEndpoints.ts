@@ -1,17 +1,19 @@
 import { resolveTenantApiHostname } from './core/tenant-host';
+import { environment } from '../environments/environment';
 
 export class Apiendpointd {
   /**
    * Tenant admin API base.
    * Uses the current browser hostname (e.g. abd.localhost) so each tenant
-   * hits its own Laravel host on :8000.
+   * hits its own Laravel host (Herd :8000 or Octane :8001 via environment.apiPort).
    */
   public static get mianUrl(): string {
     const apiHost = resolveTenantApiHostname();
     if (!apiHost) {
       throw new Error('Tenant host is required (use e.g. abd.localhost, not plain localhost).');
     }
-    return `http://${apiHost}:8000/api/admins/`;
+    const port = environment.apiPort ?? 8000;
+    return `http://${apiHost}:${port}/api/admins/`;
   }
   /** Non-admin tenant API root (`/api/`) for compounds, gates, parkings, elevators, suites. */
   public static get apiRoot(): string {

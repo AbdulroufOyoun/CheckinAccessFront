@@ -50,6 +50,7 @@ export interface RoomStatusItem {
   used_capacity?: number;
   remaining_capacity?: number;
   active: boolean;
+  purpose?: 'accommodation' | 'lecture' | 'both';
   status: RoomOccupancyStatus;
   room_type?: { id: number; name: string } | null;
   building?: { id: number; name?: string | null } | null;

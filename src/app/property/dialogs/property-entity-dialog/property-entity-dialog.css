@@ -382,4 +382,73 @@
   color: #fff;
 }
 
+.room-purpose-field {
+  margin-bottom: 1rem;
+}
+
+.room-purpose-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.85rem;
+  color: var(--muted, #64748b);
+}
+
+.room-purpose-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.room-purpose-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem 0.5rem;
+  border: 2px solid var(--border, #d4d4d4);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.room-purpose-card strong {
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.room-purpose-card.is-selected {
+  box-shadow: 0 0 0 1px currentColor;
+}
+
+.room-purpose-card--accommodation.is-selected {
+  border-color: #0d9488;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.room-purpose-card--lecture.is-selected {
+  border-color: #7c3aed;
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.room-purpose-card--both.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.room-purpose-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 520px) {
+  .room-purpose-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .rtl .dialog-foot { flex-direction: row-reverse; }

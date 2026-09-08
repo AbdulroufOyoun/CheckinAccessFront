@@ -87,12 +87,12 @@ describe('BookingCreatePage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('allows selecting multiple available rooms', () => {
+  it('allows selecting only one room at a time', () => {
     component.toggleRoom(room(1));
     component.toggleRoom(room(2));
 
-    expect(component.selectedRoomCount).toBe(2);
-    expect(component.isRoomSelected(1)).toBe(true);
+    expect(component.selectedRoomCount).toBe(1);
+    expect(component.isRoomSelected(1)).toBe(false);
     expect(component.isRoomSelected(2)).toBe(true);
     expect(component.canGoStep3).toBe(true);
     expect(component.roomCapacity).toBe(2);
@@ -106,7 +106,7 @@ describe('BookingCreatePage', () => {
     expect(component.canGoStep3).toBe(false);
   });
 
-  it('submits one unit per selected room', async () => {
+  it('submits one room unit', async () => {
     component.periods = [{
       id: 'p-1',
       mode: 'full_day',
@@ -120,7 +120,6 @@ describe('BookingCreatePage', () => {
       excluded_weekdays: [],
     }];
     component.toggleRoom(room(10));
-    component.toggleRoom(room(11));
     component.occupants = [{ id: 1, name: 'Guest', email: 'g@test.com', mobile: '0500000000' }];
 
     await component.save();
@@ -130,7 +129,7 @@ describe('BookingCreatePage', () => {
     const units = payload.bookings[0].booking_periods[0].units.filter(
       (u: { unit_type: string; unit_id: number }) => u.unit_type === 'room',
     );
-    expect(units.length).toBe(2);
-    expect(units.map((u: { unit_id: number }) => u.unit_id).sort()).toEqual([10, 11]);
+    expect(units.length).toBe(1);
+    expect(units[0].unit_id).toBe(10);
   });
 });

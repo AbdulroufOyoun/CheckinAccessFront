@@ -17,6 +17,8 @@ export function incrementRoomNumber(start: string, offset: number): string {
   return prefix + (next.length >= digits.length ? next : next.padStart(digits.length, '0'));
 }
 
+import type { RoomPurpose } from '../../../shared/room-purpose';
+
 export interface RoomDraft {
   key: number;
   number: string;
@@ -24,4 +26,5 @@ export interface RoomDraft {
   capacity: number;
   suite_id: number | null;
   room_type_id: number | null;
+  purpose: RoomPurpose;
 }
