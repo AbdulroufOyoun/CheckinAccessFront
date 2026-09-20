@@ -34,7 +34,7 @@
           <tr>
             <th>{{ 'EDU_CA_STUDENT' | translate }}</th>
             <th>{{ 'EDU_CA_CONTACT' | translate }}</th>
-            <th>{{ 'EDU_CA_COMPOUNDS' | translate }}</th>
+            <th>{{ 'EDU_CA_GRANTS' | translate }}</th>
             <th>{{ 'EDU_CA_ACTIONS' | translate }}</th>
           </tr>
         </thead>
@@ -49,8 +49,8 @@
               </td>
               <td>
                 <div class="ca-chips">
-                  @for (compound of row.compounds; track compound.id) {
-                    <span class="edu-ui__badge edu-ui__badge--on">{{ compoundLabel(compound) }}</span>
+                  @for (grant of listGrantsForRow(row); track grant.type + ':' + grant.id) {
+                    <span class="edu-ui__badge edu-ui__badge--on">{{ grantChipText(grant) }}</span>
                   }
                 </div>
               </td>
@@ -74,8 +74,8 @@
         </div>
         <div class="mobile-card__meta">{{ contactLabel(row.user) }}</div>
         <div class="mobile-card__row ca-chips">
-          @for (compound of row.compounds; track compound.id) {
-          <span class="mobile-card__chip edu-ui__badge edu-ui__badge--on">{{ compoundLabel(compound) }}</span>
+          @for (grant of listGrantsForRow(row); track grant.type + ':' + grant.id) {
+          <span class="mobile-card__chip edu-ui__badge edu-ui__badge--on">{{ grantChipText(grant) }}</span>
           }
         </div>
         <div class="mobile-card__actions">
@@ -93,7 +93,7 @@
 @if (dialogOpen) {
   <div class="ca-overlay" (click)="closeDialog()">
     <div
-      class="as ca-dlg"
+      class="as ca-dlg ca-dlg--wide"
       role="dialog"
       aria-modal="true"
       [class.as--rtl]="isRTL"
@@ -127,7 +127,7 @@
           <div class="ca-steps__line" [class.is-on]="!!selectedStudent"></div>
           <div class="ca-steps__item" [class.is-on]="!!selectedStudent">
             <span>2</span>
-            <small>{{ 'EDU_CA_STEP_COMPOUNDS' | translate }}</small>
+            <small>{{ 'EDU_CA_STEP_ACCESS' | translate }}</small>
           </div>
         </div>
 
@@ -206,43 +206,124 @@
 
           <div class="as__field">
             <div class="ca-compounds__head">
-              <span class="as__label">{{ 'EDU_CA_PICK_COMPOUNDS' | translate }} <i>*</i></span>
-              @if (compounds.length) {
-                <div class="ca-compounds__tools">
-                  <button type="button" (click)="selectAllCompounds()">{{ 'EDU_CA_SELECT_ALL' | translate }}</button>
-                  <button type="button" (click)="clearCompounds()">{{ 'EDU_CA_CLEAR' | translate }}</button>
-                </div>
-              }
+              <span class="as__label">{{ 'EDU_CA_PICK_ACCESS' | translate }} <i>*</i></span>
+              <div class="ca-compounds__tools">
+                <button type="button" (click)="clearGrants()">{{ 'EDU_CA_CLEAR' | translate }}</button>
+              </div>
             </div>
-            <p class="ca-hint">{{ 'EDU_CA_LOCKS_HINT' | translate }}</p>
+            <p class="ca-hint">{{ 'EDU_CA_GRANULAR_HINT' | translate }}</p>
 
-            @if (!compounds.length) {
+            @if (treeLoading) {
+              <p class="ca-empty">{{ 'LOADING' | translate }}</p>
+            } @else if (!treeCompounds.length) {
               <p class="ca-empty">{{ 'EDU_CA_NO_COMPOUNDS' | translate }}</p>
             } @else {
-              <div class="ca-compounds" role="group" [attr.aria-label]="'EDU_CA_PICK_COMPOUNDS' | translate">
-                @for (compound of compounds; track compound.id) {
-                  <button
-                    type="button"
-                    class="ca-compound"
-                    [class.ca-compound--on]="isSelected(compound.id)"
-                    (click)="toggleCompound(compound.id)"
-                    [attr.aria-pressed]="isSelected(compound.id)"
-                  >
-                    <span class="ca-compound__icon" aria-hidden="true">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
-                      </svg>
-                    </span>
-                    <span class="ca-compound__text">
-                      <strong>{{ compound.name || ('#' + compound.id) }}</strong>
-                      <small>{{ compound.number || ('EDU_CA_ALL_LOCKS' | translate) }}</small>
-                    </span>
-                    <span class="ca-compound__check" aria-hidden="true"></span>
-                  </button>
+              <div class="ca-tree" role="group" [attr.aria-label]="'EDU_CA_PICK_ACCESS' | translate">
+                @for (compound of treeCompounds; track compound.id) {
+                  <div class="ca-tree__compound">
+                    <div class="ca-tree__row ca-tree__row--head">
+                      <button type="button" class="ca-tree__expand" (click)="toggleCompoundExpand(compound.id)" [attr.aria-expanded]="isCompoundExpanded(compound.id)">
+                        {{ isCompoundExpanded(compound.id) ? '▾' : '▸' }}
+                      </button>
+                      <label class="ca-tree__check ca-tree__check--grow">
+                        <input type="checkbox" [checked]="isGrantSelected('compound', compound.id)" (change)="toggleGrant('compound', compound.id)" />
+                        <span><strong>{{ compound.name || ('#' + compound.id) }}</strong> <small>{{ 'EDU_CA_SCOPE_COMPOUND' | translate }}</small></span>
+                      </label>
+                      <button type="button" class="ca-tree__quick" (click)="selectAllInCompound(compound.id, $event)">
+                        {{ 'EDU_CA_SELECT_ALL_HERE' | translate }}
+                      </button>
+                    </div>
+
+                    @if (isCompoundExpanded(compound.id)) {
+                      @for (building of buildingsForCompound(compound.id); track building.id) {
+                        <div class="ca-tree__block">
+                          <div class="ca-tree__row ca-tree__row--indent">
+                            <label class="ca-tree__check ca-tree__check--grow">
+                              <input type="checkbox" [checked]="isGrantSelected('building', building.id)" (change)="toggleGrant('building', building.id)" />
+                              <span>{{ building.name || building.number || ('#' + building.id) }} · {{ 'EDU_CA_SCOPE_BUILDING' | translate }}</span>
+                            </label>
+                            <button type="button" class="ca-tree__quick" (click)="selectAllInBuilding(building, $event)">
+                              {{ 'EDU_CA_SELECT_ALL_HERE' | translate }}
+                            </button>
+                          </div>
+
+                          @for (floor of building.floors || []; track floor.id) {
+                            <div class="ca-tree__floor">
+                              <div class="ca-tree__row ca-tree__row--indent2">
+                                <label class="ca-tree__check ca-tree__check--grow">
+                                  <input type="checkbox" [checked]="isGrantSelected('floor', floor.id)" (change)="toggleGrant('floor', floor.id)" />
+                                  <span>{{ 'EDU_CA_FLOOR' | translate }} {{ floor.number }}</span>
+                                </label>
+                                <button type="button" class="ca-tree__quick" (click)="selectAllInFloor(floor, $event)">
+                                  {{ 'EDU_CA_SELECT_ALL_HERE' | translate }}
+                                </button>
+                              </div>
+
+                              @for (suite of floor.suites || []; track suite.id) {
+                                <div class="ca-tree__row ca-tree__row--indent3">
+                                  <label class="ca-tree__check ca-tree__check--grow">
+                                    <input type="checkbox" [checked]="isGrantSelected('suite', suite.id)" (change)="toggleGrant('suite', suite.id)" />
+                                    <span>{{ suite.name || suite.number || ('#' + suite.id) }} · {{ 'EDU_CA_SCOPE_SUITE' | translate }}</span>
+                                  </label>
+                                  <button type="button" class="ca-tree__quick ca-tree__quick--sm" (click)="selectAllInSuite(suite, $event)">
+                                    {{ 'EDU_CA_SELECT_ALL_HERE' | translate }}
+                                  </button>
+                                </div>
+                                @for (room of suite.rooms || []; track room.id) {
+                                  <label class="ca-tree__check ca-tree__check--indent4">
+                                    <input type="checkbox" [checked]="isGrantSelected('room', room.id)" (change)="toggleGrant('room', room.id)" />
+                                    <span>{{ room.name || room.number || ('#' + room.id) }} · {{ 'EDU_CA_SCOPE_ROOM' | translate }}</span>
+                                  </label>
+                                }
+                              }
+
+                              @for (room of floor.rooms || []; track room.id) {
+                                <label class="ca-tree__check ca-tree__check--indent3">
+                                  <input type="checkbox" [checked]="isGrantSelected('room', room.id)" (change)="toggleGrant('room', room.id)" />
+                                  <span>{{ room.name || room.number || ('#' + room.id) }} · {{ 'EDU_CA_SCOPE_ROOM' | translate }}</span>
+                                </label>
+                              }
+
+                              @for (facility of floor.facilities || []; track facility.id) {
+                                <label class="ca-tree__check ca-tree__check--indent3">
+                                  <input type="checkbox" [checked]="isGrantSelected('facility', facility.id)" (change)="toggleGrant('facility', facility.id)" />
+                                  <span>{{ facility.name || ('#' + facility.id) }} · {{ 'EDU_CA_SCOPE_FACILITY' | translate }}</span>
+                                </label>
+                              }
+                            </div>
+                          }
+
+                          @for (gate of buildingGates(building.id); track gate.id) {
+                            <label class="ca-tree__check ca-tree__check--indent2">
+                              <input type="checkbox" [checked]="isGrantSelected('gate', gate.id)" (change)="toggleGrant('gate', gate.id)" />
+                              <span>{{ gate.name || ('#' + gate.id) }} · {{ 'EDU_CA_SCOPE_GATE' | translate }}</span>
+                            </label>
+                          }
+
+                          @for (parking of building.parkings || []; track parking.id) {
+                            <label class="ca-tree__check ca-tree__check--indent2">
+                              <input type="checkbox" [checked]="isGrantSelected('parking', parking.id)" (change)="toggleGrant('parking', parking.id)" />
+                              <span>{{ parking.name || ('#' + parking.id) }} · {{ 'EDU_CA_SCOPE_PARKING' | translate }}</span>
+                            </label>
+                          }
+                        </div>
+                      }
+
+                      @if (compoundLevelGates(compound.id).length) {
+                        <p class="ca-tree__section">{{ 'EDU_CA_COMPOUND_GATES' | translate }}</p>
+                        @for (gate of compoundLevelGates(compound.id); track gate.id) {
+                          <label class="ca-tree__check ca-tree__check--indent">
+                            <input type="checkbox" [checked]="isGrantSelected('gate', gate.id)" (change)="toggleGrant('gate', gate.id)" />
+                            <span>{{ gate.name || ('#' + gate.id) }}</span>
+                          </label>
+                        }
+                      }
+                    }
+                  </div>
                 }
               </div>
               <p class="ca-count">
-                {{ 'EDU_CA_SELECTED_COUNT' | translate: { n: selectedCount, total: compounds.length } }}
+                {{ 'EDU_CA_GRANTS_SELECTED' | translate: { n: selectedCount } }}
               </p>
               @if (editingUserId != null && selectedCount === 0) {
                 <p class="ca-hint ca-hint--warn">{{ 'EDU_CA_EMPTY_SELECTION_HINT' | translate }}</p>

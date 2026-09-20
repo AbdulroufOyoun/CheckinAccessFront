@@ -9,6 +9,7 @@ import {
   type CompoundAccessRow,
   type CompoundAccessStudent,
   type CompoundAccessUser,
+  type PropertyAccessGrant,
 } from './compound-access.service';
 
 export interface EduSubject {
@@ -408,7 +409,7 @@ export class EducationService {
     return this.compoundAccess.searchUsers(query);
   }
 
-  syncCompoundAccess(userId: number, compoundIds: number[]): Promise<ApiResponse<CompoundAccessRow>> {
-    return this.compoundAccess.sync(userId, compoundIds);
+  syncCompoundAccess(userId: number, grants: PropertyAccessGrant[]): Promise<ApiResponse<CompoundAccessRow>> {
+    return this.compoundAccess.sync(userId, grants);
   }
 }

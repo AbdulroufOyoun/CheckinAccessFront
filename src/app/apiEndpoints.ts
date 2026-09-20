@@ -567,4 +567,8 @@ export class Apiendpointd {
   public static compoundAccessStudent(userId: number | string): string {
     return `${this.compoundAccess}/students/${userId}`;
   }
+
+  public static get compoundAccessPropertyTree(): string {
+    return this.compoundAccess + '/property-tree';
+  }
 }

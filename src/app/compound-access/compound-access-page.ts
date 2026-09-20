@@ -8,11 +8,38 @@ import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
 import { SnackbarService } from '../services/snackbar.service';
 import { ConfirmDialog } from '../dialog/confirm-dialog/confirm-dialog';
 import {
-  CompoundAccessCompound,
   CompoundAccessRow,
   CompoundAccessUser,
   CompoundAccessService,
+  PropertyAccessGrant,
+  PropertyAccessGrantDisplay,
+  PropertyAccessScopeType,
 } from '../services/compound-access.service';
+import { PropertyPageBundle } from '../services/property-tree-cache.service';
+
+type TreeFloor = {
+  id: number;
+  number: number | string;
+  building_id: number;
+  suites?: TreeSuite[];
+  rooms?: TreeRoom[];
+  facilities?: TreeFacility[];
+};
+
+type TreeSuite = { id: number; number?: string | number; name?: string | null; floor_id?: number; rooms?: TreeRoom[] };
+type TreeRoom = { id: number; number?: string | number; name?: string | null };
+type TreeFacility = { id: number; name?: string | null };
+type TreeBuilding = {
+  id: number;
+  name?: string;
+  number?: string;
+  compound_id?: number | null;
+  floors?: TreeFloor[];
+  parkings?: TreeParking[];
+  elevators?: { id: number; name?: string }[];
+};
+type TreeParking = { id: number; name?: string; building_id?: number | null; compound_id?: number | null };
+type TreeGate = { id: number; name?: string; compound_id?: number; building_id?: number | null };
 
 @Component({
   selector: 'app-compound-access-page',
@@ -37,10 +64,13 @@ export class CompoundAccessPage implements OnInit {
   initialLoad = true;
   saving = false;
   rows: CompoundAccessRow[] = [];
-  compounds: CompoundAccessCompound[] = [];
   filter = '';
 
   dialogOpen = false;
+  treeLoading = false;
+  propertyTree: PropertyPageBundle | null = null;
+  expandedCompounds = new Set<number>();
+
   editingUserId: number | null = null;
   studentQuery = '';
   studentHits: CompoundAccessUser[] = [];
@@ -48,7 +78,7 @@ export class CompoundAccessPage implements OnInit {
   studentMenuOpen = false;
   studentHighlight = 0;
   selectedStudent: CompoundAccessUser | null = null;
-  selectedCompoundIds = new Set<number>();
+  selectedGrantKeys = new Set<string>();
 
   private studentSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private studentSearchGen = 0;
@@ -68,13 +98,13 @@ export class CompoundAccessPage implements OnInit {
       const email = String(row.user?.email || '').toLowerCase();
       const mobile = String(row.user?.mobile || '').toLowerCase();
       const mobileDigits = mobile.replace(/\D+/g, '');
-      const compounds = row.compounds.map((c) => `${c.name || ''} ${c.number || ''}`).join(' ').toLowerCase();
+      const grants = (row.grants || []).map((g) => this.grantChipText(g)).join(' ').toLowerCase();
       return (
         name.includes(q) ||
         email.includes(q) ||
         mobile.includes(q) ||
         (digits.length >= 3 && mobileDigits.includes(digits)) ||
-        compounds.includes(q)
+        grants.includes(q)
       );
     });
   }
@@ -84,7 +114,7 @@ export class CompoundAccessPage implements OnInit {
   }
 
   get selectedCount(): number {
-    return this.selectedCompoundIds.size;
+    return this.selectedGrantKeys.size;
   }
 
   get canSave(): boolean {
@@ -118,6 +148,10 @@ export class CompoundAccessPage implements OnInit {
     return this.translate.instant('EDU_CA_PREVIEW_READY');
   }
 
+  get treeCompounds(): PropertyPageBundle['compounds'] {
+    return (this.propertyTree?.compounds || []).filter((c) => c.active !== false);
+  }
+
   ngOnInit(): void {
     this.isRTL =
       this.document.documentElement.getAttribute('dir') === 'rtl' ||
@@ -133,12 +167,13 @@ export class CompoundAccessPage implements OnInit {
   async load(): Promise<void> {
     this.loading = true;
     try {
-      const [rowsRes, compoundsRes] = await Promise.all([
-        this.compoundAccess.list(),
-        this.compoundAccess.listCompounds(),
-      ]);
-      this.rows = Array.isArray(rowsRes.data) ? rowsRes.data : [];
-      this.compounds = Array.isArray(compoundsRes.data) ? compoundsRes.data : [];
+      const rowsRes = await this.compoundAccess.list();
+      this.rows = (Array.isArray(rowsRes.data) ? rowsRes.data : []).map((row) => ({
+        ...row,
+        grants: row.grants ?? [],
+        grants_display: row.grants_display ?? row.grants ?? [],
+        compounds: row.compounds ?? [],
+      }));
     } catch {
       this.snackbar.show(this.translate.instant('EDU_CA_LOAD_FAILED'), 'error');
     } finally {
@@ -148,15 +183,34 @@ export class CompoundAccessPage implements OnInit {
     }
   }
 
+  async ensurePropertyTree(): Promise<void> {
+    if (this.propertyTree || this.treeLoading) {
+      return;
+    }
+    this.treeLoading = true;
+    this.cdr.detectChanges();
+    try {
+      const res = await this.compoundAccess.loadPropertyTree();
+      this.propertyTree = res.data ?? null;
+    } catch {
+      this.snackbar.show(this.translate.instant('EDU_CA_TREE_LOAD_FAILED'), 'error');
+    } finally {
+      this.treeLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   openCreate(): void {
     this.editingUserId = null;
     this.selectedStudent = null;
-    this.selectedCompoundIds = new Set();
+    this.selectedGrantKeys = new Set();
     this.studentQuery = '';
     this.studentHits = [];
     this.studentMenuOpen = false;
     this.studentHighlight = 0;
+    this.expandedCompounds = new Set();
     this.dialogOpen = true;
+    void this.ensurePropertyTree();
     this.focusStudentInput();
   }
 
@@ -170,11 +224,17 @@ export class CompoundAccessPage implements OnInit {
           mobile: row.user.mobile,
         }
       : { id: row.user_id };
-    this.selectedCompoundIds = new Set(row.compounds.map((c) => c.id));
+    this.selectedGrantKeys = new Set((row.grants || []).map((g) => this.grantKey(g.type, g.id)));
     this.studentQuery = this.studentLabel(this.selectedStudent);
     this.studentHits = [];
     this.studentMenuOpen = false;
+    this.expandedCompounds = new Set(
+      (row.grants || [])
+        .map((g) => g.compound_id)
+        .filter((id): id is number => typeof id === 'number' && id > 0),
+    );
     this.dialogOpen = true;
+    void this.ensurePropertyTree();
   }
 
   closeDialog(): void {
@@ -183,6 +243,171 @@ export class CompoundAccessPage implements OnInit {
     }
     this.dialogOpen = false;
     this.studentMenuOpen = false;
+  }
+
+  grantKey(type: string, id: number): string {
+    return `${type}:${id}`;
+  }
+
+  isGrantSelected(type: PropertyAccessScopeType, id: number): boolean {
+    return this.selectedGrantKeys.has(this.grantKey(type, id));
+  }
+
+  toggleGrant(type: PropertyAccessScopeType, id: number): void {
+    const key = this.grantKey(type, id);
+    const next = new Set(this.selectedGrantKeys);
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
+    this.selectedGrantKeys = next;
+  }
+
+  addGrants(grants: PropertyAccessGrant[]): void {
+    if (!grants.length) {
+      return;
+    }
+    const next = new Set(this.selectedGrantKeys);
+    for (const g of grants) {
+      next.add(this.grantKey(g.type, g.id));
+    }
+    this.selectedGrantKeys = next;
+    this.cdr.detectChanges();
+  }
+
+  selectAllInFloor(floor: TreeFloor, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.addGrants(this.grantEntriesForFloor(floor));
+  }
+
+  selectAllInBuilding(building: TreeBuilding, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.addGrants(this.grantEntriesForBuilding(building));
+  }
+
+  selectAllInCompound(compoundId: number, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const next = new Set(this.expandedCompounds);
+    next.add(compoundId);
+    this.expandedCompounds = next;
+    this.addGrants(this.grantEntriesForCompound(compoundId));
+  }
+
+  selectAllInSuite(suite: TreeSuite, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.addGrants(this.grantEntriesForSuite(suite));
+  }
+
+  private grantEntriesForSuite(suite: TreeSuite): PropertyAccessGrant[] {
+    const out: PropertyAccessGrant[] = [{ type: 'suite', id: suite.id }];
+    for (const room of suite.rooms || []) {
+      out.push({ type: 'room', id: room.id });
+    }
+    return out;
+  }
+
+  private grantEntriesForFloor(floor: TreeFloor): PropertyAccessGrant[] {
+    const out: PropertyAccessGrant[] = [{ type: 'floor', id: floor.id }];
+    for (const suite of floor.suites || []) {
+      out.push(...this.grantEntriesForSuite(suite));
+    }
+    for (const room of floor.rooms || []) {
+      out.push({ type: 'room', id: room.id });
+    }
+    for (const facility of floor.facilities || []) {
+      out.push({ type: 'facility', id: facility.id });
+    }
+    return out;
+  }
+
+  private grantEntriesForBuilding(building: TreeBuilding): PropertyAccessGrant[] {
+    const out: PropertyAccessGrant[] = [{ type: 'building', id: building.id }];
+    for (const floor of building.floors || []) {
+      out.push(...this.grantEntriesForFloor(floor));
+    }
+    for (const gate of this.buildingGates(building.id)) {
+      out.push({ type: 'gate', id: gate.id });
+    }
+    for (const parking of building.parkings || []) {
+      out.push({ type: 'parking', id: parking.id });
+    }
+    return out;
+  }
+
+  private grantEntriesForCompound(compoundId: number): PropertyAccessGrant[] {
+    const out: PropertyAccessGrant[] = [{ type: 'compound', id: compoundId }];
+    for (const building of this.buildingsForCompound(compoundId)) {
+      out.push(...this.grantEntriesForBuilding(building));
+    }
+    for (const gate of this.compoundLevelGates(compoundId)) {
+      out.push({ type: 'gate', id: gate.id });
+    }
+    return out;
+  }
+
+  clearGrants(): void {
+    this.selectedGrantKeys = new Set();
+  }
+
+  toggleCompoundExpand(compoundId: number): void {
+    const next = new Set(this.expandedCompounds);
+    if (next.has(compoundId)) {
+      next.delete(compoundId);
+    } else {
+      next.add(compoundId);
+    }
+    this.expandedCompounds = next;
+  }
+
+  isCompoundExpanded(compoundId: number): boolean {
+    return this.expandedCompounds.has(compoundId);
+  }
+
+  buildingsForCompound(compoundId: number): TreeBuilding[] {
+    const buildings = (this.propertyTree?.buildings || []) as TreeBuilding[];
+    return buildings.filter((b) => Number(b.compound_id) === compoundId);
+  }
+
+  compoundLevelGates(compoundId: number): TreeGate[] {
+    const buildingIds = new Set(this.buildingsForCompound(compoundId).map((b) => b.id));
+    return ((this.propertyTree?.gates || []) as TreeGate[]).filter(
+      (g) => Number(g.compound_id) === compoundId && (!g.building_id || !buildingIds.has(Number(g.building_id))),
+    );
+  }
+
+  compoundLevelParkings(compoundId: number): TreeParking[] {
+    const buildingIds = new Set(this.buildingsForCompound(compoundId).map((b) => b.id));
+    const all: TreeParking[] = [];
+    for (const b of this.buildingsForCompound(compoundId)) {
+      for (const p of b.parkings || []) {
+        all.push(p as TreeParking);
+      }
+    }
+    return all.filter((p) => !p.building_id || !buildingIds.has(Number(p.building_id)));
+  }
+
+  buildingGates(buildingId: number): TreeGate[] {
+    return ((this.propertyTree?.gates || []) as TreeGate[]).filter((g) => Number(g.building_id) === buildingId);
+  }
+
+  scopeTypeLabel(type: PropertyAccessScopeType): string {
+    return this.translate.instant(`EDU_CA_SCOPE_${type.toUpperCase()}`);
+  }
+
+  grantChipText(grant: PropertyAccessGrantDisplay): string {
+    const typeLabel = this.scopeTypeLabel(grant.type);
+    const name = grant.label || `#${grant.id}`;
+    return `${typeLabel}: ${name}`;
+  }
+
+  /** Summary chips in the main table (backend-collapsed). */
+  listGrantsForRow(row: CompoundAccessRow): PropertyAccessGrantDisplay[] {
+    return row.grants_display?.length ? row.grants_display : row.grants ?? [];
   }
 
   changeStudent(): void {
@@ -196,14 +421,6 @@ export class CompoundAccessPage implements OnInit {
     this.focusStudentInput();
   }
 
-  selectAllCompounds(): void {
-    this.selectedCompoundIds = new Set(this.compounds.map((c) => c.id));
-  }
-
-  clearCompounds(): void {
-    this.selectedCompoundIds = new Set();
-  }
-
   initials(user: CompoundAccessUser | null | undefined): string {
     const name = (user?.name || '').trim();
     if (!name) {
@@ -214,20 +431,6 @@ export class CompoundAccessPage implements OnInit {
       return parts[0].slice(0, 2).toUpperCase();
     }
     return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-
-  isSelected(id: number): boolean {
-    return this.selectedCompoundIds.has(id);
-  }
-
-  toggleCompound(id: number): void {
-    const next = new Set(this.selectedCompoundIds);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    this.selectedCompoundIds = next;
   }
 
   onStudentQueryChange(value: string): void {
@@ -350,6 +553,15 @@ export class CompoundAccessPage implements OnInit {
     return parts.length ? parts.join(' · ') : '—';
   }
 
+  grantsFromSelection(): { type: PropertyAccessScopeType; id: number }[] {
+    return [...this.selectedGrantKeys].map((key) => {
+      const sep = key.indexOf(':');
+      const type = key.slice(0, sep) as PropertyAccessScopeType;
+      const id = Number(key.slice(sep + 1));
+      return { type, id };
+    });
+  }
+
   async save(): Promise<void> {
     const userId = this.selectedStudent?.id ?? this.editingUserId;
     if (!userId) {
@@ -357,12 +569,12 @@ export class CompoundAccessPage implements OnInit {
       return;
     }
     if (this.editingUserId == null && this.selectedCount === 0) {
-      this.snackbar.show(this.translate.instant('EDU_CA_PICK_COMPOUND_FIRST'), 'error');
+      this.snackbar.show(this.translate.instant('EDU_CA_PICK_GRANT_FIRST'), 'error');
       return;
     }
     this.saving = true;
     try {
-      await this.compoundAccess.sync(userId, [...this.selectedCompoundIds]);
+      await this.compoundAccess.sync(userId, this.grantsFromSelection());
       this.dialogOpen = false;
       this.snackbar.show(this.translate.instant('EDU_CA_SAVED'), 'success');
       await this.load();
@@ -395,7 +607,7 @@ export class CompoundAccessPage implements OnInit {
 
   private async openRevokeConfirm(row: CompoundAccessRow): Promise<boolean> {
     const studentName = row.user?.name || `#${row.user_id}`;
-    const compounds = row.compounds.map((c) => this.compoundLabel(c)).join(' · ');
+    const grants = this.listGrantsForRow(row).map((g) => this.grantChipText(g)).join(' · ');
 
     const ref = this.dialogMobile.open(ConfirmDialog, {
       panelClass: ['custom-dialog', 'subject-dialog'],
@@ -410,18 +622,12 @@ export class CompoundAccessPage implements OnInit {
           initials: this.initials(row.user),
           title: studentName,
           subtitle: this.contactLabel(row.user),
-          meta: [
-            { labelKey: 'EDU_CA_COMPOUNDS', value: compounds || '—' },
-          ],
+          meta: [{ labelKey: 'EDU_CA_GRANTS', value: grants || '—' }],
         },
       },
     });
 
     return (await firstValueFrom(ref.afterClosed())) === true;
-  }
-
-  compoundLabel(compound: CompoundAccessCompound): string {
-    return [compound.name, compound.number].filter(Boolean).join(' · ') || `#${compound.id}`;
   }
 
   @HostListener('document:click', ['$event'])
