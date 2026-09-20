@@ -1,0 +1,89 @@
+<section class="user-detail" [class.user-detail--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="user-detail__top">
+    <button type="button" class="user-detail__back" (click)="back()">
+      {{ 'VIS_DETAIL_BACK' | translate }}
+    </button>
+    @if (visitor && !loading) {
+      <button type="button" class="user-detail__edit" (click)="openEditDialog()">
+        {{ 'VIS_EDIT' | translate }}
+      </button>
+    }
+  </header>
+
+  @if (loading) {
+    <app-page-skeleton variant="table" [rows]="6" [cols]="2" />
+  } @else if (!visitor) {
+    <p class="user-detail__empty">{{ 'VIS_DETAIL_NOT_FOUND' | translate }}</p>
+  } @else {
+    <div class="user-detail__hero">
+      <div class="user-detail__avatar" [style.background]="avatarColor" [style.box-shadow]="'0 4px 16px ' + avatarShadow">
+        {{ initials }}
+      </div>
+      <div>
+        <h1>{{ visitor.name }}</h1>
+        <p>{{ visitor.email }}</p>
+        <p>{{ visitor.mobile }}</p>
+        <span class="user-detail__badge" [class.user-detail__badge--off]="!(visitor.active === true || visitor.active === 1)">
+          {{ ((visitor.active === true || visitor.active === 1) ? 'VIS_ACTIVE' : 'VIS_INACTIVE') | translate }}
+        </span>
+      </div>
+    </div>
+
+    <section class="visitor-events">
+      <header class="visitor-events__head">
+        <h2>{{ 'VIS_DETAIL_ASSIGNED' | translate }}</h2>
+        <span>{{ assignedEvents.length }}</span>
+      </header>
+      @if (!assignedEvents.length) {
+        <p class="visitor-events__empty">{{ 'VIS_DETAIL_ASSIGNED_EMPTY' | translate }}</p>
+      } @else {
+        <div class="visitor-events__list">
+          @for (evt of assignedEvents; track evt.id) {
+            <article class="visitor-events__card">
+              <div class="visitor-events__card-top">
+                <strong>{{ evt.name }}</strong>
+                <span class="visitor-events__status visitor-events__status--{{ evt.status }}">
+                  {{ statusLabel(evt.status) | translate }}
+                </span>
+              </div>
+              <p>{{ formatDate(evt.start_date) }} → {{ formatDate(evt.end_date) }}</p>
+              @if (evt.rooms?.length) {
+                <small>{{ 'EVT_ROOMS' | translate }}: {{ evt.rooms?.length ?? 0 }}</small>
+              }
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="visitor-events visitor-events--entered">
+      <header class="visitor-events__head">
+        <h2>{{ 'VIS_DETAIL_ENTERED' | translate }}</h2>
+        <span>{{ enteredEvents.length }}</span>
+      </header>
+      @if (!enteredEvents.length) {
+        <p class="visitor-events__empty">{{ 'VIS_DETAIL_ENTERED_EMPTY' | translate }}</p>
+      } @else {
+        <div class="visitor-events__list">
+          @for (evt of enteredEvents; track evt.id) {
+            <article class="visitor-events__card">
+              <div class="visitor-events__card-top">
+                <strong>{{ evt.name }}</strong>
+                <span class="visitor-events__status visitor-events__status--{{ evt.status }}">
+                  {{ statusLabel(evt.status) | translate }}
+                </span>
+              </div>
+              <p>{{ formatDate(evt.start_date) }} → {{ formatDate(evt.end_date) }}</p>
+              @if (evt.viewed?.last_viewed_at) {
+                <small>{{ 'VIS_DETAIL_LAST_VIEW' | translate }}: {{ evt.viewed?.last_viewed_at | date: 'medium' }}</small>
+              }
+              @if (evt.viewed?.view_count) {
+                <small>{{ 'VIS_DETAIL_VIEW_COUNT' | translate: { n: evt.viewed?.view_count ?? 0 } }}</small>
+              }
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+</section>

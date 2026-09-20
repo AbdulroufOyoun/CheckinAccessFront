@@ -1,0 +1,80 @@
+<section class="user-unlocks" [class.user-unlocks--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="user-unlocks__top">
+    <button type="button" class="user-unlocks__back" (click)="back()">
+      {{ 'USR_UNLOCKS_BACK' | translate }}
+    </button>
+    @if (user) {
+      <a class="user-unlocks__link" [routerLink]="['/Users', user.id]">{{ user.name }}</a>
+    }
+  </header>
+
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">{{ 'USR_UNLOCKS_TITLE' | translate }}</h1>
+      <p class="page-subtitle">
+        @if (user) {
+          {{ user.name }}
+        }
+        @if (total) {
+          · {{ 'REP_PAGE_RANGE' | translate: { from: pageFrom, to: pageTo, total: total } }}
+        }
+      </p>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-left">
+      <div class="filter-group">
+        <span class="filter-label">{{ 'REP_FILTER_FROM' | translate }}</span>
+        <input class="rep-date" type="date" [(ngModel)]="start" (ngModelChange)="onFiltersChange()" />
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">{{ 'REP_FILTER_TO' | translate }}</span>
+        <input class="rep-date" type="date" [(ngModel)]="end" (ngModelChange)="onFiltersChange()" />
+      </div>
+    </div>
+  </div>
+
+  @if (loading && !records.length) {
+    <app-page-skeleton variant="table" [rows]="8" [cols]="4" />
+  } @else if (!records.length) {
+    <div class="rep-empty">{{ 'USR_UNLOCKS_EMPTY' | translate }}</div>
+  } @else {
+    <div class="table-card">
+      <table class="rep-table">
+        <thead>
+          <tr>
+            <th>{{ 'REP_COL_WHEN' | translate }}</th>
+            <th>{{ 'REP_COL_ROOM' | translate }}</th>
+            <th>{{ 'REP_COL_ROOM_ID' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of records; track row.id) {
+            <tr>
+              <td>{{ row.created_at || '—' }}</td>
+              <td>{{ row.room_number || '—' }}</td>
+              <td>{{ row.room_id ?? '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (lastPage > 1) {
+      <nav class="rep-pager" [attr.aria-label]="'PAG_NAV' | translate">
+        <button type="button" class="rep-pager__btn" (click)="goToPage(currentPage - 1)"
+          [disabled]="currentPage <= 1 || loading">
+          {{ 'PAG_PREV' | translate }}
+        </button>
+        <span class="rep-pager__info">
+          {{ 'PAG_PAGE' | translate: { current: currentPage, last: lastPage } }}
+        </span>
+        <button type="button" class="rep-pager__btn" (click)="goToPage(currentPage + 1)"
+          [disabled]="currentPage >= lastPage || loading">
+          {{ 'PAG_NEXT' | translate }}
+        </button>
+      </nav>
+    }
+  }
+</section>

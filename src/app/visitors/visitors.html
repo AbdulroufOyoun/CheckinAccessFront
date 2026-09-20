@@ -1,0 +1,99 @@
+<div class="users-page" [class.users-page--rtl]="isRTL">
+  <div class="page-header">
+    <div class="page-header__text">
+      <h1 class="page-header__title">{{ 'VIS_PAGE_TITLE' | translate }}</h1>
+      <p class="page-header__subtitle">
+        @if (loading) {
+        <span class="users-skel-line" aria-hidden="true"></span>
+        } @else {
+        {{ 'VIS_PAGE_COUNT' | translate: { n: total } }}
+        }
+      </p>
+      <p class="page-header__subtitle">{{ 'VIS_PAGE_HINT' | translate }}</p>
+    </div>
+    <button class="btn-add-user" type="button" (click)="openAddDialog()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      {{ 'VIS_NEW' | translate }}
+    </button>
+  </div>
+
+  <div class="search-bar" [class.search-bar--has-value]="searchQuery !== ''">
+    <span class="search-bar__icon search-bar__icon--start">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    </span>
+    <input type="text" class="search-bar__input" [placeholder]="'VIS_SEARCH' | translate"
+      [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" />
+    @if (searchQuery) {
+    <button class="search-bar__clear" type="button" [attr.aria-label]="'VIS_CLEAR_SEARCH' | translate"
+      (click)="clearSearch()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+    }
+  </div>
+
+  @if (loading) {
+  <app-page-skeleton variant="cards" [cards]="6" />
+  } @else if (!visitors.length) {
+  <div class="empty-state">
+    <div class="empty-state__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    </div>
+    <p class="empty-state__text">{{ (searchQuery ? 'VIS_EMPTY_SEARCH' : 'VIS_EMPTY') | translate }}</p>
+    @if (!searchQuery) {
+    <button class="btn-add-user" type="button" (click)="openAddDialog()">{{ 'VIS_CREATE_FIRST' | translate }}</button>
+    }
+  </div>
+  } @else {
+  <div class="users-grid">
+    @for (visitor of visitors; track visitor.id) {
+    <div class="user-card" [style.animation-delay]="visitor.delay">
+      <div class="user-card__top">
+        <div class="user-card__avatar-wrap">
+          <div class="user-card__avatar" [style.background]="visitor.color"
+            [style.box-shadow]="'0 4px 12px ' + visitor.shadow">
+            {{ visitor.initials }}
+          </div>
+          <div class="user-card__info">
+            <p class="user-card__name">{{ visitor.name }}</p>
+            <p class="user-card__nationality">{{ visitor.mobile }}</p>
+          </div>
+        </div>
+        <span class="user-card__active-badge" [class.user-card__active-badge--off]="!visitor.isActive">
+          {{ (visitor.isActive ? 'VIS_ACTIVE' : 'VIS_INACTIVE') | translate }}
+        </span>
+      </div>
+      <div class="user-card__details">
+        <div class="user-card__detail-row"><span>{{ visitor.email }}</span></div>
+      </div>
+      <div class="user-card__actions">
+        <a class="user-card__btn user-card__btn--edit" [routerLink]="['/Visitors', visitor.id]">
+          {{ 'VIS_VIEW' | translate }}
+        </a>
+        <button class="user-card__btn user-card__btn--edit" type="button"
+          (click)="openEditDialog(visitor)">{{ 'VIS_EDIT' | translate }}</button>
+        <button class="user-card__btn user-card__btn--edit" type="button"
+          (click)="removeVisitor(visitor)">{{ 'VIS_REMOVE' | translate }}</button>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>
