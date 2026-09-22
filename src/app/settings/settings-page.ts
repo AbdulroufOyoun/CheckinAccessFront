@@ -5,11 +5,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ChangePassword } from '../dialog/change-password/change-password';
 import { AuthService } from '../services/auth.service';
 import { LocaleService } from '../services/locale.service';
+import { TenantSettingsPanel } from './tenant-settings-panel';
 
 @Component({
   selector: 'app-settings-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, TenantSettingsPanel],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.css',
 })
@@ -22,12 +23,17 @@ export class SettingsPage implements OnInit {
   currentLang: 'ar' | 'en' = 'en';
   adminName = '';
   adminEmail = '';
+  canManageTenantSettings = false;
 
   ngOnInit(): void {
     this.currentLang = this.locale.lang();
     const user = this.auth.getUser();
     this.adminName = user?.name || '';
     this.adminEmail = user?.email || '';
+    void this.auth.ensureMe().then((u) => {
+      this.canManageTenantSettings = u.can('manage tenant settings');
+      this.cdr.detectChanges();
+    });
   }
 
   toggleLang(): void {

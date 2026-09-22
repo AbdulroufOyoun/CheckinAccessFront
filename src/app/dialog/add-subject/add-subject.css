@@ -219,7 +219,7 @@
 }
 
 .as__input:focus {
-  border-color: var(--blue-500, #3B82F6);
+  border-color: var(--blue-500, var(--tenant-primary-light, #3b82f6));
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
@@ -264,12 +264,12 @@
 
 .as__chip:hover {
   border-color: var(--blue-200, #BFDBFE);
-  color: var(--blue-600, #2563EB);
+  color: var(--blue-600, var(--tenant-primary, #2563eb));
 }
 
 .as__chip--on {
-  background: var(--blue-600, #2563EB);
-  border-color: var(--blue-600, #2563EB);
+  background: var(--blue-600, var(--tenant-primary, #2563eb));
+  border-color: var(--blue-600, var(--tenant-primary, #2563eb));
   color: #fff;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
@@ -382,7 +382,7 @@
 
 .as__choice--on .as__choice-icon {
   background: var(--blue-50, #EFF6FF);
-  color: var(--blue-600, #2563EB);
+  color: var(--blue-600, var(--tenant-primary, #2563eb));
   border: 1px solid var(--blue-200, #BFDBFE);
 }
 
@@ -417,8 +417,8 @@
 }
 
 .as__choice--on .as__choice-check {
-  border-color: var(--blue-600, #2563EB);
-  background: var(--blue-600, #2563EB);
+  border-color: var(--blue-600, var(--tenant-primary, #2563eb));
+  background: var(--blue-600, var(--tenant-primary, #2563eb));
 }
 
 .as__choice--on .as__choice-check::after {
@@ -477,7 +477,7 @@
 }
 
 .as__btn--primary {
-  background: linear-gradient(135deg, var(--blue-600, #2563EB), var(--blue-700, #1D4ED8));
+  background: linear-gradient(135deg, var(--blue-600, var(--tenant-primary, #2563eb)), var(--blue-700, var(--tenant-primary-dark, #1d4ed8)));
   color: #fff;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
   min-width: 150px;

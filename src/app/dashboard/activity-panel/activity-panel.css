@@ -108,7 +108,7 @@
 }
 
 .activity-item__dot--booking {
-  background: #2563EB;
+  background: var(--tenant-primary, #2563eb);
 }
 
 .activity-item__dot-wrap--checkin {
@@ -192,7 +192,7 @@
 
 .activity-item__room--booking {
   background: #EFF6FF;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .activity-item__room--checkin {

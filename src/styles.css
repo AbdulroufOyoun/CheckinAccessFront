@@ -19,9 +19,9 @@
   --blue-50: #EFF6FF;
   --blue-100: #DBEAFE;
   --blue-200: #BFDBFE;
-  --blue-500: #3B82F6;
-  --blue-600: #2563EB;
-  --blue-700: #1D4ED8;
+  --blue-500: var(--tenant-primary-light, #3b82f6);
+  --blue-600: var(--tenant-primary, #2563eb);
+  --blue-700: var(--tenant-primary-dark, #1d4ed8);
 
   --teal-500: #0D9488;
 
@@ -77,7 +77,28 @@
   --bottom-nav-h: 64px;
 
   /* Bootstrap brand overrides */
-  --bs-primary: #2563eb;
+  --bs-primary: var(--tenant-primary, #2563eb);
+  --bs-primary-rgb: 37, 99, 235;
+
+  /* Tenant brand (overridden at runtime on html — see tenant-brand.util.ts) */
+  --tenant-primary: var(--bs-primary);
+  --tenant-primary-dark: var(--tenant-primary-dark, #1d4ed8);
+  --tenant-primary-light: var(--tenant-primary-light, #3b82f6);
+  --tenant-primary-rgb: var(--bs-primary-rgb);
+  --tenant-navy: #0c1a3a;
+  --tenant-gradient: linear-gradient(135deg, var(--tenant-primary) 0%, var(--tenant-primary-dark) 100%);
+  --tenant-gradient-auth: linear-gradient(135deg, var(--tenant-primary-dark) 0%, var(--teal-500) 100%);
+  --tenant-gradient-auth-h: linear-gradient(90deg, var(--tenant-primary) 0%, var(--teal-500) 100%);
+  --rp-navy: var(--tenant-navy);
+  --hol-navy: var(--tenant-navy);
+  --bc-accent: var(--tenant-primary);
+  --ud-accent: var(--tenant-primary);
+
+  /* Semantic status tokens (override per tenant via appearance where mapped) */
+  --status-available: #16a34a;
+  --status-occupied: #dc2626;
+  --status-hold: #d97706;
+  --status-inactive: #6b7280;
   --bs-body-font-family: var(--font-en);
   --bs-border-radius: 10px;
 
@@ -100,13 +121,13 @@
 
 
 
-  --bg-page: #eef2f7;
+  --bg-page: var(--surface-bg, #eef2f7);
   --bg-card: #ffffff;
   --border: #e2e8f0;
   --border-light: #f1f5f9;
 
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
+  --primary: var(--tenant-primary, var(--tenant-primary-light, #3b82f6));
+  --primary-dark: var(--tenant-primary-dark, var(--tenant-primary, #2563eb));
   --teal: #14b8a6;
   --teal-dark: #0d9488;
   --purple: #8b5cf6;
@@ -544,6 +565,28 @@ body {
   .room-card:hover::before {
     animation: none !important;
   }
+}
+
+/* Tenant brand: Bootstrap + utilities follow runtime tokens on html */
+.btn-primary {
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-bg: var(--tenant-primary-dark, var(--bs-primary));
+  --bs-btn-hover-border-color: var(--tenant-primary-dark, var(--bs-primary));
+  --bs-btn-active-bg: var(--tenant-primary-dark, var(--bs-primary));
+  --bs-btn-active-border-color: var(--tenant-primary-dark, var(--bs-primary));
+}
+
+.text-primary {
+  color: var(--tenant-primary, var(--bs-primary)) !important;
+}
+
+.bg-primary {
+  background-color: var(--tenant-primary, var(--bs-primary)) !important;
+}
+
+.border-primary {
+  border-color: var(--tenant-primary, var(--bs-primary)) !important;
 }
 
 @media print {

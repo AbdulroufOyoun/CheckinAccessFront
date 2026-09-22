@@ -185,7 +185,7 @@
 }
 
 .as__input:focus {
-  border-color: #3b82f6;
+  border-color: var(--tenant-primary-light, #3b82f6);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
@@ -205,7 +205,7 @@
 .as__chip:hover {
   background: #eff6ff;
   border-color: #bfdbfe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .as__footer {
@@ -243,7 +243,7 @@
 }
 
 .as__btn--primary {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--tenant-primary, #2563eb), var(--tenant-primary-dark, #1d4ed8));
   color: #fff;
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
 }
@@ -275,7 +275,7 @@
 }
 
 .st-dlg__day--on {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   background: linear-gradient(180deg, #eff6ff, #dbeafe);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
@@ -302,7 +302,7 @@
 
 .st-dlg__clock-arrow {
   padding-bottom: 14px;
-  color: #2563eb;
+  color: var(--tenant-primary, #2563eb);
   font-weight: 700;
 }
 
@@ -310,7 +310,7 @@
   margin: 0;
   font-size: 0.8rem;
   font-weight: 650;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .st-dlg__duration--bad {
@@ -341,7 +341,7 @@
   padding: 0 8px;
   border-radius: 999px;
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 0.75rem;
   font-weight: 800;
   display: inline-flex;
@@ -403,7 +403,7 @@
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--tenant-primary, #2563eb), var(--tenant-primary-dark, #1d4ed8));
   color: #fff;
   display: grid;
   place-items: center;

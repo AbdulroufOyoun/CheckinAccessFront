@@ -18,6 +18,7 @@ import { Booking } from '../services/bookings.service';
 import { Apiendpointd } from '../apiEndpoints';
 import { ApiResponse } from '../interfaces/api-response';
 import { RealtimeService } from '../services/realtime.service';
+import { TenantCustomizationService } from '../services/tenant-customization.service';
 
 
 @Component({
@@ -44,6 +45,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly realtime = inject(RealtimeService);
+  private readonly tenantCustomization = inject(TenantCustomizationService);
   private readonly destroy$ = new Subject<void>();
 
   filtersOpen = false;
@@ -119,10 +121,15 @@ export class Dashboard implements OnInit, OnDestroy {
       && (this.canManageEducation || this.canManageEnrollments || this.canViewEduReports);
   }
 
+  widgetVisible(id: string, fallback = true): boolean {
+    return this.tenantCustomization.isWidgetVisible(id, fallback);
+  }
+
   ngOnInit(): void {
     this.hasProperty = this.auth.hasModule('property');
     this.hasEducation = this.auth.hasModule('education');
     if (isPlatformBrowser(this.platformId)) {
+      void this.tenantCustomization.loadSettings();
       void this.loadAll();
       this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
         if (this.hasProperty) {

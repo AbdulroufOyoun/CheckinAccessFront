@@ -135,7 +135,7 @@
   }
 
   .sticky-action-bar__btn--primary {
-    background: linear-gradient(135deg, #0c1a3a, #1d4ed8);
+    background: linear-gradient(135deg, var(--tenant-navy, #0c1a3a), var(--tenant-primary-dark, #1d4ed8));
     color: #fff;
   }
 

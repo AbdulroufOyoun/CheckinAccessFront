@@ -151,7 +151,7 @@
 .evt-wiz__back {
   border: 0;
   background: transparent;
-  color: #2563eb;
+  color: var(--tenant-primary, #2563eb);
   padding: 0;
   margin-bottom: 8px;
   cursor: pointer;
@@ -209,12 +209,12 @@
 .evt-wiz__step.is-on,
 .evt-wiz__step.is-done {
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .evt-wiz__step.is-on i,
 .evt-wiz__step.is-done i {
-  background: #2563eb;
+  background: var(--tenant-primary, #2563eb);
   color: #fff;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .evt-wiz__mode.is-on {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   background: #eff6ff;
 }
 
@@ -303,8 +303,8 @@
 }
 
 .evt-wiz__chip.is-on {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--tenant-primary, #2563eb);
+  border-color: var(--tenant-primary, #2563eb);
   color: #fff;
 }
 
@@ -326,7 +326,7 @@
 }
 
 .evt-wiz__room.is-on {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   background: #eff6ff;
 }
 

@@ -37,7 +37,7 @@
   flex-wrap: wrap;
   flex-shrink: 0;
   padding: 14px 20px;
-  background: #1d4ed8;
+  background: var(--tenant-primary-dark, #1d4ed8);
   color: #fff;
   z-index: 3;
 }
@@ -63,7 +63,7 @@
 
 .count-sticky .count-btn {
   background: #fff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   border-color: #fff;
 }
 
@@ -87,8 +87,8 @@
   gap: 16px;
   flex-wrap: wrap;
   padding: 12px 20px;
-  background: color-mix(in srgb, var(--primary, #2563eb) 10%, #fff);
-  border-bottom: 1px solid color-mix(in srgb, var(--primary, #2563eb) 22%, transparent);
+  background: color-mix(in srgb, var(--primary, var(--tenant-primary, #2563eb)) 10%, #fff);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary, var(--tenant-primary, #2563eb)) 22%, transparent);
 }
 
 .count-bar__text {
@@ -166,8 +166,8 @@
   gap: 8px;
   padding: 12px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--primary, #2563eb) 8%, #fff);
-  border: 1px solid color-mix(in srgb, var(--primary, #2563eb) 22%, transparent);
+  background: color-mix(in srgb, var(--primary, var(--tenant-primary, #2563eb)) 8%, #fff);
+  border: 1px solid color-mix(in srgb, var(--primary, var(--tenant-primary, #2563eb)) 22%, transparent);
 }
 
 .count-label {
@@ -260,7 +260,7 @@
   gap: 2px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--primary, #2563eb) 8%, transparent);
+  background: color-mix(in srgb, var(--primary, var(--tenant-primary, #2563eb)) 8%, transparent);
 }
 
 .preview-label {
@@ -285,7 +285,7 @@
 .link-btn {
   border: none;
   background: transparent;
-  color: var(--primary, #2563eb);
+  color: var(--primary, var(--tenant-primary, #2563eb));
   font: inherit;
   font-size: 0.78rem;
   font-weight: 650;
@@ -317,7 +317,7 @@
 
 .btn.soft {
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   white-space: nowrap;
 }
 
@@ -378,7 +378,7 @@
 }
 
 .btn.primary {
-  background: var(--primary, #2563eb);
+  background: var(--primary, var(--tenant-primary, #2563eb));
   color: #fff;
 }
 
@@ -434,9 +434,9 @@
 }
 
 .room-purpose-card--both.is-selected {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .room-purpose-card__icon {

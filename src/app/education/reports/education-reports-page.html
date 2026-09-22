@@ -13,6 +13,9 @@
     <button class="edu-btn edu-btn--ghost" type="button" (click)="load()" [disabled]="loading">
       {{ 'EDU_REP_REFRESH' | translate }}
     </button>
+    <button class="edu-btn edu-btn--primary" type="button" (click)="downloadPdf()" [disabled]="pdfLoading || loading">
+      {{ pdfLoading ? ('LOADING' | translate) : ('REP_DOWNLOAD_PDF' | translate) }}
+    </button>
   </div>
 
   @if (loading) {

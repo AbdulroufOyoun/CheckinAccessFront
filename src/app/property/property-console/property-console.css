@@ -496,7 +496,7 @@
 
 .prop-purpose-pill--shared {
   background: #dbeafe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .prop-tree__row .prop-purpose-pill {

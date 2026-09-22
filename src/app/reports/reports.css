@@ -7,8 +7,8 @@
   --border: #e2e8f0;
   --border-light: #f1f5f9;
 
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
+  --primary: var(--tenant-primary-light, #3b82f6);
+  --primary-dark: var(--tenant-primary, #2563eb);
   --teal: #14b8a6;
   --teal-dark: #0d9488;
   --purple: #8b5cf6;
@@ -104,7 +104,7 @@
   align-items: center;
   gap: 7px;
   padding: 9px 18px;
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  background: linear-gradient(135deg, var(--tenant-primary-light, #3b82f6), #06b6d4);
   border: none;
   border-radius: var(--r-md);
   color: #fff;
@@ -187,7 +187,7 @@
 
 .kpi-blue {
   background: rgba(59, 130, 246, .10);
-  color: #3b82f6;
+  color: var(--tenant-primary-light, #3b82f6);
   border: 1px solid rgba(59, 130, 246, .18);
 }
 
@@ -380,7 +380,7 @@
 }
 
 .report-tab.active {
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  background: linear-gradient(135deg, var(--tenant-primary-light, #3b82f6), #06b6d4);
   border-color: transparent;
   color: #fff;
   box-shadow: 0 3px 10px rgba(59, 130, 246, .30);
@@ -457,7 +457,7 @@
 
 .rev-line {
   fill: none;
-  stroke: #3b82f6;
+  stroke: var(--tenant-primary-light, #3b82f6);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -465,7 +465,7 @@
 
 .rev-dot {
   fill: #fff;
-  stroke: #3b82f6;
+  stroke: var(--tenant-primary-light, #3b82f6);
   stroke-width: 2;
   transition: r .15s ease;
 }
@@ -475,7 +475,7 @@
 }
 
 .rev-dot-active {
-  fill: #3b82f6;
+  fill: var(--tenant-primary-light, #3b82f6);
   stroke: #fff;
   stroke-width: 2.5;
 }
@@ -522,7 +522,7 @@
 }
 
 .d-blue {
-  stroke: #3b82f6;
+  stroke: var(--tenant-primary-light, #3b82f6);
 }
 
 .d-teal {
@@ -562,7 +562,7 @@
 }
 
 .ldot-blue {
-  background: #3b82f6;
+  background: var(--tenant-primary-light, #3b82f6);
 }
 
 .ldot-teal {
@@ -604,7 +604,7 @@
 }
 
 .lbar-blue {
-  background: #3b82f6;
+  background: var(--tenant-primary-light, #3b82f6);
 }
 
 .lbar-teal {

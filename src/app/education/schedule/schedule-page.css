@@ -71,7 +71,7 @@
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #3b82f6;
+  color: var(--tenant-primary-light, #3b82f6);
 }
 
 .sched__term-badge--muted .sched__term-badge__label {
@@ -119,7 +119,7 @@
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #2563eb;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .sched__term-bar__main strong {
@@ -172,7 +172,7 @@
 }
 
 .sched__btn--primary {
-  background: linear-gradient(135deg, #0C1A3A, #1D4ED8);
+  background: linear-gradient(135deg, #0C1A3A, var(--tenant-primary-dark, #1d4ed8));
   color: #fff;
   box-shadow: 0 8px 20px rgba(12, 26, 58, 0.22);
 }
@@ -206,7 +206,7 @@
 }
 
 .sched__filter select:focus {
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
@@ -322,7 +322,7 @@
 
 .sched__time-sep {
   display: block;
-  color: var(--blue-600, #2563EB);
+  color: var(--blue-600, var(--tenant-primary, #2563eb));
   font-size: 0.68rem;
   line-height: 1;
 }
@@ -402,7 +402,7 @@
 .sched__event span {
   font-size: 0.7rem;
   font-weight: 700;
-  color: var(--blue-700, #1D4ED8);
+  color: var(--blue-700, var(--tenant-primary-dark, #1d4ed8));
 }
 
 .sched__event--lab span {

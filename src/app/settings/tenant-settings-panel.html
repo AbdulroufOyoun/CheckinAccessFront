@@ -1,0 +1,551 @@
+@if (loading) {
+  <div class="tenant-skeleton" aria-busy="true">
+    <div class="placeholder-glow"><span class="placeholder col-5 tenant-skeleton__line"></span></div>
+    <div class="placeholder-glow"><span class="placeholder col-12 tenant-skeleton__line"></span></div>
+    <div class="placeholder-glow"><span class="placeholder col-12 tenant-skeleton__line"></span></div>
+  </div>
+} @else {
+  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav nav-pills tenant-settings-tabs gap-1">
+    <li [ngbNavItem]="1">
+      <button ngbNavLink type="button">{{ 'SET_TENANT_APPEARANCE' | translate }}</button>
+      <ng-template ngbNavContent>
+        <div class="tenant-tab">
+          <div class="tenant-panel-section">
+            <h3 class="tenant-panel-section__title">{{ 'SET_TENANT_LOGO' | translate }}</h3>
+            <div class="tenant-logo-row">
+              @if (logoUrl(); as url) {
+                <img [src]="url" alt="" class="tenant-logo-preview" />
+              } @else {
+                <div class="tenant-logo-preview tenant-logo-preview--empty">{{ 'SET_TENANT_LOGO_NONE' | translate }}</div>
+              }
+              <div class="flex-grow-1">
+                <label class="form-label">{{ 'SET_TENANT_LOGO_PREVIEW' | translate }}</label>
+                <input type="file" accept="image/*" class="form-control" (change)="onLogoSelected($event)" />
+              </div>
+            </div>
+          </div>
+          <div class="tenant-panel-section">
+            <h3 class="tenant-panel-section__title">{{ 'SET_TENANT_APPEARANCE' | translate }}</h3>
+            <p class="text-muted small mb-3">{{ 'SET_TENANT_APPEARANCE_HINT' | translate }}</p>
+            <h4 class="tenant-preset-heading">{{ 'SET_TENANT_PRESETS' | translate }}</h4>
+            <div class="tenant-preset-grid mb-4">
+              @for (preset of appearancePresets; track preset.id) {
+                <button
+                  type="button"
+                  class="tenant-preset-card"
+                  [class.tenant-preset-card--active]="isPresetActive(preset)"
+                  (click)="applyAppearancePreset(preset)"
+                >
+                  <span class="tenant-preset-card__swatches" aria-hidden="true">
+                    <span [style.background]="preset.primary_color"></span>
+                    <span [style.background]="preset.sidebar_color"></span>
+                    <span [style.background]="preset.surface_bg"></span>
+                  </span>
+                  <span class="tenant-preset-card__label">{{ preset.labelKey | translate }}</span>
+                </button>
+              }
+            </div>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">{{ 'SET_TENANT_PRIMARY' | translate }}</label>
+                <div class="tenant-color-field">
+                  <input
+                    type="color"
+                    class="form-control form-control-color"
+                    [(ngModel)]="appearance.primary_color"
+                    (ngModelChange)="onManualAppearanceChange()"
+                  />
+                  <input
+                    type="text"
+                    class="form-control form-control-sm font-monospace"
+                    [(ngModel)]="appearance.primary_color"
+                    (ngModelChange)="onManualAppearanceChange()"
+                  />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">{{ 'SET_TENANT_SIDEBAR' | translate }}</label>
+                <div class="tenant-color-field">
+                  <input
+                    type="color"
+                    class="form-control form-control-color"
+                    [(ngModel)]="sidebar_color"
+                    (ngModelChange)="onSidebarColorChange()"
+                  />
+                  <input
+                    type="text"
+                    class="form-control form-control-sm font-monospace"
+                    [(ngModel)]="sidebar_color"
+                    (ngModelChange)="onSidebarColorChange()"
+                  />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">{{ 'SET_TENANT_SURFACE' | translate }}</label>
+                <div class="tenant-color-field">
+                  <input
+                    type="color"
+                    class="form-control form-control-color"
+                    [(ngModel)]="appearance.surface_bg"
+                    (ngModelChange)="onManualAppearanceChange()"
+                  />
+                  <input
+                    type="text"
+                    class="form-control form-control-sm font-monospace"
+                    [(ngModel)]="appearance.surface_bg"
+                    (ngModelChange)="onManualAppearanceChange()"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="tenant-brand-preview mt-3" aria-hidden="true">
+              <span class="tenant-brand-preview__chip" [style.background]="appearance.primary_color"></span>
+              <span class="tenant-brand-preview__chip tenant-brand-preview__chip--sidebar" [style.background]="sidebar_color"></span>
+              <span class="tenant-brand-preview__chip" [style.background]="appearance.surface_bg"></span>
+            </div>
+            <div class="row g-2 mt-2">
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_APP_NAME' | translate }} (EN)</label>
+                <input class="form-control" [(ngModel)]="appearance.app_name_en" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_APP_NAME' | translate }} (AR)</label>
+                <input class="form-control" dir="rtl" [(ngModel)]="appearance.app_name_ar" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_APP_SUBTITLE' | translate }} (EN)</label>
+                <input class="form-control" [(ngModel)]="appearance.app_subtitle_en" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_APP_SUBTITLE' | translate }} (AR)</label>
+                <input class="form-control" dir="rtl" [(ngModel)]="appearance.app_subtitle_ar" />
+              </div>
+            </div>
+          </div>
+          <div class="tenant-panel-footer">
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveAppearance()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+      <button ngbNavLink type="button">{{ 'SET_TENANT_REGIONAL' | translate }}</button>
+      <ng-template ngbNavContent>
+        <div class="tenant-tab">
+          <p class="text-muted small mb-3">{{ 'SET_TENANT_REGIONAL_HINT' | translate }}</p>
+          <div class="tenant-panel-section">
+            <label class="form-label">{{ 'SET_TENANT_TIMEZONE' | translate }}</label>
+            <select class="form-select mb-3" [(ngModel)]="regional.timezone">
+              @for (tz of timezones; track tz) {
+                <option [value]="tz">{{ tz }}</option>
+              }
+            </select>
+            <label class="form-label">{{ 'SET_TENANT_DEFAULT_LANG' | translate }}</label>
+            <select class="form-select mb-3" [(ngModel)]="regional.default_lang">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="hour12" [(ngModel)]="regional.hour12" />
+              <label class="form-check-label" for="hour12">{{ 'SET_TENANT_HOUR12' | translate }}</label>
+            </div>
+          </div>
+          <div class="tenant-panel-footer">
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveRegional()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="3">
+      <button ngbNavLink type="button">{{ 'SET_TENANT_NAV' | translate }}</button>
+      <ng-template ngbNavContent>
+        <div class="tenant-tab">
+          <p class="text-muted small mb-3">{{ 'SET_TENANT_NAV_HINT' | translate }}</p>
+          <div class="tenant-nav-sections-grid">
+          @for (section of navSectionsForEdit; track section.sectionId; let si = $index) {
+            <div class="tenant-panel-section tenant-nav-section">
+              <h3 class="tenant-panel-section__title">{{ section.sectionLabelKey | translate }}</h3>
+              <div
+                cdkDropList
+                class="tenant-sort-list"
+                (cdkDropListDropped)="onNavDrop(si, $event)"
+              >
+                @for (item of section.items; track item.id) {
+                  <div class="tenant-sort-row" cdkDrag [class.tenant-sort-row--hidden]="navHidden[item.id]">
+                    <button
+                      type="button"
+                      class="tenant-sort-row__handle"
+                      cdkDragHandle
+                      [attr.aria-label]="'SET_TENANT_DRAG_HANDLE' | translate"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="9" cy="7" r="1.5" fill="currentColor" />
+                        <circle cx="15" cy="7" r="1.5" fill="currentColor" />
+                        <circle cx="9" cy="12" r="1.5" fill="currentColor" />
+                        <circle cx="15" cy="12" r="1.5" fill="currentColor" />
+                        <circle cx="9" cy="17" r="1.5" fill="currentColor" />
+                        <circle cx="15" cy="17" r="1.5" fill="currentColor" />
+                      </svg>
+                    </button>
+                    <div class="tenant-sort-row__label">
+                      <span class="tenant-sort-row__name">{{ item.labelKey | translate }}</span>
+                      <small class="text-muted font-monospace">{{ item.id }}</small>
+                    </div>
+                    <div class="form-check form-switch tenant-sort-row__switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        [id]="'nav-hide-' + item.id"
+                        [(ngModel)]="navHidden[item.id]"
+                      />
+                      <label class="form-check-label" [for]="'nav-hide-' + item.id">{{ 'SET_TENANT_HIDE' | translate }}</label>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+          </div>
+          <div class="tenant-panel-footer">
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveNavigation()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="4">
+      <button ngbNavLink type="button">{{ 'SET_TENANT_WELCOME' | translate }}</button>
+      <ng-template ngbNavContent>
+        <div class="tenant-tab">
+          <div class="tenant-panel-section">
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="welcomeOn" [(ngModel)]="welcome.enabled" />
+              <label class="form-check-label" for="welcomeOn">{{ 'SET_TENANT_WELCOME_ENABLE' | translate }}</label>
+            </div>
+            <label class="form-label">{{ 'SET_TENANT_WELCOME_STYLE' | translate }}</label>
+            <select class="form-select mb-3" [(ngModel)]="welcome.style">
+              <option value="info">Info</option>
+              <option value="success">Success</option>
+              <option value="warning">Warning</option>
+            </select>
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="welcomeDismiss" [(ngModel)]="welcome.dismissible" />
+              <label class="form-check-label" for="welcomeDismiss">{{ 'SET_TENANT_WELCOME_DISMISS' | translate }}</label>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_TITLE_EN' | translate }}</label>
+                <input class="form-control mb-2" [(ngModel)]="welcome.title_en" />
+                <textarea class="form-control" rows="2" [(ngModel)]="welcome.body_en"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_TITLE_AR' | translate }}</label>
+                <input class="form-control mb-2" dir="rtl" [(ngModel)]="welcome.title_ar" />
+                <textarea class="form-control" dir="rtl" rows="2" [(ngModel)]="welcome.body_ar"></textarea>
+              </div>
+            </div>
+          </div>
+          @if (welcome.enabled) {
+            <div class="tenant-panel-section">
+              <h3 class="tenant-panel-section__title">{{ 'SET_TENANT_WELCOME_PREVIEW' | translate }}</h3>
+              <ngb-alert [type]="welcome.style" [dismissible]="welcome.dismissible">
+                <strong>{{ welcomePreviewTitle() }}</strong>
+                <p class="mb-0 mt-1">{{ welcomePreviewBody() }}</p>
+              </ngb-alert>
+            </div>
+          }
+          <div class="tenant-panel-footer">
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveWelcome()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="5">
+      <button ngbNavLink type="button">{{ 'SET_TENANT_DASHBOARD' | translate }}</button>
+      <ng-template ngbNavContent>
+        <div class="tenant-tab">
+          <p class="text-muted small mb-3">{{ 'SET_TENANT_WIDGET_HINT' | translate }}</p>
+          <div class="tenant-panel-section">
+            <div cdkDropList class="tenant-sort-list tenant-widget-grid" (cdkDropListDropped)="onWidgetDrop($event)">
+              @for (entry of widgetEntries; track entry.id) {
+                <div class="tenant-sort-row" cdkDrag>
+                  <button
+                    type="button"
+                    class="tenant-sort-row__handle"
+                    cdkDragHandle
+                    [attr.aria-label]="'SET_TENANT_DRAG_HANDLE' | translate"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="9" cy="7" r="1.5" fill="currentColor" />
+                      <circle cx="15" cy="7" r="1.5" fill="currentColor" />
+                      <circle cx="9" cy="12" r="1.5" fill="currentColor" />
+                      <circle cx="15" cy="12" r="1.5" fill="currentColor" />
+                      <circle cx="9" cy="17" r="1.5" fill="currentColor" />
+                      <circle cx="15" cy="17" r="1.5" fill="currentColor" />
+                    </svg>
+                  </button>
+                  <div class="tenant-sort-row__label">
+                    <span class="tenant-sort-row__name">{{ entry.labelKey | translate }}</span>
+                  </div>
+                  <div class="form-check form-switch tenant-sort-row__switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'widget-' + entry.id"
+                      [ngModel]="widgetVisible[entry.id] !== false"
+                      (ngModelChange)="widgetVisible[entry.id] = $event"
+                    />
+                    <label class="form-check-label" [for]="'widget-' + entry.id">{{ 'SET_TENANT_SHOW' | translate }}</label>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="tenant-panel-footer">
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveDashboard()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="6">
+      <button ngbNavLink type="button">{{ 'SET_TENANT_LABELS' | translate }}</button>
+      <ng-template ngbNavContent>
+        <div class="tenant-tab tenant-labels-tab">
+          <div class="tenant-labels-intro">
+            <p class="tenant-labels-intro__text">{{ 'SET_TENANT_LABELS_HINT' | translate }}</p>
+            <div class="tenant-labels-toolbar">
+              <div class="tenant-labels-search">
+                <svg class="tenant-labels-search__icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                  />
+                </svg>
+                <input
+                  type="search"
+                  class="form-control tenant-labels-search__input"
+                  [(ngModel)]="labelSearch"
+                  [placeholder]="'SET_TENANT_LABELS_SEARCH' | translate"
+                  autocomplete="off"
+                />
+              </div>
+              @if (customizedLabelsCount() > 0) {
+                <span class="tenant-labels-badge">
+                  {{ 'SET_TENANT_LABELS_CUSTOM_COUNT' | translate: { count: customizedLabelsCount() } }}
+                </span>
+              }
+            </div>
+          </div>
+
+          @for (group of labelGroups; track group.id) {
+            @if (labelGroupVisible(group)) {
+              <details class="tenant-labels-group" open>
+                <summary class="tenant-labels-group__head">
+                  <span class="tenant-labels-group__title">{{ group.titleKey | translate }}</span>
+                  <span class="tenant-labels-group__hint">{{ group.hintKey | translate }}</span>
+                </summary>
+                <div class="tenant-labels-group__body">
+                  @for (key of group.keys; track key) {
+                    @if (labelRowVisible(key)) {
+                      <article
+                        class="tenant-label-card"
+                        [class.tenant-label-card--custom]="isLabelCustomized(key)"
+                      >
+                        <header class="tenant-label-card__head">
+                          <div class="tenant-label-card__titles">
+                            <h4 class="tenant-label-card__title">{{ key | translate }}</h4>
+                            <code class="tenant-label-card__code">{{ key }}</code>
+                          </div>
+                          @if (isLabelCustomized(key)) {
+                            <span class="tenant-label-card__pill">{{ 'SET_TENANT_LABEL_CUSTOMIZED' | translate }}</span>
+                          }
+                        </header>
+                        <div class="tenant-label-card__defaults" aria-label="Default labels">
+                          <span class="tenant-label-chip" dir="ltr">
+                            <span class="tenant-label-chip__tag">EN</span>
+                            {{ catalogLabel(key, 'en') }}
+                          </span>
+                          <span class="tenant-label-chip tenant-label-chip--ar" dir="rtl">
+                            <span class="tenant-label-chip__tag">AR</span>
+                            {{ catalogLabel(key, 'ar') }}
+                          </span>
+                        </div>
+                        <div class="tenant-label-card__fields">
+                          <div class="tenant-label-field">
+                            <label class="tenant-label-field__label" [for]="'label-en-' + key">
+                              {{ 'SET_TENANT_LABEL_COL_EN' | translate }}
+                            </label>
+                            <input
+                              [id]="'label-en-' + key"
+                              class="form-control form-control-sm"
+                              dir="ltr"
+                              [(ngModel)]="labelOverridesEn[key]"
+                              [placeholder]="catalogLabel(key, 'en')"
+                            />
+                          </div>
+                          <div class="tenant-label-field">
+                            <label class="tenant-label-field__label" [for]="'label-ar-' + key">
+                              {{ 'SET_TENANT_LABEL_COL_AR' | translate }}
+                            </label>
+                            <input
+                              [id]="'label-ar-' + key"
+                              class="form-control form-control-sm"
+                              dir="rtl"
+                              [(ngModel)]="labelOverridesAr[key]"
+                              [placeholder]="catalogLabel(key, 'ar')"
+                            />
+                          </div>
+                        </div>
+                        @if (isLabelCustomized(key)) {
+                          <button type="button" class="tenant-label-card__reset" (click)="clearLabelOverride(key)">
+                            {{ 'SET_TENANT_LABEL_RESET' | translate }}
+                          </button>
+                        }
+                      </article>
+                    }
+                  }
+                </div>
+              </details>
+            }
+          }
+
+          @if (labelSearch.trim() && !anyLabelGroupVisible()) {
+            <div class="tenant-labels-empty">
+              <p class="mb-0">{{ 'SET_TENANT_LABELS_NO_RESULTS' | translate }}</p>
+            </div>
+          }
+
+          <section class="tenant-panel-section tenant-terminology-block">
+            <header class="tenant-terminology-block__head">
+              <div>
+                <h3 class="tenant-panel-section__title mb-1">{{ 'SET_TENANT_TERMINOLOGY' | translate }}</h3>
+                <p class="text-muted small mb-0">{{ 'SET_TENANT_TERMINOLOGY_HINT' | translate }}</p>
+              </div>
+            </header>
+            <div class="tenant-terminology-grid">
+              @for (key of terminologyKeys; track key) {
+                <article
+                  class="tenant-term-card"
+                  [class.tenant-term-card--custom]="isTerminologyCustomized(key)"
+                >
+                  <div class="tenant-term-card__head">
+                    <h4 class="tenant-term-card__title">{{ terminologyLabelKey(key) | translate }}</h4>
+                    @if (isTerminologyCustomized(key)) {
+                      <span class="tenant-label-card__pill">{{ 'SET_TENANT_LABEL_CUSTOMIZED' | translate }}</span>
+                    }
+                  </div>
+                  <div class="tenant-label-card__defaults tenant-label-card__defaults--compact">
+                    <span class="tenant-label-chip" dir="ltr">
+                      <span class="tenant-label-chip__tag">EN</span>
+                      {{ terminologyDefault(key, 'en') }}
+                    </span>
+                    <span class="tenant-label-chip tenant-label-chip--ar" dir="rtl">
+                      <span class="tenant-label-chip__tag">AR</span>
+                      {{ terminologyDefault(key, 'ar') }}
+                    </span>
+                  </div>
+                  <div class="tenant-term-card__fields">
+                    <div class="tenant-label-field">
+                      <label class="tenant-label-field__label" [for]="'term-en-' + key">EN</label>
+                      <input
+                        [id]="'term-en-' + key"
+                        class="form-control form-control-sm"
+                        dir="ltr"
+                        [(ngModel)]="terminologyEn[key]"
+                        [placeholder]="terminologyDefault(key, 'en')"
+                      />
+                    </div>
+                    <div class="tenant-label-field">
+                      <label class="tenant-label-field__label" [for]="'term-ar-' + key">AR</label>
+                      <input
+                        [id]="'term-ar-' + key"
+                        class="form-control form-control-sm"
+                        dir="rtl"
+                        [(ngModel)]="terminologyAr[key]"
+                        [placeholder]="terminologyDefault(key, 'ar')"
+                      />
+                    </div>
+                  </div>
+                  @if (isTerminologyCustomized(key)) {
+                    <button type="button" class="tenant-label-card__reset" (click)="clearTerminologyOverride(key)">
+                      {{ 'SET_TENANT_LABEL_RESET' | translate }}
+                    </button>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+          <div class="tenant-panel-footer">
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveLabels()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="7">
+      <button ngbNavLink type="button">{{ 'SET_TENANT_PDF' | translate }}</button>
+      <ng-template ngbNavContent>
+        <div class="tenant-tab">
+          <p class="text-muted small mb-3">{{ 'SET_TENANT_PDF_HINT' | translate }}</p>
+          <div class="tenant-panel-section">
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="pdfLogo" [(ngModel)]="pdf.show_logo" />
+              <label class="form-check-label" for="pdfLogo">{{ 'SET_TENANT_PDF_LOGO' | translate }}</label>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_PDF_HEADER' | translate }}</label>
+                <input class="form-control mb-2" [(ngModel)]="pdf.header_en" />
+                <label class="form-label">{{ 'SET_TENANT_PDF_FOOTER' | translate }}</label>
+                <input class="form-control" [(ngModel)]="pdf.footer_en" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ 'SET_TENANT_PDF_HEADER_AR' | translate }}</label>
+                <input class="form-control mb-2" dir="rtl" [(ngModel)]="pdf.header_ar" />
+                <label class="form-label">{{ 'SET_TENANT_PDF_FOOTER_AR' | translate }}</label>
+                <input class="form-control" dir="rtl" [(ngModel)]="pdf.footer_ar" />
+              </div>
+            </div>
+          </div>
+          <div class="tenant-panel-footer">
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="savePdf()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+  </ul>
+  <div [ngbNavOutlet]="nav" class="tenant-settings-outlet"></div>
+}

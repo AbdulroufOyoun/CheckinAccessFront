@@ -228,7 +228,7 @@
 }
 
 .btn.primary {
-  background: var(--primary, #2563eb);
+  background: var(--primary, var(--tenant-primary, #2563eb));
   color: #fff;
 }
 

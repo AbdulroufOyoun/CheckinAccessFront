@@ -2,7 +2,7 @@
   --bd-ink: #0f172a;
   --bd-muted: #64748b;
   --bd-line: #e2e8f0;
-  --bd-accent: #1d4ed8;
+  --bd-accent: var(--tenant-primary-dark, #1d4ed8);
   display: flex;
   flex-direction: column;
   max-height: min(88vh, 720px);
@@ -231,7 +231,7 @@
 }
 
 .bd__link-main strong {
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-weight: 700;
 }
 
@@ -525,7 +525,7 @@
   padding: 3px 8px;
   border-radius: 999px;
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;

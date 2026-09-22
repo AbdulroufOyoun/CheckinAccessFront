@@ -16,6 +16,7 @@ import { authInterceptor } from './interceptors/auth.interceptor';
 import { apiErrorInterceptor } from './interceptors/api-error.interceptor';
 import { StaticTranslateLoader } from './i18n/static-translate.loader';
 import { LocaleService } from './services/locale.service';
+import { TenantCustomizationService } from './services/tenant-customization.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -45,7 +46,11 @@ export const appConfig: ApplicationConfig = {
       multi: true,
       useFactory: () => {
         const locale = inject(LocaleService);
-        return () => locale.init();
+        const tenantCustomization = inject(TenantCustomizationService);
+        return async () => {
+          await locale.init();
+          await tenantCustomization.loadPublicConfig();
+        };
       },
     },
   ],

@@ -19,6 +19,7 @@ import { BookingDetailDialog } from '../../dialog/booking-detail/booking-detail'
 import { ConfirmDialog } from '../../dialog/confirm-dialog/confirm-dialog';
 import { firstValueFrom } from 'rxjs';
 import { RealtimeService } from '../../services/realtime.service';
+import { TenantDateTimeService } from '../../services/tenant-date-time.service';
 
 interface ReservationRow {
   id: number;
@@ -61,6 +62,7 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   private readonly document = inject(DOCUMENT);
   private readonly dialogMobile = inject(DialogMobileService);
   private readonly realtime = inject(RealtimeService);
+  private readonly tenantDateTime = inject(TenantDateTimeService);
   private readonly destroy$ = new Subject<void>();
 
   readonly perPage = 20;
@@ -124,17 +126,7 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   }
 
   formatDate(value?: string | null): string {
-    if (!value || value === '—') return '—';
-    const raw = String(value).slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return value;
-    const [y, m, d] = raw.split('-').map(Number);
-    const date = new Date(y, m - 1, d);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString(this.isRTL ? 'ar-SA' : 'en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
+    return this.tenantDateTime.formatDate(value);
   }
 
   setStatusFilter(status: string): void {

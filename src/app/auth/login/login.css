@@ -33,6 +33,41 @@
 
 .auth-bg__blob--tl {
   width: 384px;
+/* ─── Page Shell ─────────────────────────────────────────── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  /* background: linear-gradient(135deg, #0F1E45 0%, #1a3a7c 40%, #0D9488 100%); */
+  background: linear-gradient(135deg, #142744 0%, #1e3a5f 45%, #2b4d73 100%);
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  direction: ltr;
+  padding: 24px 16px;
+}
+
+.auth-page--rtl {
+  direction: rtl;
+  font-family: system-ui, 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* ─── Background Blobs ───────────────────────────────────── */
+.auth-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.auth-bg__blob {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.auth-bg__blob--tl {
+  width: 384px;
   height: 384px;
   top: -160px;
   left: -160px;
@@ -103,7 +138,7 @@
 /* Top accent gradient bar */
 .auth-card__accent-bar {
   height: 6px;
-  background: linear-gradient(90deg, #2563EB, #0D9488);
+  background: var(--tenant-gradient-auth-h);
   flex-shrink: 0;
 }
 
@@ -129,7 +164,7 @@
   width: 64px;
   height: 64px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #1D4ED8, #0D9488);
+  background: var(--tenant-gradient-auth);
   box-shadow: 0 8px 24px rgba(29, 78, 216, 0.35);
   display: flex;
   align-items: center;
@@ -197,7 +232,7 @@
 }
 
 .auth-step__dot--active {
-  background: linear-gradient(135deg, #2563EB, #0D9488);
+  background: var(--tenant-gradient-auth);
   color: white;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
@@ -402,20 +437,19 @@
 }
 
 .auth-btn--primary {
-  /* background: linear-gradient(135deg, #2563EB, #1D4ED8); */
-  background-color: #1e3a5f;
+  background-color: var(--bs-primary, #2563eb);
   color: white;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 14px rgba(var(--bs-primary-rgb, 37, 99, 235), 0.4);
 }
 
 .auth-btn--primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 6px 20px rgba(var(--bs-primary-rgb, 37, 99, 235), 0.5);
 }
 
 .auth-btn--primary:active {
   transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb, 37, 99, 235), 0.3);
 }
 
 /* RTL: flip the arrow icon */

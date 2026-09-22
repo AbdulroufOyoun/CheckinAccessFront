@@ -29,8 +29,10 @@
 
         <!-- ── LOGO ──────────────────────────────── -->
         <div class="auth-logo">
+          @if (logoUrl) {
+            <img class="auth-logo__img" [src]="logoUrl" alt="" width="120" height="48" />
+          } @else {
           <div class="auth-logo__icon" aria-hidden="true">
-            <!-- Building2 icon -->
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
               stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
@@ -46,8 +48,9 @@
               <line x1="16" y1="14" x2="16.01" y2="14" />
             </svg>
           </div>
-          <h1 class="auth-logo__name">ResManager Pro</h1>
-          <p class="auth-logo__subtitle">ACCOMMODATION &amp; RESERVATION MANAGEMENT</p>
+          }
+          <h1 class="auth-logo__name">{{ appName }}</h1>
+          <p class="auth-logo__subtitle">{{ tenantCustomization.appSubtitle(currentLang) }}</p>
         </div>
 
         <!-- ── STEP HEADING ──────────────────────── -->

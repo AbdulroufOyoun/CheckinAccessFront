@@ -31,6 +31,8 @@ import {
 } from './nav-search';
 import { MobileLayoutService } from '../mobile-layout.service';
 import { DialogMobileService } from '../../services/dialog-mobile.service';
+import { TenantCustomizationService } from '../../services/tenant-customization.service';
+import { applyNavigationCustomization } from '../../services/tenant-nav.util';
 
 type NavIcon =
   | 'dashboard'
@@ -86,7 +88,13 @@ export class AppShell implements OnInit, OnDestroy {
   private readonly usersApi = inject(UsersService);
   private readonly realtime = inject(RealtimeService);
   private readonly locale = inject(LocaleService);
+  readonly tenantCustomization = inject(TenantCustomizationService);
   readonly mobileLayout = inject(MobileLayoutService);
+
+  showWelcomeBanner = false;
+  welcomeTitle = '';
+  welcomeBody = '';
+  welcomeStyle: 'info' | 'success' | 'warning' = 'info';
 
   @ViewChild('navSearchInput') navSearchInput?: ElementRef<HTMLInputElement>;
   @ViewChild('navSearchResults') navSearchResults?: ElementRef<HTMLElement>;
@@ -280,12 +288,15 @@ export class AppShell implements OnInit, OnDestroy {
       },
     ];
 
-    return sections
+    return applyNavigationCustomization(
+      sections
       .map((section) => ({
         ...section,
         items: section.items.filter((item) => item.visible),
       }))
-      .filter((section) => section.items.length > 0);
+      .filter((section) => section.items.length > 0),
+      this.tenantCustomization.navigationSettings()?.items,
+    );
   }
 
   ngOnInit(): void {
@@ -303,6 +314,10 @@ export class AppShell implements OnInit, OnDestroy {
       void this.auth.ensureMe().then((user) => {
         this.user = user;
         this.connectRealtime(user);
+        void this.tenantCustomization.loadSettings().then(() => {
+          this.syncWelcomeBanner(user);
+          this.cdr.detectChanges();
+        });
         this.cdr.detectChanges();
       }).catch(() => {
         // Keep cached session user if /me fails briefly.
@@ -597,6 +612,63 @@ export class AppShell implements OnInit, OnDestroy {
       (this.auth.hasModule('property') || this.auth.hasModule('education')) &&
       this.canManageCompoundAccess()
     );
+  }
+
+  get shellAppName(): string {
+    return this.tenantCustomization.appName(this.currentLang);
+  }
+
+  get shellAppSubtitle(): string {
+    return this.tenantCustomization.appSubtitle(this.currentLang);
+  }
+
+  get shellLogoUrl(): string | null {
+    return this.tenantCustomization.logoUrl();
+  }
+
+  dismissWelcomeBanner(): void {
+    const user = this.user;
+    if (user?.id != null && user.tenant_id != null) {
+      try {
+        sessionStorage.setItem(
+          `welcome_dismissed_${user.tenant_id}_${user.id}`,
+          '1',
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+    this.showWelcomeBanner = false;
+    this.cdr.detectChanges();
+  }
+
+  private syncWelcomeBanner(user: User | null): void {
+    const welcome = this.tenantCustomization.welcomeSettings();
+    if (!welcome?.enabled || !user) {
+      this.showWelcomeBanner = false;
+      return;
+    }
+    const lang = this.currentLang;
+    const title = (welcome.title?.[lang] || welcome.title?.en || '').trim();
+    const body = (welcome.body?.[lang] || welcome.body?.en || '').trim();
+    if (!title && !body) {
+      this.showWelcomeBanner = false;
+      return;
+    }
+    if (user.tenant_id != null && user.id != null) {
+      try {
+        if (sessionStorage.getItem(`welcome_dismissed_${user.tenant_id}_${user.id}`) === '1') {
+          this.showWelcomeBanner = false;
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    this.welcomeTitle = title;
+    this.welcomeBody = body;
+    this.welcomeStyle = welcome.style ?? 'info';
+    this.showWelcomeBanner = true;
   }
 
   toggleSidebar(): void {

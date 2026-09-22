@@ -9,6 +9,7 @@ import { Apiendpointd } from '../../apiEndpoints';
 import { SnackbarService } from '../../services/snackbar.service';
 import { AuthService } from '../../services/auth.service';
 import { LocaleService } from '../../services/locale.service';
+import { TenantCustomizationService } from '../../services/tenant-customization.service';
 import { User } from '../../model/User';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -21,6 +22,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 export class Login {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly locale = inject(LocaleService);
+  readonly tenantCustomization = inject(TenantCustomizationService);
 
   isLoading = false;
   hasError = false;
@@ -41,7 +43,16 @@ export class Login {
     this.title.setTitle('Sign in — CheckinAccess');
     if (isPlatformBrowser(this.platformId)) {
       this.currentLang = this.locale.lang();
+      void this.tenantCustomization.loadPublicConfig();
     }
+  }
+
+  get appName(): string {
+    return this.tenantCustomization.appName(this.currentLang);
+  }
+
+  get logoUrl(): string | null {
+    return this.tenantCustomization.logoUrl();
   }
 
   currentLang: 'ar' | 'en' = 'en';

@@ -8,6 +8,9 @@
       <input class="rep-date" type="date" [(ngModel)]="start" />
       <input class="rep-date" type="date" [(ngModel)]="end" />
       <button class="btn-primary" type="button" (click)="load()">{{ 'REP_REFRESH' | translate }}</button>
+      <button class="btn-secondary" type="button" [disabled]="pdfLoading" (click)="downloadPdf()">
+        {{ pdfLoading ? ('LOADING' | translate) : ('REP_DOWNLOAD_PDF' | translate) }}
+      </button>
     </div>
   </div>
 
@@ -41,7 +44,7 @@
       <tbody>
         @for (row of records; track row.id) {
         <tr>
-          <td>{{ row.created_at || '—' }}</td>
+          <td>{{ row.created_at | tenantDateTime }}</td>
           <td>{{ row.room_number || '—' }}</td>
           <td>{{ row.user_name || '—' }}</td>
           <td>{{ row.room_id ?? '—' }}</td>

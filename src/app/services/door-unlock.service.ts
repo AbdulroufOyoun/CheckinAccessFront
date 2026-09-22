@@ -18,6 +18,8 @@ export interface DoorUnlockPage {
   current_page?: number;
   last_page?: number;
   per_page?: number;
+  from?: number;
+  to?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -29,6 +31,7 @@ export class DoorUnlockService {
     room_id?: number;
     start?: string;
     end?: string;
+    page?: number;
     per_page?: number;
   }): Promise<DoorUnlockPage> {
     const qs = new URLSearchParams();
@@ -36,6 +39,7 @@ export class DoorUnlockService {
     if (params?.room_id) qs.set('room_id', String(params.room_id));
     if (params?.start) qs.set('start', params.start);
     if (params?.end) qs.set('end', params.end);
+    if (params?.page) qs.set('page', String(params.page));
     qs.set('per_page', String(params?.per_page ?? 50));
     const suffix = qs.toString() ? `?${qs}` : '';
 
@@ -54,6 +58,21 @@ export class DoorUnlockService {
       current_page: page.current_page,
       last_page: page.last_page,
       per_page: page.per_page,
+      from: page.from,
+      to: page.to,
     };
+  }
+
+  async listByUser(
+    userId: number,
+    params?: { start?: string; end?: string; page?: number; per_page?: number },
+  ): Promise<DoorUnlockPage> {
+    return this.list({
+      user_id: userId,
+      start: params?.start,
+      end: params?.end,
+      page: params?.page,
+      per_page: params?.per_page,
+    });
   }
 }

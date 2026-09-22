@@ -2,7 +2,7 @@
   --ud-ink: #0f172a;
   --ud-muted: #64748b;
   --ud-line: #e2e8f0;
-  --ud-accent: #2563eb;
+  --ud-accent: var(--tenant-primary, #2563eb);
   width: 100%;
   max-width: min(960px, 100%);
   margin-inline: auto;
@@ -65,7 +65,7 @@
 }
 
 .ud__cta {
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  background: linear-gradient(135deg, var(--tenant-primary-dark, #1d4ed8), var(--tenant-primary, #2563eb));
   color: #fff;
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
 }
@@ -333,7 +333,7 @@
 .ud-filter--active {
   background: #eff6ff;
   border-color: #bfdbfe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .ud__link-btn {
@@ -485,7 +485,7 @@
 }
 
 .ud-booking--clickable:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--tenant-primary, #2563eb);
   outline-offset: 2px;
 }
 
