@@ -2,7 +2,7 @@
   margin-top: 20px;
   padding: 18px;
   border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--bc-line, #d8e0e8) 90%, #2563eb 10%);
+  border: 1px solid color-mix(in srgb, var(--bc-line, #d8e0e8) 90%, var(--tenant-primary, #2563eb) 10%);
   background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
 }
 
@@ -37,7 +37,7 @@
   padding: 4px 10px;
   border-radius: 999px;
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -131,7 +131,7 @@
 .bae__tabs button.is-on {
   border-color: #93c5fd;
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .bae__search {
@@ -188,7 +188,7 @@
 }
 
 .bae__card.is-on {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
 }
@@ -229,6 +229,6 @@
 }
 
 .bae__card.is-on .bae__check {
-  background: #2563eb;
+  background: var(--tenant-primary, #2563eb);
   color: #fff;
 }

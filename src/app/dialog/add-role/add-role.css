@@ -191,7 +191,7 @@
 }
 
 .as__input:focus {
-  border-color: var(--blue-500, #3B82F6);
+  border-color: var(--blue-500, var(--tenant-primary-light, #3b82f6));
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
@@ -252,7 +252,7 @@
 
 .role-dlg__step.is-on span {
   color: #fff;
-  background: linear-gradient(135deg, #0C1A3A, #1D4ED8);
+  background: linear-gradient(135deg, #0C1A3A, var(--tenant-primary-dark, #1d4ed8));
 }
 
 .role-dlg__step.is-on small {
@@ -310,7 +310,7 @@
 }
 
 .as__btn--primary {
-  background: linear-gradient(135deg, var(--blue-600, #2563EB), var(--blue-700, #1D4ED8));
+  background: linear-gradient(135deg, var(--blue-600, var(--tenant-primary, #2563eb)), var(--blue-700, var(--tenant-primary-dark, #1d4ed8)));
   color: #fff;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
   min-width: 150px;

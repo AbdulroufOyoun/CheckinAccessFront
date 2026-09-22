@@ -8,7 +8,7 @@
 
 .enr-hint--edit {
   margin-top: 8px;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .enr-empty {
@@ -51,7 +51,7 @@
 }
 
 .enr-item--checked {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   background: #eff6ff;
 }
 

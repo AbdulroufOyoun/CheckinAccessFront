@@ -149,7 +149,7 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   background: white;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
 }
@@ -213,7 +213,7 @@
 
 .dialog-btn--primary {
   color: white;
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background: linear-gradient(135deg, var(--tenant-primary, #2563eb), var(--tenant-primary-dark, #1d4ed8));
 }
 
 .dialog-btn--primary:hover {

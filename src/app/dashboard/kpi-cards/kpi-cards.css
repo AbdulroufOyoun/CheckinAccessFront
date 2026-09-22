@@ -38,7 +38,7 @@
   background: linear-gradient(
     125deg,
     transparent 0%,
-    color-mix(in srgb, var(--accent, #2563eb) 6%, transparent) 45%,
+    color-mix(in srgb, var(--accent, var(--tenant-primary, #2563eb)) 6%, transparent) 45%,
     transparent 100%
   );
   background-size: 220% 220%;
@@ -54,7 +54,7 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent, #2563eb) 18%, transparent) 0%, transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent, var(--tenant-primary, #2563eb)) 18%, transparent) 0%, transparent 70%);
   bottom: -18px;
   inset-inline-start: -12px;
   pointer-events: none;

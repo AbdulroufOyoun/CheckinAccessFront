@@ -2,7 +2,7 @@
   --dur-ink: #0f172a;
   --dur-muted: #64748b;
   --dur-line: #e2e8f0;
-  --dur-accent: #1d4ed8;
+  --dur-accent: var(--tenant-primary-dark, #1d4ed8);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -221,7 +221,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .dur-chip--scope { background: #f0fdf4; color: #15803d; }

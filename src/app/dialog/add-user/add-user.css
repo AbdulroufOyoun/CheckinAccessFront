@@ -247,7 +247,7 @@
 }
 
 .form-input:focus {
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   background: white;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
 }
@@ -307,7 +307,7 @@
 }
 
 .form-select:focus {
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   background: white;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
 }
@@ -359,7 +359,7 @@
 .gender-btn:hover {
   background: #EFF6FF;
   border-color: #BFDBFE;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .gender-btn:active {
@@ -369,7 +369,7 @@
 /* Active state */
 .gender-btn--active {
   background: #EFF6FF;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
   border-color: #BFDBFE;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
   font-weight: 600;
@@ -427,7 +427,7 @@
 
 /* Primary (Save) */
 .dialog-btn--primary {
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background: linear-gradient(135deg, var(--tenant-primary, #2563eb), var(--tenant-primary-dark, #1d4ed8));
   color: white;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
@@ -537,7 +537,7 @@
   padding: 8px 14px;
   border-radius: 12px;
   background: #EFF6FF;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
@@ -646,7 +646,7 @@
   justify-content: center;
   font-weight: 700;
   font-size: 12px;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
   flex-shrink: 0;
 }
 
@@ -693,7 +693,7 @@
 
 .res-row__status--completed {
   background: #EFF6FF;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .res-row__status--cancelled {

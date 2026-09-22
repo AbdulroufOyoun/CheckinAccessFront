@@ -41,7 +41,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--blue-600, #2563eb);
+  color: var(--blue-600, var(--tenant-primary, #2563eb));
 }
 
 .dash-hero__title {
@@ -124,11 +124,11 @@
 .dash-btn--ghost.dash-btn--active {
   background: #eff6ff;
   border-color: #bfdbfe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .dash-btn--primary {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--tenant-primary, #2563eb), var(--tenant-primary-dark, #1d4ed8));
   color: #fff;
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
 }
@@ -143,7 +143,7 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #2563eb;
+  background: var(--tenant-primary, #2563eb);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -175,7 +175,7 @@
   border-radius: 999px;
   background: #eff6ff;
   border: 1px solid #bfdbfe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 12px;
   font-weight: 600;
 }
@@ -183,7 +183,7 @@
 .dash-chip__remove {
   background: none;
   border: none;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
@@ -423,7 +423,7 @@
 }
 
 .module-card--property:hover::after {
-  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  background: linear-gradient(90deg, var(--tenant-primary, #2563eb), #60a5fa);
 }
 
 .module-card--edu:hover {
@@ -446,7 +446,7 @@
 
 .module-card--property .module-card__icon {
   background: #eff6ff;
-  color: #2563eb;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .module-card--edu .module-card__icon {

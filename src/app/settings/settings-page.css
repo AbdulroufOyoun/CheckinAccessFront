@@ -2,6 +2,14 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  max-width: none;
+}
+
+.settings-narrow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   max-width: 640px;
 }
 
@@ -30,6 +38,12 @@
   color: #0f172a;
 }
 
+.settings-card--tenant {
+  width: 100%;
+  max-width: none;
+  padding: 20px 24px;
+}
+
 .settings-meta {
   margin: 0 0 14px;
   color: #64748b;
@@ -40,7 +54,7 @@
   border: 0;
   border-radius: 8px;
   padding: 10px 14px;
-  background: #2563eb;
+  background: var(--bs-primary, var(--tenant-primary, #2563eb));
   color: #fff;
   font-weight: 600;
   cursor: pointer;

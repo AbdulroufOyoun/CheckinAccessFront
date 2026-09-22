@@ -2,8 +2,8 @@
   --rp-ink: #0f172a;
   --rp-muted: #64748b;
   --rp-line: #e2e8f0;
-  --rp-accent: #1d4ed8;
-  --rp-navy: #0c1a3a;
+  --rp-accent: var(--tenant-primary-dark, #1d4ed8);
+  --rp-navy: var(--tenant-navy, #0c1a3a);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -99,7 +99,7 @@
 }
 
 .rp-btn--primary {
-  background: linear-gradient(135deg, var(--rp-navy), #1d4ed8);
+  background: linear-gradient(135deg, var(--rp-navy), var(--tenant-primary-dark, #1d4ed8));
   color: #fff;
   box-shadow: 0 8px 20px rgba(12, 26, 58, 0.18);
 }
@@ -173,7 +173,7 @@
 
 .rp-tab.is-on em {
   background: #dbeafe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 @media (max-width: 900px) {
@@ -254,7 +254,7 @@
 }
 
 .rp__search input:focus {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
@@ -370,7 +370,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--rp-navy), #2563eb);
+  background: linear-gradient(135deg, var(--rp-navy), var(--tenant-primary, #2563eb));
   color: #fff;
   font-size: 0.68rem;
   font-weight: 750;
@@ -399,7 +399,7 @@
   border-radius: 8px;
   background: #eff6ff;
   border: 1px solid #bfdbfe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 0.78rem;
   font-weight: 700;
   overflow: hidden;
@@ -446,7 +446,7 @@
 
 .rp-sched--timed {
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   border-color: #bfdbfe;
 }
 
@@ -507,7 +507,7 @@
 .rp-icon-btn:hover {
   background: #eff6ff;
   border-color: #93c5fd;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .rp-icon-btn--ok:hover {

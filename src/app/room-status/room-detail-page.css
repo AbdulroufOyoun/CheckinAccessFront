@@ -335,7 +335,7 @@
 
 .rd-pill--class {
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .rd-list {

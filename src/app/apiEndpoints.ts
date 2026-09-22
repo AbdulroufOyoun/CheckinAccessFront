@@ -285,6 +285,32 @@ export class Apiendpointd {
     return this.mianUrl + 'me';
   }
 
+  public static get tenantSettings(): string {
+    return this.mianUrl + 'tenant-settings';
+  }
+
+  public static get tenantSettingsLogo(): string {
+    return this.mianUrl + 'tenant-settings/logo';
+  }
+
+  public static get publicConfig(): string {
+    return this.apiRoot + 'tenant/public-config';
+  }
+
+  public static doorUnlockHistoryPdf(start?: string, end?: string, lang?: string): string {
+    const params = new URLSearchParams();
+    if (start) params.set('start', start);
+    if (end) params.set('end', end);
+    if (lang) params.set('lang', lang);
+    const q = params.toString();
+    return `${this.doorUnlockHistory}/export.pdf${q ? `?${q}` : ''}`;
+  }
+
+  public static educationReportsPdf(lang?: string): string {
+    const params = lang ? `?lang=${encodeURIComponent(lang)}` : '';
+    return `${this.education}reports/export.pdf${params}`;
+  }
+
   //---------------------Users / Admins--------------------
   public static get users(): string {
     return this.mianUrl + 'users-management/';
@@ -570,5 +596,22 @@ export class Apiendpointd {
 
   public static get compoundAccessPropertyTree(): string {
     return this.compoundAccess + '/property-tree';
+  }
+
+  //---------------------Visitors (admin)------------------
+  public static get visitors(): string {
+    return this.mianUrl + 'visitors-management/';
+  }
+
+  public static get visitorsSearchName(): string {
+    return this.visitors + 'search-name';
+  }
+
+  public static visitorById(id: number | string): string {
+    return `${this.visitors}${id}`;
+  }
+
+  public static visitorEvents(id: number | string): string {
+    return `${this.visitors}${id}/events`;
   }
 }

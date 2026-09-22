@@ -82,7 +82,7 @@
   gap: 8px;
   padding: 10px 16px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background: linear-gradient(135deg, var(--tenant-primary, #2563eb), var(--tenant-primary-dark, #1d4ed8));
   color: white;
   font-size: 13px;
   font-weight: 600;
@@ -143,7 +143,7 @@
 }
 
 .search-bar__input:focus {
-  border-color: #3B82F6;
+  border-color: var(--tenant-primary-light, #3b82f6);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -375,7 +375,7 @@
 /* View button */
 .user-card__btn--view {
   background: #EFF6FF;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .user-card__btn--view:hover {

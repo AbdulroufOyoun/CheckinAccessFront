@@ -57,7 +57,7 @@
   height: 384px;
   top: -160px;
   left: -160px;
-  background: radial-gradient(circle, #3B82F6, transparent);
+  background: radial-gradient(circle, var(--tenant-primary-light, #3b82f6), transparent);
   opacity: 0.20;
 }
 
@@ -122,7 +122,7 @@
 
 .auth-card__accent-bar {
   height: 6px;
-  background: linear-gradient(90deg, #2563EB, #0D9488);
+  background: linear-gradient(90deg, var(--tenant-primary, #2563eb), #0D9488);
 }
 
 .auth-card__body {
@@ -147,7 +147,7 @@
   width: 64px;
   height: 64px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #1D4ED8, #0D9488);
+  background: linear-gradient(135deg, var(--tenant-primary-dark, #1d4ed8), #0D9488);
   box-shadow: 0 8px 24px rgba(29, 78, 216, 0.35);
   display: flex;
   align-items: center;
@@ -213,7 +213,7 @@
 }
 
 .auth-step__dot--active {
-  background: linear-gradient(135deg, #2563EB, #0D9488);
+  background: linear-gradient(135deg, var(--tenant-primary, #2563eb), #0D9488);
   color: white;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
@@ -290,7 +290,7 @@
 }
 
 .otp-heading__phone {
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
   font-weight: 600;
 }
 
@@ -343,7 +343,7 @@
     background 0.15s ease,
     box-shadow 0.15s ease,
     transform 0.1s ease;
-  caret-color: #2563EB;
+  caret-color: var(--tenant-primary, #2563eb);
   /* Remove number spinners */
   /* -moz-appearance: textfield; */
 }
@@ -355,7 +355,7 @@
 
 /* Empty + focused */
 .otp-input:focus {
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   background: #EFF6FF;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   transform: scale(1.04);
@@ -364,7 +364,7 @@
 
 /* Focused state class (for template-driven focus simulation) */
 .otp-input--focused {
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   background: #EFF6FF;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   transform: scale(1.04);
@@ -372,14 +372,14 @@
 
 /* Filled digit */
 .otp-input--filled {
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   background: #EFF6FF;
   color: #1E40AF;
 }
 
 /* Subtle filled "pop" animation */
 .otp-input--filled:not(:focus) {
-  border-color: #2563EB;
+  border-color: var(--tenant-primary, #2563eb);
   background: #EFF6FF;
 }
 
@@ -463,19 +463,19 @@
 }
 
 .auth-btn--primary {
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background-color: var(--bs-primary, var(--tenant-primary, #2563eb));
   color: white;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 14px rgba(var(--bs-primary-rgb, 37, 99, 235), 0.4);
 }
 
 .auth-btn--primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 6px 20px rgba(var(--bs-primary-rgb, 37, 99, 235), 0.5);
 }
 
 .auth-btn--primary:active {
   transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb, 37, 99, 235), 0.3);
 }
 
 .auth-btn--loading {
@@ -558,7 +558,7 @@
 }
 
 .otp-links__back:hover {
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
 }
 
 /* Back chevron — LTR shows left arrow, RTL shows right arrow */
@@ -585,7 +585,7 @@
   gap: 5px;
   font-size: 13px;
   font-weight: 500;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
   background: none;
   border: none;
   cursor: pointer;
@@ -595,7 +595,7 @@
 }
 
 .otp-links__resend:hover {
-  color: #1D4ED8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .otp-links__resend--disabled {

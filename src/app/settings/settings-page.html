@@ -4,19 +4,29 @@
     <p>{{ 'SET_SUBTITLE' | translate }}</p>
   </div>
 
-  <div class="settings-card">
-    <h2>{{ 'SET_ACCOUNT' | translate }}</h2>
-    <p class="settings-meta">{{ adminName }} · {{ adminEmail }}</p>
-    <button type="button" class="settings-btn" (click)="openChangePassword()">
-      {{ 'SET_CHANGE_PASSWORD' | translate }}
-    </button>
+  <div class="settings-narrow">
+    <div class="settings-card">
+      <h2>{{ 'SET_ACCOUNT' | translate }}</h2>
+      <p class="settings-meta">{{ adminName }} · {{ adminEmail }}</p>
+      <button type="button" class="settings-btn" (click)="openChangePassword()">
+        {{ 'SET_CHANGE_PASSWORD' | translate }}
+      </button>
+    </div>
+
+    <div class="settings-card">
+      <h2>{{ 'SET_LANGUAGE' | translate }}</h2>
+      <p class="settings-meta">{{ 'SET_LANGUAGE_HINT' | translate }}</p>
+      <button type="button" class="settings-btn settings-btn--secondary" (click)="toggleLang()">
+        {{ currentLang === 'ar' ? 'English' : 'العربية' }}
+      </button>
+    </div>
   </div>
 
-  <div class="settings-card">
-    <h2>{{ 'SET_LANGUAGE' | translate }}</h2>
-    <p class="settings-meta">{{ 'SET_LANGUAGE_HINT' | translate }}</p>
-    <button type="button" class="settings-btn settings-btn--secondary" (click)="toggleLang()">
-      {{ currentLang === 'ar' ? 'English' : 'العربية' }}
-    </button>
-  </div>
+  @if (canManageTenantSettings) {
+    <div class="settings-card settings-card--tenant">
+      <h2>{{ 'SET_TENANT_CUSTOMIZATION' | translate }}</h2>
+      <p class="settings-meta">{{ 'SET_TENANT_CUSTOMIZATION_HINT' | translate }}</p>
+      <app-tenant-settings-panel />
+    </div>
+  }
 </div>

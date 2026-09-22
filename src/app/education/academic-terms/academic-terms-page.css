@@ -136,7 +136,7 @@
   border-radius: 8px;
   padding: 7px 12px;
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.3;

@@ -3,7 +3,7 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #EEF2F9;
+  background: var(--surface-bg, #EEF2F9);
   font-family: 'Inter', sans-serif;
   direction: ltr;
 }
@@ -21,8 +21,8 @@
   height: 100%;
   overflow: hidden;
   z-index: 30;
-  /* background: linear-gradient(180deg, #0C1A3A 0%, #0F2354 60%, #0E2247 100%); */
-  background: #1e3a5f;
+  /* Tenant branding via TenantCustomizationService → --sidebar-bg */
+  background: var(--sidebar-bg, linear-gradient(180deg, #0C1A3A 0%, #0E2247 100%));
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
   width: var(--sidebar-width-collapsed);
   /* collapsed default */
@@ -52,6 +52,21 @@
   overflow: hidden;
 }
 
+.sidebar__logo-img {
+  max-height: 44px;
+  max-width: 160px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.shell-welcome {
+  margin: 12px clamp(12px, 3vw, 24px) 0;
+}
+
+.shell-welcome__body {
+  margin-top: 0.35rem;
+}
+
 .sidebar__logo-icon {
   width: 36px;
   height: 36px;
@@ -60,8 +75,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #3B82F6, #265e59);
-  /* background: linear-gradient(135deg, #3B82F6, #0D9488); */
+  background: linear-gradient(135deg, var(--tenant-primary-light, #3b82f6), #265e59);
+  /* background: linear-gradient(135deg, var(--tenant-primary-light, #3b82f6), #0D9488); */
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
@@ -303,7 +318,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3B82F6, #0D9488);
+  background: linear-gradient(135deg, var(--tenant-primary-light, #3b82f6), #0D9488);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,7 +467,7 @@ header.navbar.desktop-only {
 }
 
 .navbar__search-input:focus {
-  border-color: #3B82F6;
+  border-color: var(--tenant-primary-light, #3b82f6);
   background: white;
   width: 280px;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
@@ -508,7 +523,7 @@ header.navbar.desktop-only {
   height: 32px;
   border-radius: 8px;
   background: #F1F5FB;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -524,7 +539,7 @@ header.navbar.desktop-only {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563EB, #0D9488);
+  background: var(--tenant-gradient-auth);
   color: white;
   font-size: 11px;
   font-weight: 700;
@@ -616,7 +631,7 @@ header.navbar.desktop-only {
 .navbar__notif-btn--active {
   background: #EFF6FF;
   border-color: #BFDBFE;
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .navbar__notif-btn:hover {
@@ -734,7 +749,7 @@ header.navbar.desktop-only {
 }
 
 .navbar__notif-dot--info {
-  background: #3B82F6;
+  background: var(--tenant-primary-light, #3b82f6);
 }
 
 .navbar__notif-text {
@@ -776,7 +791,7 @@ header.navbar.desktop-only {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563EB, #0D9488);
+  background: var(--tenant-gradient-auth);
   display: flex;
   align-items: center;
   justify-content: center;

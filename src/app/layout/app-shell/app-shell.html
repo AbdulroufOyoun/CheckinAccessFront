@@ -5,6 +5,9 @@
   <!-- SIDEBAR — off-canvas drawer on mobile -->
   <aside id="mobile-sidebar" class="sidebar" [class.sidebar--open]="sidebarOpen || mobileLayout.drawerOpen()" [class.sidebar--collapsed]="!sidebarOpen && !mobileLayout.isMobile()">
     <div class="sidebar__logo">
+      @if (shellLogoUrl) {
+        <img class="sidebar__logo-img" [src]="shellLogoUrl" alt="" />
+      } @else {
       <div class="sidebar__logo-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -13,9 +16,10 @@
           <path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M8 10h.01M16 10h.01M12 14h.01M8 14h.01M16 14h.01" />
         </svg>
       </div>
+      }
       <div class="sidebar__logo-text sidebar__logo-text--visible">
-        <p class="sidebar__app-name">Accommodtion System</p>
-        <p class="sidebar__app-subtitle">Management System</p>
+        <p class="sidebar__app-name">{{ shellAppName }}</p>
+        <p class="sidebar__app-subtitle">{{ shellAppSubtitle }}</p>
       </div>
     </div>
 
@@ -436,6 +440,17 @@
     </header>
 
     <main class="page-content" id="main">
+      @if (showWelcomeBanner) {
+        <div class="shell-welcome alert alert-{{ welcomeStyle }} alert-dismissible fade show" role="alert">
+          @if (welcomeTitle) {
+            <strong>{{ welcomeTitle }}</strong>
+          }
+          @if (welcomeBody) {
+            <div class="shell-welcome__body">{{ welcomeBody }}</div>
+          }
+          <button type="button" class="btn-close" (click)="dismissWelcomeBanner()" [attr.aria-label]="'CLOSE' | translate"></button>
+        </div>
+      }
       <router-outlet></router-outlet>
     </main>
   </div>

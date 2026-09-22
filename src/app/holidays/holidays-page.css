@@ -2,8 +2,8 @@
   --hol-ink: #0f172a;
   --hol-muted: #64748b;
   --hol-line: #e2e8f0;
-  --hol-accent: #1d4ed8;
-  --hol-navy: #0c1a3a;
+  --hol-accent: var(--tenant-primary-dark, #1d4ed8);
+  --hol-navy: var(--tenant-navy, #0c1a3a);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -92,7 +92,7 @@
 }
 
 .hol-btn--primary {
-  background: linear-gradient(135deg, var(--hol-navy), #1d4ed8);
+  background: linear-gradient(135deg, var(--hol-navy), var(--tenant-primary-dark, #1d4ed8));
   color: #fff;
   box-shadow: 0 8px 20px rgba(12, 26, 58, 0.18);
 }
@@ -151,7 +151,7 @@
 
 .hol-tab.is-on em {
   background: #dbeafe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
 }
 
 .hol-panel {
@@ -221,7 +221,7 @@
 
 .hol-form input:focus,
 .hol-form select:focus {
-  border-color: #2563eb;
+  border-color: var(--tenant-primary, #2563eb);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
 }
 
@@ -295,7 +295,7 @@
 
 .hol-chip--day {
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   border: 1px solid #bfdbfe;
 }
 
@@ -317,7 +317,7 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: #dbeafe;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   font-size: 0.68rem;
   font-weight: 750;
 }

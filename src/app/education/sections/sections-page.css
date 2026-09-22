@@ -45,7 +45,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--blue-600, #2563EB);
+  color: var(--blue-600, var(--tenant-primary, #2563eb));
 }
 
 .sec-lead {
@@ -91,7 +91,7 @@
 }
 
 .sec-btn--primary {
-  background: linear-gradient(135deg, var(--blue-600, #2563EB), var(--blue-700, #1D4ED8));
+  background: linear-gradient(135deg, var(--blue-600, var(--tenant-primary, #2563eb)), var(--blue-700, var(--tenant-primary-dark, #1d4ed8)));
   color: #fff;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
@@ -103,7 +103,7 @@
 
 .sec-btn--soft {
   background: #eff6ff;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   border: 1px solid #bfdbfe;
   box-shadow: none;
 }
@@ -229,7 +229,7 @@
 }
 
 .sec-select:focus {
-  border-color: var(--blue-500, #3B82F6);
+  border-color: var(--blue-500, var(--tenant-primary-light, #3b82f6));
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
@@ -285,7 +285,7 @@
   height: 28px;
   border-radius: 50%;
   border: 2.5px solid #dbeafe;
-  border-top-color: #2563eb;
+  border-top-color: var(--tenant-primary, #2563eb);
   animation: secSpin 0.7s linear infinite;
 }
 
@@ -330,7 +330,7 @@
   display: grid;
   place-items: center;
   background: var(--blue-50, #EFF6FF);
-  color: var(--blue-600, #2563EB);
+  color: var(--blue-600, var(--tenant-primary, #2563eb));
   flex-shrink: 0;
 }
 
@@ -405,7 +405,7 @@
   height: 36px;
   padding: 0 10px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--blue-600, #2563EB), var(--blue-700, #1D4ED8));
+  background: linear-gradient(135deg, var(--blue-600, var(--tenant-primary, #2563eb)), var(--blue-700, var(--tenant-primary-dark, #1d4ed8)));
   color: #fff;
   font-size: 0.8rem;
   font-weight: 800;
@@ -500,7 +500,7 @@
   padding: 0 6px;
   border-radius: 8px;
   background: var(--blue-50, #EFF6FF);
-  color: var(--blue-700, #1D4ED8);
+  color: var(--blue-700, var(--tenant-primary-dark, #1d4ed8));
   font-size: 0.7rem;
   font-weight: 800;
 }
@@ -545,7 +545,7 @@
 
 .sec-no-times:hover {
   border-color: #93c5fd;
-  color: #1d4ed8;
+  color: var(--tenant-primary-dark, #1d4ed8);
   background: #eff6ff;
 }
 

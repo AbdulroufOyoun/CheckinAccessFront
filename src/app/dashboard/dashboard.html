@@ -96,7 +96,7 @@
   </div>
   }
 
-  @if (showMixedModuleCards) {
+  @if (showMixedModuleCards && widgetVisible('module_cards')) {
   <div class="module-cards">
     @if (canBookings) {
     <a class="module-card module-card--property" routerLink="/Reservations">
@@ -149,7 +149,7 @@
   </div>
   }
 
-  @if (showEduOnlyCards) {
+  @if (showEduOnlyCards && widgetVisible('edu_module_cards')) {
   <div class="module-cards">
     @if (canManageEducation) {
     <a class="module-card module-card--edu" routerLink="/Education/Subjects">
@@ -203,27 +203,37 @@
   }
 
   @if (hasProperty) {
+  @if (widgetVisible('kpi_cards')) {
   <app-kpi-cards [summary]="summary" [loading]="loadingProperty"></app-kpi-cards>
+  }
 
   <div class="dashboard__grid-2col">
     <div class="dashboard__col-wide">
+      @if (widgetVisible('room_grid')) {
       <app-room-grid [rooms]="rooms" [summary]="summary" [loading]="loadingProperty" [canOpenRooms]="canRoomStatus"></app-room-grid>
+      }
     </div>
     <div class="dashboard__col-narrow">
+      @if (widgetVisible('occupancy_chart')) {
       @defer (on viewport; prefetch on idle) {
         <app-occupancy-chart [summary]="summary"></app-occupancy-chart>
       } @placeholder {
         <div class="occ-chart-placeholder" aria-hidden="true"></div>
       }
+      }
     </div>
   </div>
 
   <div class="dashboard__grid-3col">
-    @if (hasQuickActions) {
+    @if (hasQuickActions && widgetVisible('quick_actions')) {
     <app-quick-actions></app-quick-actions>
     }
+    @if (widgetVisible('activity_panel')) {
     <app-activity-panel [items]="activity" [loading]="loadingProperty"></app-activity-panel>
+    }
+    @if (widgetVisible('smart_alerts')) {
     <app-smart-alerts [alerts]="alerts" [loading]="loadingProperty"></app-smart-alerts>
+    }
   </div>
   }
 

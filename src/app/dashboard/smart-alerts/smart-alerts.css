@@ -104,7 +104,7 @@
 }
 
 .alert-item--info .alert-item__msg {
-  color: #2563EB;
+  color: var(--tenant-primary, #2563eb);
 }
 
 .alert-item__meta {
