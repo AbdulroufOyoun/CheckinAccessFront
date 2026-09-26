@@ -76,9 +76,9 @@
     } @else {
       <div class="evt-grid">
         @for (row of filteredRows; track row.id) {
-          <article class="evt-card evt-card--{{ row.status }}">
+          <article class="evt-card evt-card--{{ displayPhase(row) }}">
             <header>
-              <span class="evt-chip">{{ statusLabel(row.status) }}</span>
+              <span class="evt-chip">{{ statusLabel(row) }}</span>
               <h2>{{ row.name }}</h2>
               <p>{{ row.start_date }} → {{ row.end_date }}</p>
             </header>

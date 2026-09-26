@@ -359,7 +359,8 @@
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  z-index: 2;
+  z-index: 30;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
   max-height: 200px;
   overflow: auto;
 }
@@ -417,6 +418,12 @@
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+}
+
+.evt-wiz__error--footer {
+  flex: 1 1 100%;
+  margin: 0;
+  text-align: start;
 }
 
 .evt-wiz__error {

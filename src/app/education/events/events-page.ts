@@ -3,9 +3,15 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 import { SnackbarService } from '../../services/snackbar.service';
+import { DialogMobileService } from '../../services/dialog-mobile.service';
+import { ConfirmDialog } from '../../dialog/confirm-dialog/confirm-dialog';
 import { EduEvent, EventsService } from '../../services/events.service';
+
+/** Timeline label for list cards (distinct from workflow status draft/active/cancelled). */
+export type EventDisplayPhase = 'draft' | 'cancelled' | 'upcoming' | 'ongoing' | 'ended';
 
 @Component({
   selector: 'app-events-page',
@@ -21,6 +27,7 @@ export class EventsPage implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
+  private readonly dialogMobile = inject(DialogMobileService);
 
   isRTL = false;
   loading = false;
@@ -64,13 +71,44 @@ export class EventsPage implements OnInit {
     }
   }
 
-  statusLabel(status: string): string {
-    const map: Record<string, string> = {
+  displayPhase(row: EduEvent): EventDisplayPhase {
+    if (row.status === 'cancelled') {
+      return 'cancelled';
+    }
+    if (row.status === 'draft') {
+      return 'draft';
+    }
+
+    const today = this.localIsoDate();
+    const start = (row.start_date || '').slice(0, 10);
+    const end = (row.end_date || '').slice(0, 10);
+
+    if (end && end < today) {
+      return 'ended';
+    }
+    if (start && start > today) {
+      return 'upcoming';
+    }
+
+    return 'ongoing';
+  }
+
+  statusLabel(row: EduEvent): string {
+    const map: Record<EventDisplayPhase, string> = {
       draft: 'EVT_STATUS_DRAFT',
-      active: 'EVT_STATUS_ACTIVE',
       cancelled: 'EVT_STATUS_CANCELLED',
+      upcoming: 'EVT_STATUS_UPCOMING',
+      ongoing: 'EVT_STATUS_ONGOING',
+      ended: 'EVT_STATUS_ENDED',
     };
-    return this.translate.instant(map[status] || status);
+    return this.translate.instant(map[this.displayPhase(row)]);
+  }
+
+  private localIsoDate(date = new Date()): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   audienceLabel(row: EduEvent): string {
@@ -97,7 +135,7 @@ export class EventsPage implements OnInit {
   }
 
   async cancel(row: EduEvent): Promise<void> {
-    if (!confirm(this.translate.instant('EVT_CANCEL_CONFIRM'))) return;
+    if (!(await this.openCancelConfirm(row))) return;
     try {
       await this.eventsApi.cancel(row.id);
       this.snackbar.show(this.translate.instant('EVT_CANCELLED'), 'success');
@@ -108,7 +146,7 @@ export class EventsPage implements OnInit {
   }
 
   async remove(row: EduEvent): Promise<void> {
-    if (!confirm(this.translate.instant('EVT_DELETE_CONFIRM'))) return;
+    if (!(await this.openDeleteConfirm(row))) return;
     try {
       await this.eventsApi.delete(row.id);
       this.snackbar.show(this.translate.instant('EVT_DELETED'), 'success');
@@ -120,6 +158,46 @@ export class EventsPage implements OnInit {
 
   edit(row: EduEvent): void {
     void this.router.navigate(['/Education/Events/Edit', row.id]);
+  }
+
+  private async openCancelConfirm(row: EduEvent): Promise<boolean> {
+    const ref = this.dialogMobile.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      width: '440px',
+      maxWidth: '94vw',
+      data: {
+        variant: 'danger',
+        titleKey: 'EVT_CANCEL_DIALOG_TITLE',
+        messageKey: 'EVT_CANCEL_DIALOG_MESSAGE',
+        hintKey: 'EVT_CANCEL_DIALOG_HINT',
+        confirmKey: 'EVT_CANCEL_DIALOG_CONFIRM',
+        preview: {
+          title: row.name,
+          subtitle: `${row.start_date} → ${row.end_date}`,
+        },
+      },
+    });
+    return (await firstValueFrom(ref.afterClosed())) === true;
+  }
+
+  private async openDeleteConfirm(row: EduEvent): Promise<boolean> {
+    const ref = this.dialogMobile.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      width: '440px',
+      maxWidth: '94vw',
+      data: {
+        variant: 'warning',
+        titleKey: 'EVT_DELETE_DIALOG_TITLE',
+        messageKey: 'EVT_DELETE_DIALOG_MESSAGE',
+        hintKey: 'EVT_DELETE_DIALOG_HINT',
+        confirmKey: 'EVT_DELETE_DIALOG_CONFIRM',
+        preview: {
+          title: row.name,
+          subtitle: `${row.start_date} → ${row.end_date}`,
+        },
+      },
+    });
+    return (await firstValueFrom(ref.afterClosed())) === true;
   }
 
   private err(e: unknown): string {
