@@ -115,6 +115,19 @@ export class EventsService {
     return this.api.post(Apiendpointd.educationEventCancel(id));
   }
 
+  searchAttendeeCandidates(query: string): Promise<ApiResponse<EventUserRef[]>> {
+    const qs = new URLSearchParams({ q: query.trim() });
+    return this.api.get(`${Apiendpointd.educationEventAttendeeCandidates}?${qs}`);
+  }
+
+  searchSupervisorCandidates(query: string, limit = 20): Promise<ApiResponse<EventUserRef[]>> {
+    const qs = new URLSearchParams({
+      q: query.trim(),
+      limit: String(limit),
+    });
+    return this.api.get(`${Apiendpointd.educationEventSupervisorCandidates}?${qs}`);
+  }
+
   rooms(params: {
     start_date: string;
     end_date: string;

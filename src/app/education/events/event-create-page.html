@@ -61,18 +61,21 @@
     </div>
 
     <footer class="evt-wiz__actions evt-wiz__actions--sticky">
+      @if (!canSave && !saving) {
+        <p class="evt-wiz__error evt-wiz__error--footer">{{ saveBlockReasonKey | translate }}</p>
+      }
       <button type="button" class="edu-btn edu-btn--ghost" (click)="cancel()" [disabled]="saving">
         {{ 'CANCEL' | translate }}
       </button>
       @if (existingStatus === 'active') {
-        <button type="button" class="edu-btn edu-btn--primary" (click)="saveAndActivate()" [disabled]="saving || !canSave">
+        <button type="button" class="edu-btn edu-btn--primary" (click)="saveAndActivate()" [disabled]="saving">
           {{ saving ? ('SAVING' | translate) : (primarySaveLabelKey | translate) }}
         </button>
       } @else {
-        <button type="button" class="edu-btn edu-btn--ghost" (click)="saveDraft()" [disabled]="saving || !canSave">
+        <button type="button" class="edu-btn edu-btn--ghost" (click)="saveDraft()" [disabled]="saving">
           {{ saving ? ('SAVING' | translate) : (draftSaveLabelKey | translate) }}
         </button>
-        <button type="button" class="edu-btn edu-btn--primary" (click)="saveAndActivate()" [disabled]="saving || !canSave">
+        <button type="button" class="edu-btn edu-btn--primary" (click)="saveAndActivate()" [disabled]="saving">
           {{ saving ? ('SAVING' | translate) : (primarySaveLabelKey | translate) }}
         </button>
       }
@@ -138,7 +141,7 @@
   <div class="evt-wiz__grid">
     <label class="evt-wiz__field evt-wiz__field--wide">
       <span>{{ 'EVT_NAME' | translate }} *</span>
-      <input type="text" [(ngModel)]="form.name" [placeholder]="'EVT_NAME_PH' | translate" />
+      <input type="text" [(ngModel)]="form.name" (ngModelChange)="onFormChanged()" [placeholder]="'EVT_NAME_PH' | translate" />
     </label>
     <label class="evt-wiz__field evt-wiz__field--wide">
       <span>{{ 'EVT_DESCRIPTION' | translate }}</span>
@@ -146,11 +149,11 @@
     </label>
     <label class="evt-wiz__field">
       <span>{{ 'EVT_START_DATE' | translate }} *</span>
-      <input type="date" [(ngModel)]="form.start_date" [min]="isEditMode ? undefined : today" />
+      <input type="date" [(ngModel)]="form.start_date" (ngModelChange)="onFormChanged()" [min]="isEditMode ? undefined : today" />
     </label>
     <label class="evt-wiz__field">
       <span>{{ 'EVT_END_DATE' | translate }} *</span>
-      <input type="date" [(ngModel)]="form.end_date" [min]="form.start_date || today" />
+      <input type="date" [(ngModel)]="form.end_date" (ngModelChange)="onFormChanged()" [min]="form.start_date || today" />
     </label>
   </div>
 
@@ -238,11 +241,22 @@
   </div>
 
   @if (form.audience_mode === 'selected_students') {
+    <p class="evt-wiz__hint">{{ 'EVT_ATTENDEE_SEARCH_HINT' | translate }}</p>
     <div class="evt-wiz__search">
-      <input type="search" [(ngModel)]="attendeeQuery" (input)="searchAttendees()" [placeholder]="'EVT_SEARCH_STUDENTS' | translate" />
-      @if (attendeeHits.length) {
+      <input
+        type="search"
+        [ngModel]="attendeeQuery"
+        (ngModelChange)="onAttendeeQueryChange($event)"
+        [placeholder]="'EVT_SEARCH_STUDENTS' | translate"
+      />
+      @if (attendeeSearchLoading()) {
+        <p class="evt-wiz__hint">{{ 'LOADING' | translate }}</p>
+      } @else if (attendeeSearchTried() && attendeeQuery.trim() && !attendeeHits().length) {
+        <p class="evt-wiz__hint">{{ 'EVT_SEARCH_NO_MATCHES' | translate }}</p>
+      }
+      @if (attendeeHits().length) {
         <div class="evt-wiz__hits">
-          @for (u of attendeeHits; track u.id) {
+          @for (u of attendeeHits(); track u.id) {
             <button type="button" (click)="addAttendee(u)">{{ u.name || ('#' + u.id) }}</button>
           }
         </div>
@@ -256,11 +270,22 @@
   }
 
   <h3 class="evt-edit__subhead">{{ 'EVT_SUPERVISORS' | translate }} *</h3>
+  <p class="evt-wiz__hint">{{ 'EVT_SUPERVISOR_SEARCH_HINT' | translate }}</p>
   <div class="evt-wiz__search">
-    <input type="search" [(ngModel)]="supervisorQuery" (input)="searchSupervisors()" [placeholder]="'EVT_SEARCH_SUPERVISORS' | translate" />
-    @if (supervisorHits.length) {
+    <input
+      type="search"
+      [ngModel]="supervisorQuery"
+      (ngModelChange)="onSupervisorQueryChange($event)"
+      [placeholder]="'EVT_SEARCH_SUPERVISORS' | translate"
+    />
+    @if (supervisorSearchLoading()) {
+      <p class="evt-wiz__hint">{{ 'LOADING' | translate }}</p>
+    } @else if (supervisorSearchTried() && supervisorQuery.trim() && !supervisorHits().length) {
+      <p class="evt-wiz__hint">{{ 'EVT_SEARCH_NO_MATCHES' | translate }}</p>
+    }
+    @if (supervisorHits().length) {
       <div class="evt-wiz__hits">
-        @for (u of supervisorHits; track u.id) {
+        @for (u of supervisorHits(); track u.id) {
           <button type="button" (click)="addSupervisor(u)">{{ u.name || ('#' + u.id) }}</button>
         }
       </div>

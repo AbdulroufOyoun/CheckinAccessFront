@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ApplicationRef, ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,7 +12,7 @@ import {
   EventUserRef,
 } from '../../services/events.service';
 import { EducationService, CompoundAccessStudent } from '../../services/education.service';
-import { UsersService, TenantUser } from '../../services/users.service';
+import { TenantUser, UsersService } from '../../services/users.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { TimePicker } from '../../shared/time-picker/time-picker';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
@@ -35,6 +35,7 @@ export class EventCreatePage implements OnInit {
   private readonly eventsApi = inject(EventsService);
   private readonly edu = inject(EducationService);
   private readonly usersApi = inject(UsersService);
+  private readonly appRef = inject(ApplicationRef);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -73,8 +74,14 @@ export class EventCreatePage implements OnInit {
   supervisors: EventUserRef[] = [];
   attendeeQuery = '';
   supervisorQuery = '';
-  attendeeHits: CompoundAccessStudent[] = [];
-  supervisorHits: TenantUser[] = [];
+  readonly attendeeHits = signal<CompoundAccessStudent[]>([]);
+  readonly supervisorHits = signal<TenantUser[]>([]);
+  readonly attendeeSearchLoading = signal(false);
+  readonly supervisorSearchLoading = signal(false);
+  readonly attendeeSearchTried = signal(false);
+  readonly supervisorSearchTried = signal(false);
+  private attendeeSearchSeq = 0;
+  private supervisorSearchSeq = 0;
 
   readonly weekdays: WeekdayOption[] = [
     { code: 0, labelKey: 'BOOK_DAY_SUN' },
@@ -149,6 +156,39 @@ export class EventCreatePage implements OnInit {
     return this.canGoStep2 && this.canGoStep3;
   }
 
+  get saveBlockReasonKey(): string {
+    if (!this.form.name.trim()) return 'EVT_REQUIRED';
+    if (this.periodTimeInvalid()) return 'EVT_TIME_INVALID';
+    if (!this.form.start_date || !this.form.end_date) return 'EVT_REQUIRED';
+    if (!this.canGoStep3) return 'EVT_PICK_ROOMS';
+    if (this.form.audience_mode === 'selected_students' && this.attendees.length === 0) return 'EVT_PICK_ATTENDEES';
+    if (this.supervisors.length === 0) return 'EVT_PICK_SUPERVISORS';
+    return 'EVT_REQUIRED';
+  }
+
+  onFormChanged(): void {
+    this.refreshView();
+  }
+
+  onAttendeeQueryChange(value: string): void {
+    this.attendeeQuery = value;
+    void this.searchAttendees();
+  }
+
+  onSupervisorQueryChange(value: string): void {
+    this.supervisorQuery = value;
+    void this.searchSupervisors();
+  }
+
+  /** Zoneless + ngTemplateOutlet: flush UI after async updates. */
+  private refreshView(): void {
+    this.cdr.markForCheck();
+    queueMicrotask(() => {
+      this.cdr.detectChanges();
+      this.appRef.tick();
+    });
+  }
+
   periodTimeInvalid(): boolean {
     if (!this.form.time_scheduled) return false;
     return !!this.form.start_time && !!this.form.end_time && this.form.end_time <= this.form.start_time;
@@ -164,6 +204,7 @@ export class EventCreatePage implements OnInit {
     } else {
       this.excludedWeekdays = [...this.excludedWeekdays, code];
     }
+    this.onFormChanged();
   }
 
   isRoomSelected(id: number): boolean {
@@ -177,6 +218,7 @@ export class EventCreatePage implements OnInit {
     } else {
       this.selectedRoomIds.add(room.id);
     }
+    this.onFormChanged();
   }
 
   async goToRooms(): Promise<void> {
@@ -248,33 +290,88 @@ export class EventCreatePage implements OnInit {
 
   async searchAttendees(): Promise<void> {
     const q = this.attendeeQuery.trim();
+    const seq = ++this.attendeeSearchSeq;
     if (!q) {
-      this.attendeeHits = [];
+      this.attendeeHits.set([]);
+      this.attendeeSearchTried.set(false);
+      this.attendeeSearchLoading.set(false);
+      this.refreshView();
       return;
     }
+    this.attendeeSearchLoading.set(true);
+    this.attendeeSearchTried.set(false);
+    this.refreshView();
     try {
-      const res = await this.edu.searchCompoundAccessStudents(q);
-      const hits = Array.isArray(res.data) ? res.data : [];
-      this.attendeeHits = this.filterAttendeeHits(hits);
+      const hits = await this.fetchAttendeeCandidates(q);
+      if (seq !== this.attendeeSearchSeq) return;
+      this.attendeeHits.set(this.filterAttendeeHits(hits));
     } catch {
-      this.attendeeHits = [];
+      if (seq !== this.attendeeSearchSeq) return;
+      this.attendeeHits.set([]);
+      this.snackbar.show(this.translate.instant('REQUEST_FAILED'), 'error');
+    } finally {
+      if (seq === this.attendeeSearchSeq) {
+        this.attendeeSearchLoading.set(false);
+        this.attendeeSearchTried.set(true);
+        this.refreshView();
+      }
     }
-    this.cdr.detectChanges();
   }
 
   async searchSupervisors(): Promise<void> {
     const q = this.supervisorQuery.trim();
+    const seq = ++this.supervisorSearchSeq;
     if (!q) {
-      this.supervisorHits = [];
+      this.supervisorHits.set([]);
+      this.supervisorSearchTried.set(false);
+      this.supervisorSearchLoading.set(false);
+      this.refreshView();
       return;
     }
+    this.supervisorSearchLoading.set(true);
+    this.supervisorSearchTried.set(false);
+    this.refreshView();
     try {
-      const page = await this.usersApi.searchByName(q, 8);
-      this.supervisorHits = this.filterSupervisorHits(page.data || []);
+      const hits = await this.fetchSupervisorCandidates(q);
+      if (seq !== this.supervisorSearchSeq) return;
+      this.supervisorHits.set(this.filterSupervisorHits(hits));
     } catch {
-      this.supervisorHits = [];
+      if (seq !== this.supervisorSearchSeq) return;
+      this.supervisorHits.set([]);
+      this.snackbar.show(this.translate.instant('REQUEST_FAILED'), 'error');
+    } finally {
+      if (seq === this.supervisorSearchSeq) {
+        this.supervisorSearchLoading.set(false);
+        this.supervisorSearchTried.set(true);
+        this.refreshView();
+      }
     }
-    this.cdr.detectChanges();
+  }
+
+  private async fetchAttendeeCandidates(q: string): Promise<CompoundAccessStudent[]> {
+    try {
+      const res = await this.eventsApi.searchAttendeeCandidates(q);
+      if (Array.isArray(res.data)) {
+        return res.data as CompoundAccessStudent[];
+      }
+    } catch {
+      // Fallback when backend route is missing (older deploy).
+    }
+    const res = await this.edu.searchCompoundAccessStudents(q);
+    return Array.isArray(res.data) ? res.data : [];
+  }
+
+  private async fetchSupervisorCandidates(q: string): Promise<TenantUser[]> {
+    try {
+      const res = await this.eventsApi.searchSupervisorCandidates(q, 20);
+      if (Array.isArray(res.data)) {
+        return res.data as TenantUser[];
+      }
+    } catch {
+      // Fallback when backend route is missing (older deploy).
+    }
+    const page = await this.usersApi.searchByName(q, 20);
+    return page.data || [];
   }
 
   addAttendee(user: CompoundAccessStudent): void {
@@ -285,8 +382,9 @@ export class EventCreatePage implements OnInit {
     if (this.attendees.some((u) => u.id === user.id)) return;
     this.attendees = [...this.attendees, user];
     this.attendeeQuery = '';
-    this.attendeeHits = [];
-    this.supervisorHits = this.filterSupervisorHits(this.supervisorHits);
+    this.attendeeHits.set([]);
+    this.supervisorHits.set(this.filterSupervisorHits(this.supervisorHits()));
+    this.onFormChanged();
   }
 
   removeAttendee(id: number): void {
@@ -297,6 +395,7 @@ export class EventCreatePage implements OnInit {
     if (this.supervisorQuery.trim()) {
       void this.searchSupervisors();
     }
+    this.onFormChanged();
   }
 
   addSupervisor(user: TenantUser): void {
@@ -307,8 +406,9 @@ export class EventCreatePage implements OnInit {
     if (this.supervisors.some((u) => u.id === user.id)) return;
     this.supervisors = [...this.supervisors, user];
     this.supervisorQuery = '';
-    this.supervisorHits = [];
-    this.attendeeHits = this.filterAttendeeHits(this.attendeeHits);
+    this.supervisorHits.set([]);
+    this.attendeeHits.set(this.filterAttendeeHits(this.attendeeHits()));
+    this.onFormChanged();
   }
 
   removeSupervisor(id: number): void {
@@ -319,6 +419,7 @@ export class EventCreatePage implements OnInit {
     if (this.attendeeQuery.trim()) {
       void this.searchAttendees();
     }
+    this.onFormChanged();
   }
 
   private isAttendee(userId: number): boolean {
@@ -399,8 +500,9 @@ export class EventCreatePage implements OnInit {
   }
 
   private async persist(status: 'draft' | 'active'): Promise<void> {
-    if (!this.canSave && status === 'active') {
-      this.snackbar.show(this.translate.instant('EVT_REQUIRED'), 'error');
+    this.onFormChanged();
+    if (!this.canSave) {
+      this.snackbar.show(this.translate.instant(this.saveBlockReasonKey), 'error');
       return;
     }
     this.saving = true;

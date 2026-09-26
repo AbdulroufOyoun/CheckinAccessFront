@@ -265,9 +265,24 @@
   font-weight: 700;
 }
 
-.evt-card--active .evt-chip {
+.evt-card--ongoing .evt-chip {
   background: #ecfdf5;
   color: #047857;
+}
+
+.evt-card--upcoming .evt-chip {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.evt-card--ended .evt-chip {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.evt-card--draft .evt-chip {
+  background: #fef9c3;
+  color: #a16207;
 }
 
 .evt-card--cancelled .evt-chip {
