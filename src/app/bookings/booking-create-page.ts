@@ -26,6 +26,7 @@ import {
   suiteAvailableCount,
   SuiteRoomGroup,
 } from '../shared/room-display-groups';
+import { EntityLabelPipe } from '../pipes/entity-label.pipe';
 
 type BookingMode = 'full_day' | 'hourly';
 type WizardStep = 1 | 2 | 3;
@@ -51,7 +52,7 @@ interface PeriodDraft {
 @Component({
   selector: 'app-booking-create-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, TimePicker, BookingAccessExtras],
+  imports: [CommonModule, FormsModule, TranslateModule, TimePicker, BookingAccessExtras, EntityLabelPipe],
   templateUrl: './booking-create-page.html',
   styleUrls: ['./booking-create-page.css', '../shared/room-suite-layout.css'],
 })

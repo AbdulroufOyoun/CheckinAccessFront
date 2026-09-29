@@ -181,10 +181,32 @@ export class AuthService {
     return this.mePromise;
   }
 
+  isSuperAdmin(): boolean {
+    const user = this.getUser();
+    return (user?.roles ?? []).some((role) => role === 'Super Admin');
+  }
+
   homeRoute(): string {
     if (this.hasModule('property')) return '/Dashboard';
     if (this.hasModule('education')) return '/Education/Subjects';
     return '/Dashboard';
+  }
+
+  /** Call after `TenantCustomizationService.loadSettings()` post-login. */
+  postLoginRoute(onboarding?: {
+    completed?: boolean;
+    establishment_step_done?: boolean;
+  }): string {
+    if (!this.hasModule('property') || !this.isSuperAdmin()) {
+      return this.homeRoute();
+    }
+    if (onboarding?.completed === true) {
+      return this.homeRoute();
+    }
+    if (onboarding?.establishment_step_done !== true) {
+      return '/EstablishmentSetup';
+    }
+    return '/PropertyOnboarding';
   }
 
   logout(): void {

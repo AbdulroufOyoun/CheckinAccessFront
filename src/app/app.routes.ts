@@ -1,6 +1,16 @@
 import { Routes } from '@angular/router';
 import { Login } from './auth/login/login';
-import { authGuard, guestGuard, moduleGuard, moduleGuardAny, permissionGuard, tenantGuard } from './guards/auth.guard';
+import {
+  authGuard,
+  establishmentOnboardingRedirectGuard,
+  establishmentSetupGuard,
+  propertyOnboardingGuard,
+  guestGuard,
+  moduleGuard,
+  moduleGuardAny,
+  permissionGuard,
+  tenantGuard,
+} from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -20,9 +30,23 @@ export const routes: Routes = [
   },
 
   {
+    path: 'EstablishmentSetup',
+    canActivate: [tenantGuard, authGuard, establishmentSetupGuard],
+    loadComponent: () =>
+      import('./onboarding/establishment-setup').then((m) => m.EstablishmentSetup),
+  },
+
+  {
+    path: 'PropertyOnboarding',
+    canActivate: [tenantGuard, authGuard, propertyOnboardingGuard],
+    loadComponent: () =>
+      import('./onboarding/property-onboarding').then((m) => m.PropertyOnboarding),
+  },
+
+  {
     path: '',
     loadComponent: () => import('./layout/app-shell/app-shell').then((m) => m.AppShell),
-    canActivate: [tenantGuard, authGuard],
+    canActivate: [tenantGuard, authGuard, establishmentOnboardingRedirectGuard],
     children: [
       {
         path: 'Dashboard',

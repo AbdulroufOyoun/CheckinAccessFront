@@ -1,0 +1,242 @@
+<div
+
+  class="est-setup onb-shell onb-shell--establishment"
+
+  [class.est-setup--rtl]="uiLang() === 'ar'"
+
+  [attr.dir]="uiLang() === 'ar' ? 'rtl' : 'ltr'"
+
+  [attr.data-ui-lang]="uiLang()"
+
+  [style.--onb-accent]="scenePrimaryColor()"
+
+>
+
+  <aside
+
+    class="onb-shell__scene est-setup__scene"
+
+    [attr.aria-label]="i18n('EST_SETUP_SCENE_ARIA')"
+
+  >
+
+    <div class="est-setup__scene-grid" aria-hidden="true"></div>
+
+    <app-onboarding-3d-scene
+
+      mode="establishment"
+
+      [presetId]="scenePresetId()"
+
+      [visual]="sceneVisual()"
+
+      [primaryColor]="scenePrimaryColor()"
+
+      [highlightPulse]="scenePulse()"
+
+    />
+
+    <div class="onb-shell__scene-overlay est-setup__scene-fade" aria-hidden="true"></div>
+
+    <div class="est-setup__scene-meta">
+
+      <span class="onb-shell__scene-badge">{{ i18n('EST_SETUP_3D_BADGE') }}</span>
+
+      <p class="est-setup__scene-caption">{{ sceneCaption() }}</p>
+      <p class="est-setup__scene-hint">{{ i18n('EST_SETUP_3D_DRAG') }}</p>
+
+    </div>
+
+  </aside>
+
+
+
+  <div class="onb-shell__form onb-shell__form--establishment">
+
+  <main class="est-setup__panel">
+
+    <header class="est-setup__head">
+
+      @if (customization.logoDisplayUrl(); as logoUrl) {
+
+        <img class="est-setup__logo" [src]="logoUrl" alt="" width="140" height="52" />
+
+      } @else {
+
+        <div class="est-setup__logo-mark" aria-hidden="true">
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+
+            <rect x="4" y="2" width="16" height="20" rx="2" />
+
+            <path d="M9 22v-4h6v4" />
+
+          </svg>
+
+        </div>
+
+      }
+
+      <p class="est-setup__eyebrow">{{ i18n('EST_SETUP_EYEBROW') }}</p>
+
+      <h1 class="est-setup__title">{{ i18n('EST_SETUP_TITLE') }}</h1>
+
+      <p class="est-setup__lead">{{ i18n('EST_SETUP_LEAD') }}</p>
+
+    </header>
+
+
+
+    @if (loading()) {
+
+      <div class="est-setup__loading" role="status">
+
+        <span class="est-setup__spinner"></span>
+
+        <span>{{ i18n('LOADING') }}</span>
+
+      </div>
+
+    } @else if (errorKey()) {
+
+      <div class="est-setup__alert">{{ i18n(errorKey()!) }}</div>
+
+    } @else {
+
+      <section class="est-setup__lang" [attr.aria-label]="i18n('EST_SETUP_LANG_ARIA')">
+
+        <h2 class="est-setup__lang-title">{{ i18n('EST_SETUP_LANG_TITLE') }}</h2>
+
+        <p class="est-setup__lang-lead">{{ i18n('EST_SETUP_LANG_LEAD') }}</p>
+
+        <div class="est-setup__lang-options">
+
+          <button
+
+            type="button"
+
+            class="est-setup__lang-btn"
+
+            [class.est-setup__lang-btn--active]="selectedLang() === 'ar'"
+
+            (click)="selectLanguage('ar')"
+
+            [disabled]="applying()"
+
+          >
+
+            <span class="est-setup__lang-badge" aria-hidden="true">AR</span>
+
+            <span class="est-setup__lang-label">{{ i18n('EST_SETUP_LANG_AR') }}</span>
+
+          </button>
+
+          <button
+
+            type="button"
+
+            class="est-setup__lang-btn"
+
+            [class.est-setup__lang-btn--active]="selectedLang() === 'en'"
+
+            (click)="selectLanguage('en')"
+
+            [disabled]="applying()"
+
+          >
+
+            <span class="est-setup__lang-badge" aria-hidden="true">EN</span>
+
+            <span class="est-setup__lang-label">{{ i18n('EST_SETUP_LANG_EN') }}</span>
+
+          </button>
+
+        </div>
+
+      </section>
+
+
+
+      <div class="est-setup__cards">
+
+        @for (preset of presets(); track preset.id; let i = $index) {
+
+          <button
+
+            type="button"
+
+            class="est-setup__card"
+
+            [class.est-setup__card--active]="selectedId() === preset.id"
+
+            [style.animation-delay.ms]="80 + i * 60"
+
+            (click)="selectPreset(preset.id)"
+
+            [disabled]="applying()"
+
+          >
+
+            <span class="est-setup__card-check" aria-hidden="true">
+
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+                <polyline points="20 6 9 17 4 12" />
+
+              </svg>
+
+            </span>
+
+            <span class="est-setup__icon" aria-hidden="true">{{ iconGlyph(preset.icon) }}</span>
+
+            <span class="est-setup__card-title">{{ presetText(preset, 'title') }}</span>
+
+            <span class="est-setup__card-desc">{{ presetText(preset, 'description') }}</span>
+
+          </button>
+
+        }
+
+      </div>
+
+
+
+      <footer class="est-setup__actions">
+
+        <button
+
+          type="button"
+
+          class="est-setup__cta"
+
+          [disabled]="!canContinue()"
+
+          (click)="confirm()"
+
+        >
+
+          @if (applying()) {
+
+            <span class="est-setup__spinner est-setup__spinner--sm"></span>
+
+          }
+
+          {{ i18n('EST_SETUP_CONTINUE') }}
+
+        </button>
+
+        <p class="est-setup__hint">{{ i18n('EST_SETUP_HINT') }}</p>
+
+      </footer>
+
+    }
+
+  </main>
+
+  </div>
+
+</div>
+
+

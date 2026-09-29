@@ -1,0 +1,263 @@
+<div
+  class="prop-onb onb-shell onb-shell--property"
+  [class.prop-onb--rtl]="locale.lang() === 'ar'"
+  [attr.dir]="locale.lang() === 'ar' ? 'rtl' : 'ltr'"
+  [attr.data-ui-lang]="locale.lang()"
+  [style.--onb-accent]="scenePrimaryColor()"
+>
+  <aside
+    class="onb-shell__scene"
+    [class.onb-shell__scene--layout]="step() >= 2"
+    [attr.aria-label]="i18n('PROP_ONB_SCENE_ARIA')"
+  >
+    <app-onboarding-3d-scene
+      mode="property"
+      [presetId]="profileId()"
+      [visual]="sceneVisual()"
+      [primaryColor]="scenePrimaryColor()"
+      [step]="step()"
+      [compounds]="compoundsCount()"
+      [buildingsPerCompound]="buildingsPerCompound()"
+      [floorsPerBuilding]="floorsPerBuilding()"
+      [roomsPerFloor]="roomsPerFloor()"
+      [roomTypeCount]="roomTypes().length"
+      [roomTypeLabels]="roomTypes()"
+      [activeTypeIndex]="activeTypeIndex()"
+      [layoutFocus]="layoutFocus()"
+    />
+    <div class="onb-shell__scene-overlay" aria-hidden="true"></div>
+    <span class="onb-shell__scene-badge">{{ i18n('PROP_ONB_3D_BADGE') }}</span>
+  </aside>
+
+  <div class="onb-shell__form">
+  <main class="prop-onb__panel" [class.prop-onb__panel--layout]="step() === 2">
+    <div class="prop-onb__panel-scroll">
+    <div class="prop-onb__panel-accent"></div>
+
+    <header class="prop-onb__head">
+      <p class="prop-onb__eyebrow">{{ i18n('PROP_ONB_EYEBROW') }}</p>
+      <h1 class="prop-onb__title">{{ i18n('PROP_ONB_TITLE') }}</h1>
+      <p class="prop-onb__lead">{{ i18n('PROP_ONB_SKIP_HINT') }}</p>
+
+      <ol class="prop-onb__steps" aria-label="Progress">
+        <li class="prop-onb__step" [class.prop-onb__step--active]="step() >= 1" [class.prop-onb__step--done]="step() > 1">1</li>
+        <li class="prop-onb__step-line" [class.prop-onb__step-line--done]="step() > 1"></li>
+        <li class="prop-onb__step" [class.prop-onb__step--active]="step() >= 2" [class.prop-onb__step--done]="step() > 2">2</li>
+        <li class="prop-onb__step-line" [class.prop-onb__step-line--done]="step() > 2"></li>
+        <li class="prop-onb__step" [class.prop-onb__step--active]="step() >= 3">3</li>
+      </ol>
+    </header>
+
+    @if (step() === 1) {
+      <section class="prop-onb__section">
+        <h2 class="prop-onb__section-title">{{ i18n('PROP_ONB_TYPES_TITLE') }}</h2>
+        <p class="prop-onb__section-lead">{{ i18n('PROP_ONB_TYPES_LEAD') }}</p>
+
+        <p class="prop-onb__label">{{ i18n('PROP_ONB_SUGGESTED') }}</p>
+        <div class="prop-onb__type-grid">
+          @for (typeName of suggestedTypes(); track typeName) {
+            <button
+              type="button"
+              class="prop-onb__type-card"
+              [class.prop-onb__type-card--selected]="isTypeSelected(typeName)"
+              (click)="toggleSuggestedType(typeName)"
+              [disabled]="busy()"
+            >
+              <span class="prop-onb__type-swatch" [attr.data-idx]="typeColorIndex(typeName)" aria-hidden="true"></span>
+              <span class="prop-onb__type-card-title">{{ typeName }}</span>
+              @if (isTypeSelected(typeName)) {
+                <span class="prop-onb__type-check" aria-hidden="true">✓</span>
+              }
+            </button>
+          }
+        </div>
+
+        <div class="prop-onb__add-row">
+          <input
+            type="text"
+            class="prop-onb__input"
+            [(ngModel)]="newTypeName"
+            [placeholder]="i18n('PROP_ONB_TYPE_PH')"
+            (keyup.enter)="addCustomType()"
+            [disabled]="busy()"
+          />
+          <button type="button" class="prop-onb__btn-secondary" (click)="addCustomType()" [disabled]="busy()">
+            {{ i18n('PROP_ONB_ADD_TYPE') }}
+          </button>
+        </div>
+
+        @if (roomTypes().length) {
+          <p class="prop-onb__label">{{ i18n('PROP_ONB_SELECTED_TYPES') }}</p>
+          <div class="prop-onb__selected-types">
+            @for (typeName of roomTypes(); track typeName; let idx = $index) {
+              <button
+                type="button"
+                class="prop-onb__selected-chip"
+                [class.prop-onb__selected-chip--active]="activeTypeIndex() === idx"
+                (click)="selectActiveType(idx)"
+                [disabled]="busy()"
+              >
+                <span class="prop-onb__type-swatch prop-onb__type-swatch--sm" [attr.data-idx]="typeColorIndex(typeName)"></span>
+                <span>{{ typeName }}</span>
+                <span
+                  class="prop-onb__type-remove"
+                  role="button"
+                  tabindex="0"
+                  (click)="removeType(typeName); $event.stopPropagation()"
+                  (keyup.enter)="removeType(typeName); $event.stopPropagation()"
+                  [attr.aria-label]="i18n('REMOVE')"
+                >×</span>
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="prop-onb__empty">{{ i18n('PROP_ONB_TYPES_EMPTY') }}</p>
+        }
+      </section>
+    }
+
+    @if (step() === 2) {
+      <section class="prop-onb__section">
+        <h2 class="prop-onb__section-title">{{ i18n('PROP_ONB_LAYOUT_TITLE') }}</h2>
+        <p class="prop-onb__section-lead">{{ i18n('PROP_ONB_LAYOUT_LEAD') }}</p>
+
+        <div class="prop-onb__group">
+          <h3 class="prop-onb__group-title">{{ i18n('PROP_ONB_GROUP_HORIZON') }}</h3>
+          <div class="prop-onb__counters">
+            <div class="prop-onb__counter-card" [class.prop-onb__counter-card--focus]="layoutFocus() === 'compounds'">
+              <span class="prop-onb__counter-label">{{ i18n('PROP_ONB_COMPOUNDS') }}</span>
+              <div class="prop-onb__stepper">
+                <button type="button" (click)="bump('compounds', -1)" [disabled]="busy()">−</button>
+                <span>{{ compoundsCount() }}</span>
+                <button type="button" (click)="bump('compounds', 1)" [disabled]="busy()">+</button>
+              </div>
+            </div>
+            <div class="prop-onb__counter-card" [class.prop-onb__counter-card--focus]="layoutFocus() === 'buildings'">
+              <span class="prop-onb__counter-label">{{ i18n('PROP_ONB_BUILDINGS') }}</span>
+              <div class="prop-onb__stepper">
+                <button type="button" (click)="bump('buildings', -1)" [disabled]="busy()">−</button>
+                <span>{{ buildingsPerCompound() }}</span>
+                <button type="button" (click)="bump('buildings', 1)" [disabled]="busy()">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="prop-onb__group">
+          <h3 class="prop-onb__group-title">{{ i18n('PROP_ONB_GROUP_VERTICAL') }}</h3>
+          <div class="prop-onb__slider-block" [class.prop-onb__counter-card--focus]="layoutFocus() === 'floors'">
+            <div class="prop-onb__slider-head">
+              <span class="prop-onb__counter-label">{{ i18n('PROP_ONB_FLOORS') }}</span>
+              <strong>{{ floorsPerBuilding() }}</strong>
+            </div>
+            <input
+              type="range"
+              class="prop-onb__range"
+              min="1"
+              max="20"
+              [ngModel]="floorsPerBuilding()"
+              (ngModelChange)="onSlider('floors', $event)"
+              [disabled]="busy()"
+            />
+          </div>
+        </div>
+
+        <div class="prop-onb__group">
+          <h3 class="prop-onb__group-title">{{ i18n('PROP_ONB_GROUP_DENSITY') }}</h3>
+          <div class="prop-onb__density-row">
+            <div class="prop-onb__slider-block prop-onb__slider-block--grow" [class.prop-onb__counter-card--focus]="layoutFocus() === 'rooms'">
+              <div class="prop-onb__slider-head">
+                <span class="prop-onb__counter-label">{{ i18n('PROP_ONB_ROOMS_PER_FLOOR') }}</span>
+                <strong>{{ roomsPerFloor() }}</strong>
+              </div>
+              <input
+                type="range"
+                class="prop-onb__range"
+                min="1"
+                max="30"
+                [ngModel]="roomsPerFloor()"
+                (ngModelChange)="onSlider('rooms', $event)"
+                [disabled]="busy()"
+              />
+              <p class="prop-onb__floor-hint">{{ i18n('PROP_ONB_FLOOR_GRID_HINT') }}</p>
+              <div
+                class="prop-onb__floor-schematic"
+                [style.grid-template-columns]="'repeat(' + floorGrid().cols + ', 1fr)'"
+                [attr.aria-label]="i18n('PROP_ONB_FLOOR_GRID_HINT')"
+              >
+                @for (cell of floorGridCells(); track cell) {
+                  <span class="prop-onb__floor-cell"></span>
+                }
+                @if (floorGridExtra() > 0) {
+                  <span class="prop-onb__floor-cell prop-onb__floor-cell--more">+{{ floorGridExtra() }}</span>
+                }
+              </div>
+            </div>
+            <div class="prop-onb__counter-card">
+              <span class="prop-onb__counter-label">{{ i18n('PROP_ONB_CAPACITY') }}</span>
+              <div class="prop-onb__stepper">
+                <button type="button" (click)="bump('capacity', -1)" [disabled]="busy()">−</button>
+                <span>{{ defaultCapacity() }}</span>
+                <button type="button" (click)="bump('capacity', 1)" [disabled]="busy()">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="prop-onb__preview prop-onb__preview--3d-hint">
+          <span class="prop-onb__preview-kpi">{{ totalRooms() }}</span>
+          <span class="prop-onb__preview-label">{{ i18n('PROP_ONB_TOTAL_ROOMS') }}</span>
+          <span class="prop-onb__preview-note">
+            {{ floorsPerBuilding() }} × {{ roomsPerFloor() }} — {{ i18n('PROP_ONB_3D_SYNC') }}
+          </span>
+        </div>
+        @if (totalRooms() > 5000) {
+          <p class="prop-onb__warn">{{ i18n('PROP_ONB_TOO_MANY') }}</p>
+        }
+      </section>
+    }
+
+    @if (step() === 3) {
+      <section class="prop-onb__section">
+        <h2 class="prop-onb__section-title">{{ i18n('PROP_ONB_REVIEW_TITLE') }}</h2>
+        <ul class="prop-onb__summary prop-onb__summary--cards">
+          <li><strong>{{ i18n('PROP_ONB_REVIEW_TYPES') }}:</strong> {{ roomTypes().join(', ') }}</li>
+          <li><strong>{{ i18n('PROP_ONB_COMPOUNDS') }}:</strong> {{ compoundsCount() }}</li>
+          <li><strong>{{ i18n('PROP_ONB_BUILDINGS') }}:</strong> {{ buildingsPerCompound() }} {{ i18n('PROP_ONB_PER_COMPOUND') }}</li>
+          <li><strong>{{ i18n('PROP_ONB_FLOORS') }}:</strong> {{ floorsPerBuilding() }} {{ i18n('PROP_ONB_PER_BUILDING') }}</li>
+          <li><strong>{{ i18n('PROP_ONB_ROOMS_PER_FLOOR') }}:</strong> {{ roomsPerFloor() }}</li>
+          <li><strong>{{ i18n('PROP_ONB_TOTAL_ROOMS') }}:</strong> {{ totalRooms() }}</li>
+        </ul>
+      </section>
+    }
+
+    </div>
+
+    <footer class="prop-onb__footer">
+      <button type="button" class="prop-onb__link" (click)="skip()" [disabled]="busy()">
+        {{ i18n('PROP_ONB_SKIP') }}
+      </button>
+
+      <div class="prop-onb__nav">
+        @if (step() > 1) {
+          <button type="button" class="prop-onb__btn-secondary" (click)="prevStep()" [disabled]="busy()">
+            {{ i18n('PROP_ONB_BACK') }}
+          </button>
+        }
+        @if (step() < 3) {
+          <button type="button" class="prop-onb__cta" (click)="nextStep()" [disabled]="!canGoNext() || busy()">
+            {{ i18n('PROP_ONB_NEXT') }}
+          </button>
+        } @else {
+          <button type="button" class="prop-onb__cta" (click)="createStructure()" [disabled]="!canGoNext() || busy()">
+            @if (busy()) {
+              <span class="prop-onb__spinner"></span>
+            }
+            {{ i18n('PROP_ONB_CREATE') }}
+          </button>
+        }
+      </div>
+    </footer>
+  </main>
+  </div>
+</div>

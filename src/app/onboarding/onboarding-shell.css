@@ -1,0 +1,188 @@
+/* Split layout: live Three.js scene + glass form panel */
+.onb-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #0f172a;
+}
+
+.onb-shell--establishment,
+.onb-shell--property {
+  background: linear-gradient(145deg, #0c1528 0%, #1a3358 42%, #152238 100%);
+}
+
+@media (min-width: 992px) {
+  .onb-shell {
+    flex-direction: row;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+.onb-shell__scene {
+  position: relative;
+  flex: 1 1 44%;
+  min-height: 240px;
+  max-height: 42vh;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (min-width: 992px) {
+  .onb-shell__scene {
+    min-height: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    flex: 1 1 44%;
+    border-bottom: none;
+    border-inline-end: none;
+  }
+}
+
+/* Stacked layout: shorter 3D band so the form fits typical laptop viewports */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .onb-shell__scene {
+    max-height: 34vh;
+    min-height: 200px;
+  }
+
+  .onb-shell--property .onb-shell__scene--layout {
+    max-height: 30vh;
+  }
+}
+
+.onb-shell--establishment .onb-shell__scene,
+.onb-shell--property .onb-shell__scene {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, color-mix(in srgb, var(--onb-accent, #2563eb) 22%, transparent), transparent),
+    linear-gradient(180deg, rgba(12, 21, 40, 0.2) 0%, rgba(12, 21, 40, 0.85) 100%);
+}
+
+.onb-shell--property .onb-shell__scene--layout {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 88%, color-mix(in srgb, var(--onb-accent, #2563eb) 16%, transparent), transparent),
+    linear-gradient(165deg, rgba(8, 14, 28, 0.15) 0%, rgba(12, 21, 40, 0.55) 100%);
+}
+
+.onb-shell__scene-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.15) 0%,
+    transparent 35%,
+    transparent 70%,
+    rgba(15, 23, 42, 0.45) 100%
+  );
+  z-index: 2;
+}
+
+.onb-shell__scene--layout .onb-shell__scene-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(10, 18, 32, 0.08) 0%,
+    transparent 42%,
+    transparent 68%,
+    rgba(10, 18, 32, 0.28) 100%
+  );
+}
+
+@media (min-width: 992px) {
+  .onb-shell__scene--layout .onb-shell__scene-overlay {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(10, 18, 32, 0.06) 45%,
+      rgba(10, 18, 32, 0.32) 100%
+    );
+  }
+
+  .prop-onb--rtl .onb-shell__scene--layout .onb-shell__scene-overlay {
+    background: linear-gradient(
+      270deg,
+      transparent 0%,
+      rgba(10, 18, 32, 0.06) 45%,
+      rgba(10, 18, 32, 0.32) 100%
+    );
+  }
+}
+
+.onb-shell__scene-badge {
+  position: absolute;
+  z-index: 3;
+  bottom: 1rem;
+  inset-inline-start: 1rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.onb-shell__form {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.25rem 1rem 2rem;
+  position: relative;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.onb-shell__form--establishment {
+  background: transparent;
+}
+
+@media (min-width: 992px) {
+  .onb-shell__form {
+    padding: 1rem clamp(1rem, 2.5vw, 2rem);
+    flex: 1 1 56%;
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .onb-shell__form .prop-onb__panel,
+  .onb-shell__form .est-setup__panel {
+    margin-inline: auto;
+  }
+
+  .onb-shell--establishment::before,
+  .onb-shell--property::before {
+    content: '';
+    position: absolute;
+    top: 8%;
+    bottom: 8%;
+    inset-inline-start: 44%;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(255, 255, 255, 0.12) 20%,
+      rgba(255, 255, 255, 0.12) 80%,
+      transparent
+    );
+    pointer-events: none;
+    z-index: 4;
+  }
+}
+
+.onb-shell__form .est-setup__panel,
+.onb-shell__form .prop-onb__panel {
+  max-width: 920px;
+  width: 100%;
+}
+
+.onb-shell__form .prop-onb__panel {
+  max-width: 760px;
+}

@@ -5,7 +5,7 @@
   <!-- SIDEBAR — off-canvas drawer on mobile -->
   <aside id="mobile-sidebar" class="sidebar" [class.sidebar--open]="sidebarOpen || mobileLayout.drawerOpen()" [class.sidebar--collapsed]="!sidebarOpen && !mobileLayout.isMobile()">
     <div class="sidebar__logo">
-      @if (shellLogoUrl) {
+      @if (tenantCustomization.logoDisplayUrl(); as shellLogoUrl) {
         <img class="sidebar__logo-img" [src]="shellLogoUrl" alt="" />
       } @else {
       <div class="sidebar__logo-icon">
@@ -440,6 +440,11 @@
     </header>
 
     <main class="page-content" id="main">
+      @if (showEstablishmentPendingBanner) {
+        <div class="shell-welcome alert alert-warning" role="status">
+          {{ 'EST_SETUP_PENDING_BANNER' | translate }}
+        </div>
+      }
       @if (showWelcomeBanner) {
         <div class="shell-welcome alert alert-{{ welcomeStyle }} alert-dismissible fade show" role="alert">
           @if (welcomeTitle) {

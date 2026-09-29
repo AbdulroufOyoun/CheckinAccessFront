@@ -25,7 +25,7 @@ export class LocaleService {
     try {
       await firstValueFrom(
         this.translate.use(lang).pipe(
-          timeout({ first: 1200 }),
+          timeout({ first: 8000 }),
           catchError(() => of(undefined)),
         ),
       );

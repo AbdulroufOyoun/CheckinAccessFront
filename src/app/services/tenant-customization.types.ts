@@ -51,6 +51,31 @@ export interface TenantPdfSettings {
   primary_color?: string | null;
 }
 
+export interface TenantOnboardingSettings {
+  completed?: boolean;
+  profile_id?: string | null;
+  establishment_step_done?: boolean;
+  property_structure_done?: boolean;
+  property_structure_skipped?: boolean;
+  completed_at?: string | null;
+}
+
+export interface PropertyOnboardingProvisionPayload {
+  room_types: string[];
+  compounds_count: number;
+  buildings_per_compound: number;
+  floors_per_building: number;
+  rooms_per_floor: number;
+  default_capacity?: number;
+}
+
+export interface EstablishmentPresetCard {
+  id: string;
+  icon: string;
+  title: LocalizedText;
+  description: LocalizedText;
+}
+
 export interface TenantCustomizationPayload {
   schema_version?: number;
   appearance?: TenantAppearance;
@@ -61,6 +86,7 @@ export interface TenantCustomizationPayload {
   welcome?: TenantWelcomeSettings;
   dashboard?: { widgets: DashboardWidgetConfig[] };
   pdf?: TenantPdfSettings;
+  onboarding?: TenantOnboardingSettings;
 }
 
 export interface TenantPublicConfig {

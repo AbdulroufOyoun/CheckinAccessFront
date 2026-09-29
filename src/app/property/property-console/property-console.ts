@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { DialogMobileService } from '../../services/dialog-mobile.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
+import { EntityLabelPipe } from '../../pipes/entity-label.pipe';
 import { SnackbarService } from '../../services/snackbar.service';
 import { PropertyTreeCache } from '../../services/property-tree-cache.service';
 import {
@@ -50,7 +51,7 @@ type DetailTab = 'overview' | 'locks' | 'catalogs';
 @Component({
   selector: 'app-property-console',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, PageSkeleton, NgTemplateOutlet],
+  imports: [CommonModule, FormsModule, TranslateModule, PageSkeleton, NgTemplateOutlet, EntityLabelPipe],
   templateUrl: './property-console.html',
   styleUrl: './property-console.css',
 })

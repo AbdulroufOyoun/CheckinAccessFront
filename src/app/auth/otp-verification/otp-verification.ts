@@ -8,6 +8,7 @@ import { Apiendpointd } from '../../apiEndpoints';
 import { User } from '../../model/User';
 import { AuthService } from '../../services/auth.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { TenantCustomizationService } from '../../services/tenant-customization.service';
 
 
 @Component({
@@ -27,7 +28,15 @@ export class OtpVerification {
   email: string = '';
   password: string = '';
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef, private translate: TranslateService, private api: ApiService, public authService: AuthService, private snackbar: SnackbarService,) { }
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private translate: TranslateService,
+    private api: ApiService,
+    public authService: AuthService,
+    private snackbar: SnackbarService,
+    private tenantCustomization: TenantCustomizationService,
+  ) {}
 
   ngOnInit(): void {
     const state =
@@ -88,11 +97,21 @@ export class OtpVerification {
       if (result.success) {
         const user = new User(result.data.user);
         this.authService.saveUser(result.data.token, user);
+        try {
+          await this.authService.refreshMe(true);
+        } catch {
+          /* keep session */
+        }
+        let settings = null;
+        try {
+          settings = await this.tenantCustomization.loadSettings(true);
+        } catch {
+          /* ignore */
+        }
         this.isSuccess = true;
         this.snackbar.show(result.message, 'success');
-        console.log(this.authService.getToken());
-        console.log(this.authService.getUser());
-        this.router.navigate(['/Dashboard']);
+        const route = this.authService.postLoginRoute(settings?.onboarding);
+        await this.router.navigate([route]);
       } else {
         console.log('Maybe Error')
       }

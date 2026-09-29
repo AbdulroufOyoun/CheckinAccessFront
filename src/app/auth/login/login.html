@@ -29,7 +29,7 @@
 
         <!-- ── LOGO ──────────────────────────────── -->
         <div class="auth-logo">
-          @if (logoUrl) {
+          @if (tenantCustomization.logoDisplayUrl(); as logoUrl) {
             <img class="auth-logo__img" [src]="logoUrl" alt="" width="120" height="48" />
           } @else {
           <div class="auth-logo__icon" aria-hidden="true">

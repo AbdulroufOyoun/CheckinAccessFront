@@ -130,9 +130,16 @@ export class Login {
         } catch {
           // Session still usable; modules refresh can retry later from the shell.
         }
+        let settings = null;
+        try {
+          settings = await this.tenantCustomization.loadSettings(true);
+        } catch {
+          /* onboarding redirect falls back to dashboard */
+        }
         this.stopLoading();
         this.snackbar.show(verifyResult.message || 'Login successful', 'success');
-        await this.router.navigate([this.authService.homeRoute()]);
+        const route = this.authService.postLoginRoute(settings?.onboarding);
+        await this.router.navigate([route]);
         return;
       }
 

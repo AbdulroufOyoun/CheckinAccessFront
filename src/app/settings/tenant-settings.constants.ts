@@ -1,104 +1,27 @@
-export type TenantLabelGroupId = 'nav' | 'dashboard' | 'property' | 'education' | 'admin';
+import {
+  TENANT_LABEL_GROUPS_GENERATED,
+  TENANT_LABEL_KEYS_GENERATED,
+  TENANT_LABEL_MODULES,
+  type TenantLabelModule,
+} from './tenant-label-catalog.generated';
+
+export type { TenantLabelModule };
+export { TENANT_LABEL_MODULES, TENANT_LABEL_META } from './tenant-label-catalog.generated';
+
+export type TenantLabelGroupId = (typeof TENANT_LABEL_GROUPS_GENERATED)[number]['id'];
 
 export interface TenantLabelGroup {
-  id: TenantLabelGroupId;
+  id: TenantLabelGroupId | string;
   titleKey: string;
   hintKey: string;
+  module: TenantLabelModule;
   keys: readonly string[];
 }
 
-/** Grouped menu/page labels for the tenant customization UI. */
-export const TENANT_LABEL_GROUPS: TenantLabelGroup[] = [
-  {
-    id: 'nav',
-    titleKey: 'SET_TENANT_LABELS_GROUP_NAV',
-    hintKey: 'SET_TENANT_LABELS_GROUP_NAV_HINT',
-    keys: [
-      'NAV_SECTION_OVERVIEW',
-      'NAV_SECTION_PROPERTY',
-      'NAV_SECTION_EDUCATION',
-      'NAV_SECTION_ADMIN',
-    ],
-  },
-  {
-    id: 'dashboard',
-    titleKey: 'SET_TENANT_LABELS_GROUP_DASHBOARD',
-    hintKey: 'SET_TENANT_LABELS_GROUP_DASHBOARD_HINT',
-    keys: ['DASHBOARD', 'DASH_SUB_PROP', 'DASH_SUB_EDU', 'DASH_SUB_BOTH'],
-  },
-  {
-    id: 'property',
-    titleKey: 'SET_TENANT_LABELS_GROUP_PROPERTY',
-    hintKey: 'SET_TENANT_LABELS_GROUP_PROPERTY_HINT',
-    keys: [
-      'DUR_NAV',
-      'RESERVATIONS',
-      'BOOK_VIEW_DELETED',
-      'ROOM_STATUS_NAV',
-      'HOL_NAV',
-      'PROP_NAV',
-      'LOCKS_NAV',
-      'REPORTS',
-      'REP_TITLE',
-      'COMPOUND_ACCESS_NAV',
-    ],
-  },
-  {
-    id: 'education',
-    titleKey: 'SET_TENANT_LABELS_GROUP_EDUCATION',
-    hintKey: 'SET_TENANT_LABELS_GROUP_EDUCATION_HINT',
-    keys: [
-      'EDU_SUBJECTS',
-      'EDU_SECTIONS',
-      'EDU_SCHEDULE',
-      'EDU_ENROLLMENTS',
-      'EDU_TERMS',
-      'EDU_ENROLLMENT_HISTORY',
-      'EDU_EVENTS',
-      'EDU_REPORTS',
-    ],
-  },
-  {
-    id: 'admin',
-    titleKey: 'SET_TENANT_LABELS_GROUP_ADMIN',
-    hintKey: 'SET_TENANT_LABELS_GROUP_ADMIN_HINT',
-    keys: ['USERS', 'ADMINS', 'ROLES_PERMISSIONS', 'SETTINGS', 'SET_TITLE'],
-  },
-];
+/** Grouped menu/page labels for the tenant customization UI (generated from catalog). */
+export const TENANT_LABEL_GROUPS: TenantLabelGroup[] = [...TENANT_LABEL_GROUPS_GENERATED];
 
-export const TENANT_LABEL_KEYS = [
-  'DASHBOARD',
-  'DUR_NAV',
-  'RESERVATIONS',
-  'BOOK_VIEW_DELETED',
-  'ROOM_STATUS_NAV',
-  'HOL_NAV',
-  'PROP_NAV',
-  'LOCKS_NAV',
-  'REPORTS',
-  'EDU_SUBJECTS',
-  'EDU_SECTIONS',
-  'EDU_SCHEDULE',
-  'EDU_ENROLLMENTS',
-  'EDU_TERMS',
-  'EDU_ENROLLMENT_HISTORY',
-  'EDU_EVENTS',
-  'EDU_REPORTS',
-  'USERS',
-  'COMPOUND_ACCESS_NAV',
-  'ADMINS',
-  'ROLES_PERMISSIONS',
-  'SETTINGS',
-  'NAV_SECTION_OVERVIEW',
-  'NAV_SECTION_PROPERTY',
-  'NAV_SECTION_EDUCATION',
-  'NAV_SECTION_ADMIN',
-  'SET_TITLE',
-  'DASH_SUB_PROP',
-  'DASH_SUB_EDU',
-  'DASH_SUB_BOTH',
-  'REP_TITLE',
-] as const;
+export const TENANT_LABEL_KEYS = [...TENANT_LABEL_KEYS_GENERATED];
 
 export const TENANT_NAV_IDS = [
   'dashboard',

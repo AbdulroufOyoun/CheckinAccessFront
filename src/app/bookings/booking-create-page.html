@@ -258,7 +258,7 @@
     } @else {
     <div class="bc-room-filters">
       <div class="bc-field">
-        <label>{{ 'ROOM_STATUS_BUILDING' | translate }}</label>
+        <label>{{ 'building' | entityLabel }}</label>
         <select [(ngModel)]="buildingFilter" (ngModelChange)="reloadRooms()">
           <option [ngValue]="null">{{ 'ROOM_STATUS_ALL_BUILDINGS' | translate }}</option>
           @for (b of buildings; track b.id) {

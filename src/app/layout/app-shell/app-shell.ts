@@ -19,7 +19,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth.service';
 import { LocaleService } from '../../services/locale.service';
 import { User } from '../../model/User';
+import { firstValueFrom } from 'rxjs';
 import { ChangePassword } from '../../dialog/change-password/change-password';
+import { ConfirmDialog } from '../../dialog/confirm-dialog/confirm-dialog';
 import { TenantUser, UsersService } from '../../services/users.service';
 import { RealtimeService } from '../../services/realtime.service';
 import {
@@ -95,6 +97,7 @@ export class AppShell implements OnInit, OnDestroy {
   welcomeTitle = '';
   welcomeBody = '';
   welcomeStyle: 'info' | 'success' | 'warning' = 'info';
+  showEstablishmentPendingBanner = false;
 
   @ViewChild('navSearchInput') navSearchInput?: ElementRef<HTMLInputElement>;
   @ViewChild('navSearchResults') navSearchResults?: ElementRef<HTMLElement>;
@@ -316,6 +319,7 @@ export class AppShell implements OnInit, OnDestroy {
         this.connectRealtime(user);
         void this.tenantCustomization.loadSettings().then(() => {
           this.syncWelcomeBanner(user);
+          this.syncEstablishmentPendingBanner(user);
           this.cdr.detectChanges();
         });
         this.cdr.detectChanges();
@@ -671,6 +675,17 @@ export class AppShell implements OnInit, OnDestroy {
     this.showWelcomeBanner = true;
   }
 
+  private syncEstablishmentPendingBanner(user: User | null): void {
+    if (!user) {
+      this.showEstablishmentPendingBanner = false;
+      return;
+    }
+    this.showEstablishmentPendingBanner =
+      this.auth.hasModule('property') &&
+      !this.auth.isSuperAdmin() &&
+      this.tenantCustomization.onboardingSettings()?.completed !== true;
+  }
+
   toggleSidebar(): void {
     if (this.mobileLayout.isMobile()) {
       this.mobileLayout.toggleDrawer();
@@ -769,7 +784,22 @@ export class AppShell implements OnInit, OnDestroy {
     });
   }
 
-  logOut(): void {
+  async logOut(): Promise<void> {
+    this.closeDropdowns();
+    const ref = this.dialogMobile.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      width: '440px',
+      maxWidth: '94vw',
+      data: {
+        variant: 'warning',
+        titleKey: 'LOGOUT_DIALOG_TITLE',
+        messageKey: 'LOGOUT_DIALOG_MESSAGE',
+        confirmKey: 'LOGOUT_DIALOG_CONFIRM',
+      },
+    });
+    if ((await firstValueFrom(ref.afterClosed())) !== true) {
+      return;
+    }
     this.realtime.disconnect();
     this.auth.logout();
   }

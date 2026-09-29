@@ -1,19 +1,31 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbAlertModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TenantCustomizationService } from '../services/tenant-customization.service';
 import { SnackbarService } from '../services/snackbar.service';
 import { LocaleService } from '../services/locale.service';
 import {
   TENANT_LABEL_GROUPS,
   TENANT_LABEL_KEYS,
+  TENANT_LABEL_META,
+  TENANT_LABEL_MODULES,
   TENANT_NAV_IDS,
   TENANT_TERMINOLOGY_KEYS,
   TIMEZONE_OPTIONS,
   type TenantLabelGroup,
+  type TenantLabelModule,
 } from './tenant-settings.constants';
 import {
   TENANT_WIDGET_CATALOG,
@@ -43,19 +55,39 @@ import baseAr from '../../assets/i18n/ar.json';
   templateUrl: './tenant-settings-panel.html',
   styleUrl: './tenant-settings-panel.css',
 })
-export class TenantSettingsPanel implements OnInit {
-  private readonly customization = inject(TenantCustomizationService);
+export class TenantSettingsPanel implements OnInit, OnDestroy {
+  private static buildLabelGroupsForUi(groups: TenantLabelGroup[]): TenantLabelGroup[] {
+    return groups
+      .map((group) => ({
+        ...group,
+        keys: group.keys.filter((key) => TENANT_LABEL_META[key]?.kind !== 'nav'),
+      }))
+      .filter((group) => group.keys.length > 0);
+  }
+
+  readonly customization = inject(TenantCustomizationService);
+  private pendingLogoFile: File | null = null;
+  private pendingLogoObjectUrl: string | null = null;
+  private readonly pendingLogoPreview = signal<string | null>(null);
+  readonly logoPreviewUrl = computed(
+    () => this.pendingLogoPreview() ?? this.customization.logoDisplayUrl(),
+  );
   private readonly snackbar = inject(SnackbarService);
   private readonly cdr = inject(ChangeDetectorRef);
   readonly locale = inject(LocaleService);
+  private readonly translate = inject(TranslateService);
 
   activeTab = 1;
   saving = false;
   loading = true;
 
   readonly labelKeys = TENANT_LABEL_KEYS;
-  readonly labelGroups = TENANT_LABEL_GROUPS;
+  /** Page copy only — sidebar menu titles (DUR_NAV, …) are managed under Navigation. */
+  readonly labelGroups = TenantSettingsPanel.buildLabelGroupsForUi(TENANT_LABEL_GROUPS);
+  readonly labelUiKeys = this.labelGroups.flatMap((g) => g.keys);
   labelSearch = '';
+  labelModuleFilter: TenantLabelModule | 'all' = 'all';
+  readonly labelModules = TENANT_LABEL_MODULES;
   readonly navIds = TENANT_NAV_IDS;
   readonly terminologyKeys = TENANT_TERMINOLOGY_KEYS;
   readonly timezones = TIMEZONE_OPTIONS;
@@ -116,29 +148,18 @@ export class TenantSettingsPanel implements OnInit {
     void this.load();
   }
 
-  logoUrl(): string | null {
-    return this.customization.logoUrl();
-  }
-
-  /** Live preview while editing appearance colors (also applied after save via API). */
-  previewAppearance(): void {
-    this.syncSidebarEndFromPicker();
-    this.customization.applyBranding({
-      primary_color: this.appearance.primary_color,
-      sidebar_color_start: this.appearance.sidebar_color_start,
-      sidebar_color_end: this.appearance.sidebar_color_end,
-      surface_bg: this.appearance.surface_bg,
-    });
+  ngOnDestroy(): void {
+    this.clearPendingLogoSelection();
   }
 
   onManualAppearanceChange(): void {
     this.activeAppearancePresetId = null;
-    this.previewAppearance();
+    this.syncSidebarEndFromPicker();
   }
 
   onSidebarColorChange(): void {
     this.activeAppearancePresetId = null;
-    this.previewAppearance();
+    this.syncSidebarEndFromPicker();
   }
 
   applyAppearancePreset(preset: TenantAppearancePreset): void {
@@ -146,7 +167,7 @@ export class TenantSettingsPanel implements OnInit {
     this.appearance.primary_color = preset.primary_color;
     this.sidebar_color = preset.sidebar_color;
     this.appearance.surface_bg = preset.surface_bg;
-    this.previewAppearance();
+    this.syncSidebarEndFromPicker();
     this.cdr.detectChanges();
   }
 
@@ -157,6 +178,11 @@ export class TenantSettingsPanel implements OnInit {
   private syncSidebarEndFromPicker(): void {
     this.appearance.sidebar_color_start = this.sidebar_color;
     this.appearance.sidebar_color_end = shadeHex(this.sidebar_color, -16);
+  }
+
+  private previewAppearance(): void {
+    this.syncSidebarEndFromPicker();
+    this.customization.applyBranding(this.appearance);
   }
 
   welcomePreviewTitle(): string {
@@ -185,13 +211,41 @@ export class TenantSettingsPanel implements OnInit {
     return key;
   }
 
+  /** Human-facing card title (never the internal i18n key). */
+  labelCardTitle(key: string): string {
+    const lang = this.locale.lang();
+    const override =
+      lang === 'ar' ? this.labelOverridesAr[key]?.trim() : this.labelOverridesEn[key]?.trim();
+    if (override) {
+      return override;
+    }
+    return this.catalogLabel(key, lang);
+  }
+
+  labelModuleLabel(module: TenantLabelModule | 'all'): string {
+    if (module === 'all') {
+      return 'SET_TENANT_LABELS_MODULE_ALL';
+    }
+    return `SET_TENANT_LABELS_MODULE_${module.toUpperCase()}`;
+  }
+
+  setLabelModuleFilter(module: TenantLabelModule | 'all'): void {
+    this.labelModuleFilter = module;
+    this.cdr.detectChanges();
+  }
+
   labelRowVisible(key: string): boolean {
+    if (this.labelModuleFilter !== 'all') {
+      const group = this.labelGroups.find((g) => g.keys.includes(key));
+      if (group && group.module !== this.labelModuleFilter) {
+        return false;
+      }
+    }
     const q = this.labelSearch.trim().toLowerCase();
     if (!q) {
       return true;
     }
     const haystack = [
-      key,
       this.catalogLabel(key, 'en'),
       this.catalogLabel(key, 'ar'),
       this.labelOverridesEn[key] ?? '',
@@ -204,6 +258,9 @@ export class TenantSettingsPanel implements OnInit {
   }
 
   labelGroupVisible(group: TenantLabelGroup): boolean {
+    if (this.labelModuleFilter !== 'all' && group.module !== this.labelModuleFilter) {
+      return false;
+    }
     return group.keys.some((key) => this.labelRowVisible(key));
   }
 
@@ -216,7 +273,7 @@ export class TenantSettingsPanel implements OnInit {
   }
 
   customizedLabelsCount(): number {
-    return this.labelKeys.filter((key) => this.isLabelCustomized(key)).length;
+    return this.labelUiKeys.filter((key) => this.isLabelCustomized(key)).length;
   }
 
   clearLabelOverride(key: string): void {
@@ -245,6 +302,7 @@ export class TenantSettingsPanel implements OnInit {
     try {
       const data = (await this.customization.loadSettings(true)) ?? this.customization.settings();
       if (data) {
+        this.clearPendingLogoSelection();
         this.hydrateFromPayload(data);
       } else {
         this.rebuildNavSections();
@@ -262,16 +320,12 @@ export class TenantSettingsPanel implements OnInit {
     if (!file) {
       return;
     }
-    void this.customization
-      .uploadLogo(file)
-      .then(() => {
-        this.snackbar.show('Logo updated', 'success');
-        input.value = '';
-        this.cdr.detectChanges();
-      })
-      .catch(() => {
-        this.snackbar.show('Upload failed', 'error');
-      });
+    this.clearPendingLogoSelection();
+    this.pendingLogoFile = file;
+    this.pendingLogoObjectUrl = URL.createObjectURL(file);
+    this.pendingLogoPreview.set(this.pendingLogoObjectUrl);
+    input.value = '';
+    this.cdr.detectChanges();
   }
 
   onNavDrop(sectionIndex: number, event: CdkDragDrop<TenantNavSectionForEdit['items']>): void {
@@ -295,16 +349,42 @@ export class TenantSettingsPanel implements OnInit {
 
   async saveAppearance(): Promise<void> {
     this.syncSidebarEndFromPicker();
-    await this.save({
-      appearance: {
-        primary_color: this.appearance.primary_color,
-        sidebar_color_start: this.appearance.sidebar_color_start,
-        sidebar_color_end: this.appearance.sidebar_color_end,
-        surface_bg: this.appearance.surface_bg,
-        app_name: { ar: this.appearance.app_name_ar, en: this.appearance.app_name_en },
-        app_subtitle: { ar: this.appearance.app_subtitle_ar, en: this.appearance.app_subtitle_en },
-      },
-    });
+    this.saving = true;
+    this.cdr.detectChanges();
+    try {
+      if (this.pendingLogoFile) {
+        await this.customization.uploadLogo(this.pendingLogoFile);
+        this.clearPendingLogoSelection();
+      }
+      const data = await this.customization.saveSettings({
+        appearance: {
+          primary_color: this.appearance.primary_color,
+          sidebar_color_start: this.appearance.sidebar_color_start,
+          sidebar_color_end: this.appearance.sidebar_color_end,
+          surface_bg: this.appearance.surface_bg,
+          app_name: { ar: this.appearance.app_name_ar, en: this.appearance.app_name_en },
+          app_subtitle: { ar: this.appearance.app_subtitle_ar, en: this.appearance.app_subtitle_en },
+        },
+      });
+      if (data) {
+        this.hydrateFromPayload(data);
+      }
+      this.snackbar.show(this.translate.instant('SET_TENANT_TOAST_SAVED'), 'success');
+    } catch (err) {
+      this.snackbar.show(this.saveErrorMessage(err), 'error');
+    } finally {
+      this.saving = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private clearPendingLogoSelection(): void {
+    if (this.pendingLogoObjectUrl) {
+      URL.revokeObjectURL(this.pendingLogoObjectUrl);
+      this.pendingLogoObjectUrl = null;
+    }
+    this.pendingLogoFile = null;
+    this.pendingLogoPreview.set(null);
   }
 
   async saveRegional(): Promise<void> {
@@ -383,14 +463,27 @@ export class TenantSettingsPanel implements OnInit {
     });
   }
 
+  private saveErrorMessage(err: unknown): string {
+    if (err instanceof HttpErrorResponse && typeof err.error?.message === 'string' && err.error.message.trim()) {
+      return err.error.message.trim();
+    }
+    if (err instanceof Error && err.message.trim()) {
+      return err.message.trim();
+    }
+    return this.translate.instant('SET_TENANT_TOAST_SAVE_FAIL');
+  }
+
   private async save(patch: Partial<TenantCustomizationPayload>): Promise<void> {
     this.saving = true;
     this.cdr.detectChanges();
     try {
-      await this.customization.saveSettings(patch);
-      this.snackbar.show('Settings saved', 'success');
-    } catch {
-      this.snackbar.show('Save failed', 'error');
+      const data = await this.customization.saveSettings(patch);
+      if (data) {
+        this.hydrateFromPayload(data);
+      }
+      this.snackbar.show(this.translate.instant('SET_TENANT_TOAST_SAVED'), 'success');
+    } catch (err) {
+      this.snackbar.show(this.saveErrorMessage(err), 'error');
     } finally {
       this.saving = false;
       this.cdr.detectChanges();
@@ -425,10 +518,14 @@ export class TenantSettingsPanel implements OnInit {
       this.appearance.sidebar_color_start = a.sidebar_color_start ?? this.appearance.sidebar_color_start;
       this.appearance.sidebar_color_end = a.sidebar_color_end ?? this.appearance.sidebar_color_end;
       this.appearance.surface_bg = a.surface_bg ?? this.appearance.surface_bg;
-      this.appearance.app_name_ar = a.app_name?.ar ?? '';
-      this.appearance.app_name_en = a.app_name?.en ?? '';
-      this.appearance.app_subtitle_ar = a.app_subtitle?.ar ?? '';
-      this.appearance.app_subtitle_en = a.app_subtitle?.en ?? '';
+      this.appearance.app_name_ar =
+        (a.app_name?.ar && String(a.app_name.ar).trim()) || this.customization.appName('ar');
+      this.appearance.app_name_en =
+        (a.app_name?.en && String(a.app_name.en).trim()) || this.customization.appName('en');
+      this.appearance.app_subtitle_ar =
+        (a.app_subtitle?.ar && String(a.app_subtitle.ar).trim()) || this.customization.appSubtitle('ar');
+      this.appearance.app_subtitle_en =
+        (a.app_subtitle?.en && String(a.app_subtitle.en).trim()) || this.customization.appSubtitle('en');
       this.sidebar_color = a.sidebar_color_start ?? this.sidebar_color;
     }
     const r = data.regional;

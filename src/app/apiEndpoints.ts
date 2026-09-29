@@ -293,8 +293,28 @@ export class Apiendpointd {
     return this.mianUrl + 'tenant-settings/logo';
   }
 
+  public static get tenantEstablishmentPresets(): string {
+    return this.mianUrl + 'tenant-settings/establishment-presets';
+  }
+
+  public static get tenantApplyEstablishmentPreset(): string {
+    return this.mianUrl + 'tenant-settings/apply-establishment-preset';
+  }
+
+  public static get tenantPropertyOnboardingProvision(): string {
+    return this.mianUrl + 'tenant-settings/property-onboarding/provision';
+  }
+
+  public static get tenantPropertyOnboardingSkip(): string {
+    return this.mianUrl + 'tenant-settings/property-onboarding/skip';
+  }
+
   public static get publicConfig(): string {
     return this.apiRoot + 'tenant/public-config';
+  }
+
+  public static get tenantLogo(): string {
+    return this.apiRoot + 'tenant/logo';
   }
 
   public static doorUnlockHistoryPdf(start?: string, end?: string, lang?: string): string {
@@ -559,6 +579,14 @@ export class Apiendpointd {
 
   public static educationEventById(id: number | string): string {
     return `${this.educationEvents}/${id}`;
+  }
+
+  public static get educationEventSupervisorCandidates(): string {
+    return `${this.educationEvents}/supervisor-candidates`;
+  }
+
+  public static get educationEventAttendeeCandidates(): string {
+    return `${this.educationEvents}/attendee-candidates`;
   }
 
   public static get educationEventRooms(): string {

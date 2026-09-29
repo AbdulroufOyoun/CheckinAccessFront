@@ -10,10 +10,19 @@
       <button ngbNavLink type="button">{{ 'SET_TENANT_APPEARANCE' | translate }}</button>
       <ng-template ngbNavContent>
         <div class="tenant-tab">
+          <div class="tenant-tab-save-bar">
+            <p class="tenant-tab-save-bar__hint">{{ 'SET_TENANT_SAVE_HINT' | translate }}</p>
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveAppearance()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
           <div class="tenant-panel-section">
             <h3 class="tenant-panel-section__title">{{ 'SET_TENANT_LOGO' | translate }}</h3>
             <div class="tenant-logo-row">
-              @if (logoUrl(); as url) {
+              @if (logoPreviewUrl(); as url) {
                 <img [src]="url" alt="" class="tenant-logo-preview" />
               } @else {
                 <div class="tenant-logo-preview tenant-logo-preview--empty">{{ 'SET_TENANT_LOGO_NONE' | translate }}</div>
@@ -335,9 +344,38 @@
       <button ngbNavLink type="button">{{ 'SET_TENANT_LABELS' | translate }}</button>
       <ng-template ngbNavContent>
         <div class="tenant-tab tenant-labels-tab">
+          <div class="tenant-tab-save-bar">
+            <p class="tenant-tab-save-bar__hint">{{ 'SET_TENANT_SAVE_HINT' | translate }}</p>
+            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveLabels()">
+              @if (saving) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              }
+              {{ 'SAVE' | translate }}
+            </button>
+          </div>
           <div class="tenant-labels-intro">
             <p class="tenant-labels-intro__text">{{ 'SET_TENANT_LABELS_HINT' | translate }}</p>
             <div class="tenant-labels-toolbar">
+              <div class="tenant-labels-modules" role="group" [attr.aria-label]="'SET_TENANT_LABELS_MODULE_FILTER' | translate">
+                <button
+                  type="button"
+                  class="tenant-labels-modules__pill"
+                  [class.is-active]="labelModuleFilter === 'all'"
+                  (click)="setLabelModuleFilter('all')"
+                >
+                  {{ labelModuleLabel('all') | translate }}
+                </button>
+                @for (mod of labelModules; track mod) {
+                  <button
+                    type="button"
+                    class="tenant-labels-modules__pill"
+                    [class.is-active]="labelModuleFilter === mod"
+                    (click)="setLabelModuleFilter(mod)"
+                  >
+                    {{ labelModuleLabel(mod) | translate }}
+                  </button>
+                }
+              </div>
               <div class="tenant-labels-search">
                 <svg class="tenant-labels-search__icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                   <path
@@ -377,8 +415,7 @@
                       >
                         <header class="tenant-label-card__head">
                           <div class="tenant-label-card__titles">
-                            <h4 class="tenant-label-card__title">{{ key | translate }}</h4>
-                            <code class="tenant-label-card__code">{{ key }}</code>
+                            <h4 class="tenant-label-card__title">{{ labelCardTitle(key) }}</h4>
                           </div>
                           @if (isLabelCustomized(key)) {
                             <span class="tenant-label-card__pill">{{ 'SET_TENANT_LABEL_CUSTOMIZED' | translate }}</span>
