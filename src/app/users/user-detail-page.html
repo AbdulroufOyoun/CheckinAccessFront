@@ -56,6 +56,11 @@
       <button type="button" class="ud__cta" (click)="openEdit()">
         {{ 'USR_EDIT' | translate }}
       </button>
+      @if (hasMobileDevice) {
+      <button type="button" class="ud__btn-outline" (click)="clearMobileDevice()">
+        {{ 'USR_MOBILE_DEVICE_RESET' | translate }}
+      </button>
+      }
       <button type="button" class="ud__btn-danger" (click)="removeUser()">
         {{ 'USR_REMOVE' | translate }}
       </button>
@@ -78,6 +83,10 @@
     <div class="ud-stat">
       <span>{{ 'USR_DETAIL_NATIONALITY' | translate }}</span>
       <strong>{{ user.nationality || '—' }}</strong>
+    </div>
+    <div class="ud-stat">
+      <span>{{ 'USR_DETAIL_MOBILE_DEVICE' | translate }}</span>
+      <strong dir="ltr">{{ mobileDeviceLabel }}</strong>
     </div>
   </section>
 

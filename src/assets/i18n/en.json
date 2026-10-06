@@ -1394,5 +1394,16 @@
   "LOCKS_LINK_PICK_HINT": "Only locks that are not linked to any unit are shown.",
   "LOCKS_NONE_TO_ADD": "No additional locks to link.",
   "LOCKS_SELECTED": "Selected",
-  "LOCKS_NAV": "Locks"
+  "LOCKS_NAV": "Locks",
+  "USR_REMOVE_DIALOG_TITLE": "Remove user from tenant?",
+  "USR_REMOVE_DIALOG_MESSAGE": "{{name}} will lose access to this tenant. Their central account stays unless they have no other links.",
+  "USR_REMOVE_DIALOG_HINT": "You can add them again later from user management.",
+  "USR_REMOVE_DIALOG_CONFIRM": "Yes, remove user",
+  "USR_MOBILE_RESET_DIALOG_TITLE": "Reset mobile device?",
+  "USR_MOBILE_RESET_DIALOG_MESSAGE": "Sign out {{name}} from all mobile sessions and allow the next phone to register.",
+  "USR_MOBILE_RESET_DIALOG_HINT": "Only the first device that signs in after this will be bound again.",
+  "USR_DETAIL_MOBILE_DEVICE": "Mobile app device",
+  "USR_MOBILE_DEVICE_RESET": "Reset mobile device",
+  "USR_MOBILE_DEVICE_RESET_CONFIRM": "Sign out {{name}} from all mobile devices and allow the next phone to register?",
+  "USR_MOBILE_DEVICE_RESET_OK": "Mobile device access reset"
 }

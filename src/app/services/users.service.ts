@@ -14,6 +14,9 @@ export interface TenantUser {
   is_platform_admin?: boolean;
   created_at?: string;
   updated_at?: string;
+  mobile_device_id?: string | null;
+  mobile_device_platform?: string | null;
+  mobile_device_bound_at?: string | null;
 }
 
 export interface UsersPage {
@@ -120,6 +123,14 @@ export class UsersService {
 
   remove(id: number): Promise<ApiResponse<unknown>> {
     return this.api.delete(Apiendpointd.userById(id)).then((res) => {
+      this.showCache.delete(id);
+      this.showInflight.delete(id);
+      return res as ApiResponse<unknown>;
+    });
+  }
+
+  clearMobileDevice(id: number): Promise<ApiResponse<unknown>> {
+    return this.api.post(Apiendpointd.userClearMobileDevice(id), {}).then((res) => {
       this.showCache.delete(id);
       this.showInflight.delete(id);
       return res as ApiResponse<unknown>;

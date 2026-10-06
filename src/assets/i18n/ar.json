@@ -1394,5 +1394,16 @@
   "LOCKS_LINK_PICK_HINT": "تظهر فقط الأقفال غير المربوطة بأي وحدة عقارية.",
   "LOCKS_NONE_TO_ADD": "لا توجد أقفال إضافية للربط.",
   "LOCKS_SELECTED": "المحدد",
-  "LOCKS_NAV": "الأقفال"
+  "LOCKS_NAV": "الأقفال",
+  "USR_REMOVE_DIALOG_TITLE": "إزالة المستخدم من المستأجر؟",
+  "USR_REMOVE_DIALOG_MESSAGE": "سيفقد {{name}} الوصول إلى هذا المستأجر. يبقى حسابه المركزي ما لم يكن مرتبطاً بمستأجر آخر.",
+  "USR_REMOVE_DIALOG_HINT": "يمكنك إضافته مجدداً لاحقاً من إدارة المستخدمين.",
+  "USR_REMOVE_DIALOG_CONFIRM": "نعم، إزالة المستخدم",
+  "USR_MOBILE_RESET_DIALOG_TITLE": "إعادة تعيين جهاز الجوال؟",
+  "USR_MOBILE_RESET_DIALOG_MESSAGE": "تسجيل خروج {{name}} من كل جلسات الجوال والسماح للهاتف التالي بالتسجيل.",
+  "USR_MOBILE_RESET_DIALOG_HINT": "أول جهاز يسجّل دخولاً بعد ذلك يُربط من جديد.",
+  "USR_DETAIL_MOBILE_DEVICE": "جهاز تطبيق الجوال",
+  "USR_MOBILE_DEVICE_RESET": "إعادة تعيين جهاز الجوال",
+  "USR_MOBILE_DEVICE_RESET_CONFIRM": "تسجيل خروج {{name}} من كل أجهزة الجوال والسماح للهاتف التالي بالتسجيل؟",
+  "USR_MOBILE_DEVICE_RESET_OK": "تمت إعادة تعيين جهاز الجوال"
 }

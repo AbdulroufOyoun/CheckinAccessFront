@@ -8,7 +8,11 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
+
+import { ConfirmDialog } from '../dialog/confirm-dialog/confirm-dialog';
+
+import { DialogMobileService } from '../services/dialog-mobile.service';
 
 import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
 
@@ -150,6 +154,8 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
   private readonly dialog = inject(MatDialog);
 
+  private readonly dialogMobile = inject(DialogMobileService);
+
   private readonly translate = inject(TranslateService);
 
   private readonly cdr = inject(ChangeDetectorRef);
@@ -243,6 +249,36 @@ export class UserDetailPage implements OnInit, OnDestroy {
   get isActive(): boolean {
 
     return this.user?.active === true || this.user?.active === 1;
+
+  }
+
+
+
+  get hasMobileDevice(): boolean {
+
+    return Boolean(this.user?.mobile_device_id);
+
+  }
+
+
+
+  get mobileDeviceLabel(): string {
+
+    if (!this.user?.mobile_device_id) {
+
+      return '—';
+
+    }
+
+    const platform = (this.user.mobile_device_platform || '').toLowerCase();
+
+    const prefix = platform === 'ios' ? 'iOS' : platform === 'android' ? 'Android' : platform || 'Device';
+
+    const id = this.user.mobile_device_id;
+
+    const short = id.length > 12 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id;
+
+    return `${prefix} · ${short}`;
 
   }
 
@@ -440,15 +476,24 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
 
 
+  async clearMobileDevice(): Promise<void> {
+    if (!this.user || !this.hasMobileDevice) return;
+    const ok = await this.openMobileDeviceResetConfirm();
+    if (!ok) return;
+    try {
+      await this.usersApi.clearMobileDevice(this.user.id);
+      this.snackbar.show(this.translate.instant('USR_MOBILE_DEVICE_RESET_OK'), 'success');
+      void this.load({ force: true });
+    } catch (e: unknown) {
+      this.snackbar.show(this.err(e), 'error');
+    }
+  }
+
   async removeUser(): Promise<void> {
 
     if (!this.user) return;
 
-    const ok = confirm(
-
-      this.translate.instant('USR_REMOVE_CONFIRM', { name: this.user.name }),
-
-    );
+    const ok = await this.openRemoveUserConfirm();
 
     if (!ok) return;
 
@@ -807,6 +852,110 @@ export class UserDetailPage implements OnInit, OnDestroy {
     const m = (e as { error?: { message?: string } })?.error?.message;
 
     return typeof m === 'string' ? m : this.translate.instant('REQUEST_FAILED');
+
+  }
+
+
+
+  private async openRemoveUserConfirm(): Promise<boolean> {
+
+    if (!this.user) return false;
+
+    const ref = this.dialogMobile.open(ConfirmDialog, {
+
+      panelClass: ['custom-dialog', 'subject-dialog'],
+
+      width: '440px',
+
+      maxWidth: '94vw',
+
+      data: {
+
+        variant: 'danger',
+
+        titleKey: 'USR_REMOVE_DIALOG_TITLE',
+
+        messageKey: 'USR_REMOVE_DIALOG_MESSAGE',
+
+        messageParams: { name: this.user.name },
+
+        hintKey: 'USR_REMOVE_DIALOG_HINT',
+
+        confirmKey: 'USR_REMOVE_DIALOG_CONFIRM',
+
+        preview: {
+
+          initials: this.initials,
+
+          title: this.user.name,
+
+          subtitle: this.user.email || this.user.mobile,
+
+          meta: [
+
+            {
+
+              labelKey: 'USR_DETAIL_PHONE',
+
+              value: this.user.mobile || '—',
+
+            },
+
+          ],
+
+        },
+
+      },
+
+    });
+
+    return (await firstValueFrom(ref.afterClosed())) === true;
+
+  }
+
+
+
+  private async openMobileDeviceResetConfirm(): Promise<boolean> {
+
+    if (!this.user) return false;
+
+    const ref = this.dialogMobile.open(ConfirmDialog, {
+
+      panelClass: ['custom-dialog', 'subject-dialog'],
+
+      width: '440px',
+
+      maxWidth: '94vw',
+
+      data: {
+
+        variant: 'warning',
+
+        titleKey: 'USR_MOBILE_RESET_DIALOG_TITLE',
+
+        messageKey: 'USR_MOBILE_RESET_DIALOG_MESSAGE',
+
+        messageParams: { name: this.user.name },
+
+        hintKey: 'USR_MOBILE_RESET_DIALOG_HINT',
+
+        confirmKey: 'USR_MOBILE_DEVICE_RESET',
+
+        preview: {
+
+          initials: this.initials,
+
+          title: this.user.name,
+
+          subtitle: this.mobileDeviceLabel,
+
+        },
+
+      },
+
+    });
+
+    return (await firstValueFrom(ref.afterClosed())) === true;
 
   }
 

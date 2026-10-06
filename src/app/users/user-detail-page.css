@@ -38,6 +38,7 @@
 .ud__back,
 .ud__link,
 .ud__cta,
+.ud__btn-outline,
 .ud__btn-danger {
   display: inline-flex;
   align-items: center;
@@ -73,6 +74,16 @@
 .ud__cta:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.ud__btn-outline {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+}
+
+.ud__btn-outline:hover {
+  background: #f8fafc;
 }
 
 .ud__btn-danger {
