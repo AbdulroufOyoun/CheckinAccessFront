@@ -1405,5 +1405,12 @@
   "USR_DETAIL_MOBILE_DEVICE": "جهاز تطبيق الجوال",
   "USR_MOBILE_DEVICE_RESET": "إعادة تعيين جهاز الجوال",
   "USR_MOBILE_DEVICE_RESET_CONFIRM": "تسجيل خروج {{name}} من كل أجهزة الجوال والسماح للهاتف التالي بالتسجيل؟",
-  "USR_MOBILE_DEVICE_RESET_OK": "تمت إعادة تعيين جهاز الجوال"
+  "USR_MOBILE_DEVICE_RESET_OK": "تمت إعادة تعيين جهاز الجوال",
+  "USR_MOBILE_ACCESS_TITLE": "وصول تطبيق الجوال",
+  "USR_MOBILE_CARD_EYEBROW": "تطبيق CheckinAccess",
+  "USR_MOBILE_STATUS_BOUND": "جهاز مربوط",
+  "USR_MOBILE_STATUS_OPEN": "لا يوجد هاتف مربوط بعد",
+  "USR_MOBILE_BOUND_AT": "تاريخ الربط: {{date}}",
+  "USR_MOBILE_ACCESS_HINT": "يُربط هاتف واحد لكل مستخدم. استخدم إعادة التعيين إذا احتاج تسجيل الدخول من جهاز جديد.",
+  "USR_MOBILE_DEVICE_NONE": "لا يوجد جهاز مربوط"
 }

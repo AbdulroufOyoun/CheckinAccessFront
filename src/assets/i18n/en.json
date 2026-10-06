@@ -1405,5 +1405,12 @@
   "USR_DETAIL_MOBILE_DEVICE": "Mobile app device",
   "USR_MOBILE_DEVICE_RESET": "Reset mobile device",
   "USR_MOBILE_DEVICE_RESET_CONFIRM": "Sign out {{name}} from all mobile devices and allow the next phone to register?",
-  "USR_MOBILE_DEVICE_RESET_OK": "Mobile device access reset"
+  "USR_MOBILE_DEVICE_RESET_OK": "Mobile device access reset",
+  "USR_MOBILE_ACCESS_TITLE": "Mobile app access",
+  "USR_MOBILE_CARD_EYEBROW": "CheckinAccess mobile",
+  "USR_MOBILE_STATUS_BOUND": "Device linked",
+  "USR_MOBILE_STATUS_OPEN": "No phone linked yet",
+  "USR_MOBILE_BOUND_AT": "Linked on {{date}}",
+  "USR_MOBILE_ACCESS_HINT": "One phone can be bound per user. Reset here if they must sign in on a new device.",
+  "USR_MOBILE_DEVICE_NONE": "No device bound"
 }

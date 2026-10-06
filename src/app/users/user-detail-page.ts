@@ -21,6 +21,7 @@ import { SnackbarService } from '../services/snackbar.service';
 import { AuthService } from '../services/auth.service';
 
 import { TenantUser, UsersService } from '../services/users.service';
+import { TenantDateTimeService } from '../services/tenant-date-time.service';
 
 import { AddUser } from '../dialog/add-user/add-user';
 
@@ -162,6 +163,8 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
   private readonly document = inject(DOCUMENT);
 
+  private readonly tenantDateTime = inject(TenantDateTimeService);
+
 
 
   private sub?: Subscription;
@@ -196,7 +199,9 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
   canSeeEnrollments = false;
 
+  canManageUsers = false;
 
+  mobileResetBusy = false;
 
   ngOnInit(): void {
 
@@ -223,6 +228,8 @@ export class UserDetailPage implements OnInit, OnDestroy {
     this.canSeeEnrollments =
 
       this.auth.hasModule('education') && this.auth.can('manage enrollments');
+
+    this.canManageUsers = this.auth.can('manage users');
 
 
 
@@ -266,7 +273,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
     if (!this.user?.mobile_device_id) {
 
-      return '—';
+      return this.translate.instant('USR_MOBILE_DEVICE_NONE');
 
     }
 
@@ -282,7 +289,19 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
   }
 
+  get mobilePlatformKey(): 'ios' | 'android' | 'other' {
+    const p = (this.user?.mobile_device_platform || '').toLowerCase();
+    if (p === 'ios') return 'ios';
+    if (p === 'android') return 'android';
+    return 'other';
+  }
 
+  get mobileBoundAtLabel(): string {
+    const raw = this.user?.mobile_device_bound_at;
+    if (!raw) return '';
+    const formatted = this.tenantDateTime.formatDateTime(raw);
+    return this.translate.instant('USR_MOBILE_BOUND_AT', { date: formatted });
+  }
 
   get filteredBookings(): BookingRow[] {
 
@@ -477,15 +496,20 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
 
   async clearMobileDevice(): Promise<void> {
-    if (!this.user || !this.hasMobileDevice) return;
+    if (!this.user || !this.canManageUsers || this.mobileResetBusy) return;
     const ok = await this.openMobileDeviceResetConfirm();
     if (!ok) return;
+    this.mobileResetBusy = true;
+    this.cdr.detectChanges();
     try {
       await this.usersApi.clearMobileDevice(this.user.id);
       this.snackbar.show(this.translate.instant('USR_MOBILE_DEVICE_RESET_OK'), 'success');
       void this.load({ force: true });
     } catch (e: unknown) {
       this.snackbar.show(this.err(e), 'error');
+    } finally {
+      this.mobileResetBusy = false;
+      this.cdr.detectChanges();
     }
   }
 
