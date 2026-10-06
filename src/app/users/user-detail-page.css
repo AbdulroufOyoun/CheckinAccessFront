@@ -38,6 +38,7 @@
 .ud__back,
 .ud__link,
 .ud__cta,
+.ud__btn-outline,
 .ud__btn-danger {
   display: inline-flex;
   align-items: center;
@@ -73,6 +74,251 @@
 .ud__cta:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.ud__btn-outline {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f172a;
+}
+
+.ud__btn-outline:hover {
+  background: #f8fafc;
+}
+
+.ud__btn-outline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* —— Mobile app device binding (distinct from profile cards) —— */
+.ud-mobile-card {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 20px 18px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, #0d9488 28%, var(--ud-line));
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(13, 148, 136, 0.12), transparent 55%),
+    linear-gradient(165deg, #f0fdfa 0%, #fff 48%);
+  box-shadow:
+    0 4px 24px rgba(13, 148, 136, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.ud-mobile-card__glow {
+  position: absolute;
+  inset-inline-end: -40px;
+  top: -50px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.35), transparent 70%);
+  pointer-events: none;
+}
+
+.ud-mobile-card__head {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ud-mobile-card__brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ud-mobile-card__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #0f766e;
+  background: linear-gradient(145deg, #ccfbf1, #99f6e4);
+  border: 1px solid color-mix(in srgb, #14b8a6 35%, transparent);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.18);
+}
+
+.ud-mobile-card__eyebrow {
+  margin: 0 0 2px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.ud-mobile-card__head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 750;
+  color: #134e4a;
+}
+
+.ud-mobile-card__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.ud-mobile-card__chip--on {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+
+.ud-mobile-card__chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.ud-mobile-card__chip--on .ud-mobile-card__chip-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.ud-mobile-card__hint {
+  position: relative;
+  margin: 0 0 16px;
+  padding-inline-start: 14px;
+  border-inline-start: 3px solid #5eead4;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.ud-mobile-card__body {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.ud-mobile-device {
+  flex: 1 1 220px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px dashed #cbd5e1;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.ud-mobile-device--linked {
+  border-style: solid;
+  border-color: color-mix(in srgb, #14b8a6 35%, #e2e8f0);
+  background: #fff;
+}
+
+.ud-mobile-device__platform {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.ud-mobile-device__platform--android {
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.ud-mobile-device__platform--ios {
+  color: #1e293b;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.ud-mobile-device__platform--other {
+  color: #0f766e;
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.ud-mobile-device__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ud-mobile-device__label {
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.ud-mobile-device__value {
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: #0f172a;
+  word-break: break-all;
+}
+
+.ud-mobile-device--linked .ud-mobile-device__value {
+  color: #134e4a;
+}
+
+.ud-mobile-device__meta {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.ud-mobile-card__reset {
+  flex: 0 1 auto;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fff;
+  color: #b91c1c;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.ud-mobile-card__reset:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #f87171;
+  transform: translateY(-1px);
+}
+
+.ud-mobile-card__reset:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .ud__btn-danger {
@@ -589,6 +835,7 @@
   }
 
   .ud-hero__actions .ud__cta,
+  .ud-hero__actions .ud__btn-outline,
   .ud-hero__actions .ud__btn-danger {
     flex: 1;
     justify-content: center;
@@ -596,6 +843,14 @@
 
   .ud-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ud-mobile-card__body {
+    flex-direction: column;
+  }
+
+  .ud-mobile-card__reset {
+    width: 100%;
   }
 }
 

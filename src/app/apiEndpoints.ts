@@ -340,6 +340,10 @@ export class Apiendpointd {
     return `${this.users}${id}`;
   }
 
+  public static userClearMobileDevice(id: number | string): string {
+    return `${this.users}${id}/clear-mobile-device`;
+  }
+
   public static get usersSearchName(): string {
     return this.users + 'search-name';
   }
