@@ -77,6 +77,30 @@ export function moduleGuardAny(...modules: TenantModuleName[]): CanActivateFn {
   };
 }
 
+export const welcomeTourGuard: CanActivateFn = async () => {
+  const router = inject(Router);
+  if (!browserOnly()) {
+    return router.createUrlTree(['/Login']);
+  }
+  const auth = inject(AuthService);
+  if (!auth.isLoggedIn()) {
+    return router.createUrlTree(['/Login']);
+  }
+  if (!auth.hasModule('property') || !auth.isSuperAdmin()) {
+    return router.createUrlTree([auth.homeRoute()]);
+  }
+  const customization = inject(TenantCustomizationService);
+  const settings = await customization.loadSettings();
+  const onboarding = settings?.onboarding;
+  if (onboarding?.completed === true) {
+    return router.createUrlTree([auth.homeRoute()]);
+  }
+  if (onboarding?.product_intro_done === true) {
+    return router.createUrlTree(['/EstablishmentSetup']);
+  }
+  return true;
+};
+
 export const establishmentSetupGuard: CanActivateFn = async () => {
   const router = inject(Router);
   if (!browserOnly()) {
@@ -91,11 +115,15 @@ export const establishmentSetupGuard: CanActivateFn = async () => {
   }
   const customization = inject(TenantCustomizationService);
   const settings = await customization.loadSettings();
-  if (settings?.onboarding?.establishment_step_done === true) {
-    return router.createUrlTree(['/PropertyOnboarding']);
-  }
-  if (settings?.onboarding?.completed === true) {
+  const onboarding = settings?.onboarding;
+  if (onboarding?.completed === true) {
     return router.createUrlTree([auth.homeRoute()]);
+  }
+  if (onboarding?.product_intro_done !== true) {
+    return router.createUrlTree(['/OnboardingWelcome']);
+  }
+  if (onboarding?.establishment_step_done === true) {
+    return router.createUrlTree(['/PropertyOnboarding']);
   }
   return true;
 };
@@ -117,6 +145,9 @@ export const propertyOnboardingGuard: CanActivateFn = async () => {
   const onboarding = settings?.onboarding;
   if (onboarding?.completed === true) {
     return router.createUrlTree([auth.homeRoute()]);
+  }
+  if (onboarding?.product_intro_done !== true) {
+    return router.createUrlTree(['/OnboardingWelcome']);
   }
   if (onboarding?.establishment_step_done !== true) {
     return router.createUrlTree(['/EstablishmentSetup']);

@@ -39,6 +39,160 @@
   </div>
   }
 </div>
+} @else if (variant === 'room-detail') {
+<div class="psk-room-detail" aria-hidden="true">
+  <div class="psk-room-detail__hero">
+    <div class="psk-room-detail__hero-text">
+      <div class="psk-bone" style="width: 38%"></div>
+      <div class="psk-bone psk-bone--xl" style="width: 52%; margin-top: 10px"></div>
+      <div class="psk-bone" style="width: 64%; margin-top: 10px"></div>
+      <div class="psk-bone" style="width: 46%; margin-top: 8px"></div>
+    </div>
+    <div class="psk-bone psk-bone--chip" style="width: 96px; height: 32px"></div>
+  </div>
+  <div class="psk-room-detail__stats">
+    @for (s of [0, 1, 2, 3]; track s) {
+      <div class="psk-room-detail__stat">
+        <div class="psk-bone" style="width: 55%"></div>
+        <div class="psk-bone psk-bone--lg" style="width: 40%; margin-top: 10px"></div>
+      </div>
+    }
+  </div>
+  <div class="psk-room-detail__occ">
+    <div class="psk-bone" style="width: 30%"></div>
+    <div class="psk-bone psk-bone--chip" style="width: 100%; height: 10px; margin-top: 10px; border-radius: 999px"></div>
+  </div>
+  <div class="psk-room-detail__wide">
+    <div class="psk-bone psk-bone--lg" style="width: 42%"></div>
+    <div class="psk-bone" style="width: 72%; margin-top: 12px"></div>
+    <div class="psk-bone" style="width: 88%; margin-top: 8px"></div>
+  </div>
+  <div class="psk-room-detail__grid">
+    <div class="psk-room-detail__panel">
+      <div class="psk-bone psk-bone--lg" style="width: 50%"></div>
+      @for (r of [0, 1, 2, 3, 4]; track r) {
+        <div class="psk-room-detail__dl-row">
+          <div class="psk-bone" style="width: 42%"></div>
+          <div class="psk-bone" style="width: 36%"></div>
+        </div>
+      }
+    </div>
+    <div class="psk-room-detail__panel">
+      <div class="psk-bone psk-bone--lg" style="width: 45%"></div>
+      @for (r of [0, 1, 2]; track r) {
+        <div class="psk-bone" style="width: 80%; margin-top: 12px"></div>
+      }
+    </div>
+  </div>
+  <div class="psk-room-detail__wide psk-room-detail__table">
+    <div class="psk-bone psk-bone--lg" style="width: 36%"></div>
+    <div class="psk-table psk-table--inset">
+      <div class="psk-table__head" style="grid-template-columns: 1.2fr 1fr 1fr 0.8fr 0.7fr">
+        @for (c of [0, 1, 2, 3, 4]; track c) {
+          <div class="psk-bone" [style.width.%]="45"></div>
+        }
+      </div>
+      @for (r of rowItems; track r) {
+        @if (r < 4) {
+          <div class="psk-table__row" style="grid-template-columns: 1.2fr 1fr 1fr 0.8fr 0.7fr">
+            @for (c of [0, 1, 2, 3, 4]; track c) {
+              <div class="psk-bone" [style.width.%]="c === 0 ? 70 : 50"></div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
+} @else if (variant === 'sections') {
+<div class="psk-sections" aria-hidden="true">
+  <div class="psk-sections__hero">
+    <div>
+      <div class="psk-bone" style="width: 120px"></div>
+      <div class="psk-bone psk-bone--xl" style="width: 220px; margin-top: 10px"></div>
+      <div class="psk-bone" style="width: 320px; max-width: 100%; margin-top: 10px"></div>
+    </div>
+    <div class="psk-bone psk-bone--btn" style="width: 140px; height: 40px"></div>
+  </div>
+  <div class="psk-sections__stats">
+    @for (s of [0, 1, 2]; track s) {
+      <div class="psk-sections__stat">
+        <div class="psk-bone psk-bone--xl" style="width: 48px"></div>
+        <div class="psk-bone" style="width: 72%; margin-top: 8px"></div>
+      </div>
+    }
+  </div>
+  <div class="psk-sections__toolbar">
+    <div class="psk-bone psk-bone--chip" style="flex: 1; min-width: 200px; height: 42px; border-radius: 12px"></div>
+    <div class="psk-bone psk-bone--chip" style="width: 180px; height: 42px; border-radius: 12px"></div>
+  </div>
+  @for (g of [0, 1]; track g) {
+    <div class="psk-sections__group">
+      <div class="psk-sections__group-head">
+        <div class="psk-bone psk-bone--avatar"></div>
+        <div style="flex: 1">
+          <div class="psk-bone psk-bone--lg" style="width: 55%"></div>
+          <div class="psk-bone" style="width: 35%; margin-top: 8px"></div>
+        </div>
+        <div class="psk-bone psk-bone--btn" style="width: 120px"></div>
+      </div>
+      <div class="psk-sections__cards">
+        @for (c of [0, 1, 2]; track c) {
+          <div class="psk-sections__card">
+            <div class="psk-bone psk-bone--chip" style="width: 36px; height: 36px; border-radius: 10px"></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px">
+              <div class="psk-bone" style="width: 75%"></div>
+              <div class="psk-bone" style="width: 55%"></div>
+            </div>
+            <div class="psk-bone psk-bone--btn" style="width: 88px"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+} @else if (variant === 'property') {
+<div class="psk-property" aria-hidden="true">
+  <div class="psk-property__stats">
+    @for (s of [0, 1, 2, 3]; track s) {
+      <div class="psk-property__stat">
+        <div class="psk-bone" style="width: 60%"></div>
+        <div class="psk-bone psk-bone--xl" style="width: 32%; margin-top: 10px"></div>
+      </div>
+    }
+  </div>
+  <div class="psk-property__layout">
+    <aside class="psk-property__tree">
+      <div class="psk-bone psk-bone--lg" style="width: 70%"></div>
+      <div class="psk-bone" style="width: 90%; margin-top: 8px"></div>
+      @for (r of rowItems; track r) {
+        @if (r < 8) {
+          <div class="psk-property__tree-row" [style.padding-inline-start.px]="8 + r * 10">
+            <div class="psk-bone psk-bone--chip" style="width: 18px; height: 18px; border-radius: 4px"></div>
+            <div class="psk-bone" [style.width.%]="r % 3 === 0 ? 75 : 55"></div>
+          </div>
+        }
+      }
+    </aside>
+    <section class="psk-property__detail">
+      <div class="psk-bone psk-bone--lg" style="width: 45%"></div>
+      <div class="psk-bone" style="width: 65%; margin-top: 8px"></div>
+      <div class="psk-property__detail-grid">
+        @for (c of [0, 1, 2, 3, 4, 5]; track c) {
+          <div class="psk-property__field">
+            <div class="psk-bone" style="width: 50%"></div>
+            <div class="psk-bone psk-bone--chip" style="width: 100%; height: 38px; margin-top: 8px; border-radius: 10px"></div>
+          </div>
+        }
+      </div>
+      <div class="psk-property__actions">
+        <div class="psk-bone psk-bone--btn"></div>
+        <div class="psk-bone psk-bone--btn"></div>
+        <div class="psk-bone psk-bone--btn"></div>
+      </div>
+    </section>
+  </div>
+</div>
 } @else {
 <div class="psk-kpi" aria-hidden="true">
   @for (k of kpiItems; track k) {

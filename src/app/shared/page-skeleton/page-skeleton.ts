@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './page-skeleton.css',
 })
 export class PageSkeleton {
-  @Input() variant: 'table' | 'cards' | 'kpi' = 'table';
+  @Input() variant: 'table' | 'cards' | 'kpi' | 'room-detail' | 'sections' | 'property' = 'table';
   @Input() rows = 6;
   @Input() cols = 5;
   @Input() cards = 6;

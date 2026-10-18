@@ -12,16 +12,17 @@ import { LocaleService } from '../../services/locale.service';
 import { TenantCustomizationService } from '../../services/tenant-customization.service';
 import { User } from '../../model/User';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageToggle } from '../../shared/language-toggle/language-toggle';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule, LanguageToggle],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login {
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly locale = inject(LocaleService);
+  readonly locale = inject(LocaleService);
   readonly tenantCustomization = inject(TenantCustomizationService);
 
   isLoading = false;
@@ -42,20 +43,17 @@ export class Login {
   ) {
     this.title.setTitle('Sign in — CheckinAccess');
     if (isPlatformBrowser(this.platformId)) {
-      this.currentLang = this.locale.lang();
       void this.tenantCustomization.loadPublicConfig();
     }
   }
 
   get appName(): string {
-    return this.tenantCustomization.appName(this.currentLang);
+    return this.tenantCustomization.appName(this.locale.lang());
   }
 
   get logoUrl(): string | null {
     return this.tenantCustomization.logoUrl();
   }
-
-  currentLang: 'ar' | 'en' = 'en';
 
   private stopLoading(): void {
     this.isLoading = false;

@@ -98,7 +98,7 @@ export interface EduEnrollmentRow {
     enrolled_at?: string;
     section?: EduSection;
   };
-  user?: { id: number; name?: string; email?: string } | null;
+  user?: { id: number; name?: string | null; email?: string | null; mobile?: string | null } | null;
 }
 
 export interface EduFacilityOption {

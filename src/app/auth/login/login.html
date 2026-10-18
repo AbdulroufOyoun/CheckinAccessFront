@@ -1,6 +1,6 @@
 <!-- login.component.html -->
 
-<div class="auth-page">
+<div class="auth-page" [class.auth-page--rtl]="locale.lang() === 'ar'">
   <!-- <div class="auth-page" [class.auth-page--rtl]="false"> -->
 
   <!-- ═══════════════════════════════════════════════
@@ -21,6 +21,7 @@
        MAIN CARD
   ═══════════════════════════════════════════════ -->
   <main id="main" class="auth-card-wrap">
+    <app-language-toggle variant="auth" />
     <div class="auth-card">
       <!-- Top gradient accent bar -->
       <div class="auth-card__accent-bar"></div>
@@ -50,7 +51,7 @@
           </div>
           }
           <h1 class="auth-logo__name">{{ appName }}</h1>
-          <p class="auth-logo__subtitle">{{ tenantCustomization.appSubtitle(currentLang) }}</p>
+          <p class="auth-logo__subtitle">{{ tenantCustomization.appSubtitle(locale.lang()) }}</p>
         </div>
 
         <!-- ── STEP HEADING ──────────────────────── -->

@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -19,6 +19,8 @@ import { ApiResponse } from '../../interfaces/api-response';
 import { TenantUser, UsersService } from '../../services/users.service';
 import { BookingAccessExtras } from '../../bookings/booking-access-extras/booking-access-extras';
 import { BookingExtraPick, bookingExtraKey } from '../../bookings/booking-extra-unit';
+import { LocaleService } from '../../services/locale.service';
+import { Subject } from 'rxjs';
 
 export interface BookingDetailDialogData {
   bookingId: number;
@@ -32,17 +34,18 @@ export interface BookingDetailDialogData {
   templateUrl: './booking-detail.html',
   styleUrl: './booking-detail.css',
 })
-export class BookingDetailDialog implements OnInit {
+export class BookingDetailDialog implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<BookingDetailDialog>);
   readonly data = inject<BookingDetailDialogData>(MAT_DIALOG_DATA);
   private readonly bookings = inject(BookingsService);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
   private readonly api = inject(ApiService);
   private readonly usersApi = inject(UsersService);
+  private readonly locale = inject(LocaleService);
+  private readonly destroy$ = new Subject<void>();
 
   loading = true;
   navigating = false;
@@ -65,9 +68,10 @@ export class BookingDetailDialog implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.isRTL =
-      this.document.documentElement.getAttribute('dir') === 'rtl' ||
-      this.translate.getCurrentLang() === 'ar';
+    this.locale.observeLang(this.destroy$, (_lang, rtl) => {
+      this.isRTL = rtl;
+      this.cdr.detectChanges();
+    });
     this.booking = this.data.preview ?? null;
     this.loading = !this.booking;
     if (this.booking) {
@@ -75,6 +79,11 @@ export class BookingDetailDialog implements OnInit {
     }
     void this.load();
     void this.loadUsers();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get status(): 'active' | 'paused' | 'cancelled' {

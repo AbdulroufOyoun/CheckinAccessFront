@@ -34,22 +34,16 @@
     <div class="prop-onb__panel-scroll">
     <div class="prop-onb__panel-accent"></div>
 
+    <app-onboarding-journey-bar phase="property" />
+
     <header class="prop-onb__head">
       <p class="prop-onb__eyebrow">{{ i18n('PROP_ONB_EYEBROW') }}</p>
       <h1 class="prop-onb__title">{{ i18n('PROP_ONB_TITLE') }}</h1>
       <p class="prop-onb__lead">{{ i18n('PROP_ONB_SKIP_HINT') }}</p>
-
-      <ol class="prop-onb__steps" aria-label="Progress">
-        <li class="prop-onb__step" [class.prop-onb__step--active]="step() >= 1" [class.prop-onb__step--done]="step() > 1">1</li>
-        <li class="prop-onb__step-line" [class.prop-onb__step-line--done]="step() > 1"></li>
-        <li class="prop-onb__step" [class.prop-onb__step--active]="step() >= 2" [class.prop-onb__step--done]="step() > 2">2</li>
-        <li class="prop-onb__step-line" [class.prop-onb__step-line--done]="step() > 2"></li>
-        <li class="prop-onb__step" [class.prop-onb__step--active]="step() >= 3">3</li>
-      </ol>
     </header>
 
     @if (step() === 1) {
-      <section class="prop-onb__section">
+      <section class="prop-onb__section onb-form-section">
         <h2 class="prop-onb__section-title">{{ i18n('PROP_ONB_TYPES_TITLE') }}</h2>
         <p class="prop-onb__section-lead">{{ i18n('PROP_ONB_TYPES_LEAD') }}</p>
 
@@ -117,9 +111,11 @@
     }
 
     @if (step() === 2) {
-      <section class="prop-onb__section">
+      <section class="prop-onb__section onb-form-section">
         <h2 class="prop-onb__section-title">{{ i18n('PROP_ONB_LAYOUT_TITLE') }}</h2>
         <p class="prop-onb__section-lead">{{ i18n('PROP_ONB_LAYOUT_LEAD') }}</p>
+
+        <p class="prop-onb__3d-note">{{ i18n('PROP_ONB_3D_ALERT') }}</p>
 
         <div class="prop-onb__group">
           <h3 class="prop-onb__group-title">{{ i18n('PROP_ONB_GROUP_HORIZON') }}</h3>

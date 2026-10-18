@@ -7,7 +7,7 @@
   </header>
 
   @if (loading) {
-  <app-page-skeleton variant="cards" [cards]="4" />
+  <app-page-skeleton variant="room-detail" />
   } @else if (!room && !statusSnapshot) {
   <div class="rd-empty">
     <p>{{ 'ROOM_DETAIL_NOT_FOUND' | translate }}</p>

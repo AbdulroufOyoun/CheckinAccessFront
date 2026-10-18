@@ -853,13 +853,16 @@ header.navbar.desktop-only {
   padding: 24px;
 }
 
-/* ─── SHELL OVERLAY ─────────────────────────────────────── */
-/* .shell__overlay {
+/* ─── SHELL OVERLAY (desktop user menu click-outside) ───── */
+.shell__overlay {
   position: fixed;
   inset: 0;
-  z-index: 20; */
-/* Only visible when dropdown is open — controlled by *ngIf */
-/* } */
+  z-index: 45;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: default;
+}
 
 
 

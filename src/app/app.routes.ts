@@ -5,6 +5,7 @@ import {
   establishmentOnboardingRedirectGuard,
   establishmentSetupGuard,
   propertyOnboardingGuard,
+  welcomeTourGuard,
   guestGuard,
   moduleGuard,
   moduleGuardAny,
@@ -27,6 +28,13 @@ export const routes: Routes = [
     canActivate: [tenantGuard, guestGuard],
     loadComponent: () =>
       import('./auth/otp-verification/otp-verification').then((m) => m.OtpVerification),
+  },
+
+  {
+    path: 'OnboardingWelcome',
+    canActivate: [tenantGuard, authGuard, welcomeTourGuard],
+    loadComponent: () =>
+      import('./onboarding/onboarding-product-welcome').then((m) => m.OnboardingProductWelcome),
   },
 
   {
@@ -80,6 +88,15 @@ export const routes: Routes = [
         canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
         loadComponent: () =>
           import('./bookings/booking-create-page').then((m) => m.BookingCreatePage),
+      },
+
+      {
+        path: 'BookingScenarios',
+        canActivate: [moduleGuard('property'), permissionGuard('manage bookings')],
+        loadComponent: () =>
+          import('./bookings/booking-scenarios-page/booking-scenarios-page').then(
+            (m) => m.BookingScenariosPage,
+          ),
       },
 
       {

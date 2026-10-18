@@ -1,4 +1,4 @@
-export type Onboarding3dMode = 'establishment' | 'property';
+export type Onboarding3dMode = 'welcome' | 'establishment' | 'property';
 
 export type Onboarding3dVisual =
   | 'tower'

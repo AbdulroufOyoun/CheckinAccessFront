@@ -75,10 +75,8 @@
         <tr class="reveal-item" [style.--reveal-i]="i < 12 ? i : 12">
           <td>
             <div class="edu-ui__name-cell">
-              <span class="edu-ui__text">{{ studentLabel(group) }}</span>
-              @if (group.user?.email && group.user?.name) {
-              <span class="edu-ui__text-secondary">{{ group.user?.email }}</span>
-              }
+              <span class="edu-ui__text">{{ studentPrimaryName(group) }}</span>
+              <span class="edu-ui__text-secondary">{{ studentSecondaryLine(group) }}</span>
             </div>
           </td>
           <td>

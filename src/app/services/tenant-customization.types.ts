@@ -54,6 +54,7 @@ export interface TenantPdfSettings {
 export interface TenantOnboardingSettings {
   completed?: boolean;
   profile_id?: string | null;
+  product_intro_done?: boolean;
   establishment_step_done?: boolean;
   property_structure_done?: boolean;
   property_structure_skipped?: boolean;

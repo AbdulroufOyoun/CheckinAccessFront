@@ -20,7 +20,19 @@
 
   >
 
+    <div class="est-setup__scene-orbs" aria-hidden="true">
+
+      <span class="est-setup__orb est-setup__orb--a"></span>
+
+      <span class="est-setup__orb est-setup__orb--b"></span>
+
+      <span class="est-setup__orb est-setup__orb--c"></span>
+
+    </div>
+
     <div class="est-setup__scene-grid" aria-hidden="true"></div>
+
+    <div class="est-setup__scene-scan" aria-hidden="true"></div>
 
     <app-onboarding-3d-scene
 
@@ -40,10 +52,27 @@
 
     <div class="est-setup__scene-meta">
 
-      <span class="onb-shell__scene-badge">{{ i18n('EST_SETUP_3D_BADGE') }}</span>
+      <span class="onb-shell__scene-badge est-setup__scene-badge">
 
-      <p class="est-setup__scene-caption">{{ sceneCaption() }}</p>
+        @if (selectedId()) {
+
+          <span class="est-setup__live-dot" aria-hidden="true"></span>
+
+        }
+
+        {{ selectedId() ? i18n('EST_SETUP_3D_BADGE_LIVE') : i18n('EST_SETUP_3D_BADGE') }}
+
+      </span>
+
+      <p
+
+        class="est-setup__scene-caption"
+
+        [class.est-setup__scene-caption--live]="selectedId()"
+
+      >{{ sceneCaption() }}</p>
       <p class="est-setup__scene-hint">{{ i18n('EST_SETUP_3D_DRAG') }}</p>
+      <p class="est-setup__scene-sub">{{ i18n('EST_SETUP_3D_BADGE_SUB') }}</p>
 
     </div>
 
@@ -53,9 +82,15 @@
 
   <div class="onb-shell__form onb-shell__form--establishment">
 
-  <main class="est-setup__panel">
+    <div class="est-setup__form-glow" aria-hidden="true"></div>
 
-    <header class="est-setup__head">
+    <div class="est-setup__form-grain" aria-hidden="true"></div>
+
+  <main class="est-setup__panel est-setup__panel--enter">
+
+    <app-onboarding-journey-bar phase="establishment" />
+
+    <header class="est-setup__head est-setup__head--enter">
 
       @if (customization.logoDisplayUrl(); as logoUrl) {
 
@@ -83,7 +118,9 @@
 
       <h1 class="est-setup__title">{{ i18n('EST_SETUP_TITLE') }}</h1>
 
-      <p class="est-setup__lead">{{ i18n('EST_SETUP_LEAD') }}</p>
+      <p class="est-setup__lead" id="est-setup-lead">{{ i18n('EST_SETUP_LEAD') }}</p>
+
+      <app-onboarding-platform-chips aria-describedby="est-setup-lead" />
 
     </header>
 
@@ -105,7 +142,7 @@
 
     } @else {
 
-      <section class="est-setup__lang" [attr.aria-label]="i18n('EST_SETUP_LANG_ARIA')">
+      <section class="est-setup__lang onb-form-section" [attr.aria-label]="i18n('EST_SETUP_LANG_ARIA')">
 
         <h2 class="est-setup__lang-title">{{ i18n('EST_SETUP_LANG_TITLE') }}</h2>
 
@@ -159,7 +196,7 @@
 
 
 
-      <div class="est-setup__cards">
+      <div class="est-setup__cards onb-form-section">
 
         @for (preset of presets(); track preset.id; let i = $index) {
 

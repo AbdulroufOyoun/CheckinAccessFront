@@ -10,6 +10,9 @@ import {
 } from '../services/holidays.service';
 import { SnackbarService } from '../services/snackbar.service';
 import { PageSkeleton } from '../shared/page-skeleton/page-skeleton';
+import { ConfirmDialog } from '../dialog/confirm-dialog/confirm-dialog';
+import { DialogMobileService } from '../services/dialog-mobile.service';
+import { firstValueFrom } from 'rxjs';
 
 type HolidaysTab = 'weekends' | 'gregorian' | 'islamic';
 
@@ -49,6 +52,7 @@ export class HolidaysPage implements OnInit {
   private readonly api = inject(HolidaysService);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
+  private readonly dialogMobile = inject(DialogMobileService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject(DOCUMENT);
 
@@ -169,7 +173,8 @@ export class HolidaysPage implements OnInit {
   }
 
   async removeWeekend(row: WeekendDay): Promise<void> {
-    if (!confirm(this.translate.instant('HOL_DELETE_CONFIRM'))) return;
+    const ok = await this.openDeleteConfirm(this.dayName(row.code), this.translate.instant('HOL_TAB_WEEKENDS'));
+    if (!ok) return;
     try {
       await this.api.deleteWeekend(row.id);
       this.snackbar.show(this.translate.instant('HOL_DELETED'), 'success');
@@ -203,7 +208,8 @@ export class HolidaysPage implements OnInit {
   }
 
   async removeGregorian(row: GregorianHoliday): Promise<void> {
-    if (!confirm(this.translate.instant('HOL_DELETE_CONFIRM'))) return;
+    const ok = await this.openDeleteConfirm(row.name, this.formatDate(row.date));
+    if (!ok) return;
     try {
       await this.api.deleteGregorian(row.id);
       this.snackbar.show(this.translate.instant('HOL_DELETED'), 'success');
@@ -244,7 +250,11 @@ export class HolidaysPage implements OnInit {
   }
 
   async removeIslamic(row: IslamicHoliday): Promise<void> {
-    if (!confirm(this.translate.instant('HOL_DELETE_CONFIRM'))) return;
+    const ok = await this.openDeleteConfirm(
+      row.name,
+      this.hijriLabel(row.hijri_day, row.hijri_month),
+    );
+    if (!ok) return;
     try {
       await this.api.deleteIslamic(row.id);
       this.snackbar.show(this.translate.instant('HOL_DELETED'), 'success');
@@ -274,6 +284,26 @@ export class HolidaysPage implements OnInit {
     // Laravel ISO date cast (e.g. 2026-03-19T21:00:00.000000Z): use local calendar day.
     const d = new Date(raw);
     return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  private async openDeleteConfirm(title: string, subtitle?: string): Promise<boolean> {
+    const ref = this.dialogMobile.open(ConfirmDialog, {
+      panelClass: ['custom-dialog', 'subject-dialog'],
+      width: '440px',
+      maxWidth: '94vw',
+      data: {
+        variant: 'danger',
+        titleKey: 'HOL_DELETE_DIALOG_TITLE',
+        messageKey: 'HOL_DELETE_DIALOG_MESSAGE',
+        hintKey: 'HOL_DELETE_DIALOG_HINT',
+        confirmKey: 'HOL_DELETE_DIALOG_CONFIRM',
+        preview: {
+          title,
+          subtitle: subtitle?.trim() || undefined,
+        },
+      },
+    });
+    return (await firstValueFrom(ref.afterClosed())) === true;
   }
 
   private err(e: unknown): string {

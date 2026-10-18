@@ -16,9 +16,7 @@
     <div class="settings-card">
       <h2>{{ 'SET_LANGUAGE' | translate }}</h2>
       <p class="settings-meta">{{ 'SET_LANGUAGE_HINT' | translate }}</p>
-      <button type="button" class="settings-btn settings-btn--secondary" (click)="toggleLang()">
-        {{ currentLang === 'ar' ? 'English' : 'العربية' }}
-      </button>
+      <app-language-toggle variant="settings" [showIcon]="false" />
     </div>
   </div>
 

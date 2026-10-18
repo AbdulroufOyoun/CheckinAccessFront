@@ -1,0 +1,49 @@
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font: inherit;
+  border: none;
+  background: transparent;
+}
+
+.lang-toggle--navbar {
+  /* inherits .navbar__lang-btn from app-shell.css when combined */
+}
+
+.lang-toggle--auth {
+  position: absolute;
+  top: -8px;
+  inset-inline-end: 0;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 8px 14px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+.lang-toggle--auth:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.lang-toggle--inline {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  background: #fff;
+  font-weight: 650;
+  font-size: 0.85rem;
+}
+
+.lang-toggle__icon {
+  flex-shrink: 0;
+}
+
+.lang-toggle--navbar .lang-toggle__icon {
+  stroke: #3b82f6;
+}

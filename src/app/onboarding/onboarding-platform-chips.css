@@ -1,0 +1,70 @@
+.onb-platform-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: center;
+  list-style: none;
+  margin: 0 0 1.35rem;
+  padding: 0;
+}
+
+.onb-platform-chips__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+:host-context(.est-setup) .onb-platform-chips__item {
+  animation: onbChipIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:host-context(.est-setup) .onb-platform-chips__item:nth-child(1) {
+  animation-delay: 0.12s;
+}
+:host-context(.est-setup) .onb-platform-chips__item:nth-child(2) {
+  animation-delay: 0.18s;
+}
+:host-context(.est-setup) .onb-platform-chips__item:nth-child(3) {
+  animation-delay: 0.24s;
+}
+:host-context(.est-setup) .onb-platform-chips__item:nth-child(4) {
+  animation-delay: 0.3s;
+}
+:host-context(.est-setup) .onb-platform-chips__item:nth-child(5) {
+  animation-delay: 0.36s;
+}
+:host-context(.est-setup) .onb-platform-chips__item:nth-child(6) {
+  animation-delay: 0.42s;
+}
+
+:host-context(.est-setup) .onb-platform-chips__item:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--onb-accent, #0ea5e9) 35%, #e2e8f0);
+}
+
+@keyframes onbChipIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onb-platform-chips__icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}

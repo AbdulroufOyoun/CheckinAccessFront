@@ -5,12 +5,13 @@
     <div class="placeholder-glow"><span class="placeholder col-12 tenant-skeleton__line"></span></div>
   </div>
 } @else {
-  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav nav-pills tenant-settings-tabs gap-1">
+  <div class="tenant-panel-ready reveal">
+  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav nav-pills tenant-settings-tabs gap-1 reveal-item" style="--reveal-i: 0">
     <li [ngbNavItem]="1">
       <button ngbNavLink type="button">{{ 'SET_TENANT_APPEARANCE' | translate }}</button>
       <ng-template ngbNavContent>
         <div class="tenant-tab">
-          <div class="tenant-tab-save-bar">
+          <div class="tenant-tab-save-bar reveal-item" style="--reveal-i: 1">
             <p class="tenant-tab-save-bar__hint">{{ 'SET_TENANT_SAVE_HINT' | translate }}</p>
             <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveAppearance()">
               @if (saving) {
@@ -19,7 +20,7 @@
               {{ 'SAVE' | translate }}
             </button>
           </div>
-          <div class="tenant-panel-section">
+          <div class="tenant-panel-section reveal-item" style="--reveal-i: 2">
             <h3 class="tenant-panel-section__title">{{ 'SET_TENANT_LOGO' | translate }}</h3>
             <div class="tenant-logo-row">
               @if (logoPreviewUrl(); as url) {
@@ -33,7 +34,7 @@
               </div>
             </div>
           </div>
-          <div class="tenant-panel-section">
+          <div class="tenant-panel-section reveal-item" style="--reveal-i: 3">
             <h3 class="tenant-panel-section__title">{{ 'SET_TENANT_APPEARANCE' | translate }}</h3>
             <p class="text-muted small mb-3">{{ 'SET_TENANT_APPEARANCE_HINT' | translate }}</p>
             <h4 class="tenant-preset-heading">{{ 'SET_TENANT_PRESETS' | translate }}</h4>
@@ -147,7 +148,7 @@
       <ng-template ngbNavContent>
         <div class="tenant-tab">
           <p class="text-muted small mb-3">{{ 'SET_TENANT_REGIONAL_HINT' | translate }}</p>
-          <div class="tenant-panel-section">
+          <div class="tenant-panel-section reveal-item" style="--reveal-i: 1">
             <label class="form-label">{{ 'SET_TENANT_TIMEZONE' | translate }}</label>
             <select class="form-select mb-3" [(ngModel)]="regional.timezone">
               @for (tz of timezones; track tz) {
@@ -182,8 +183,8 @@
           <p class="text-muted small mb-3">{{ 'SET_TENANT_NAV_HINT' | translate }}</p>
           <div class="tenant-nav-sections-grid">
           @for (section of navSectionsForEdit; track section.sectionId; let si = $index) {
-            <div class="tenant-panel-section tenant-nav-section">
-              <h3 class="tenant-panel-section__title">{{ section.sectionLabelKey | translate }}</h3>
+            <div class="tenant-panel-section tenant-nav-section reveal-item" [style.--reveal-i]="si + 1">
+              <h3 class="tenant-panel-section__title">{{ catalogLabel(section.sectionLabelKey, locale.lang()) }}</h3>
               <div
                 cdkDropList
                 class="tenant-sort-list"
@@ -207,7 +208,7 @@
                       </svg>
                     </button>
                     <div class="tenant-sort-row__label">
-                      <span class="tenant-sort-row__name">{{ item.labelKey | translate }}</span>
+                      <span class="tenant-sort-row__name">{{ catalogLabel(item.labelKey, locale.lang()) }}</span>
                       <small class="text-muted font-monospace">{{ item.id }}</small>
                     </div>
                     <div class="form-check form-switch tenant-sort-row__switch">
@@ -240,7 +241,7 @@
       <button ngbNavLink type="button">{{ 'SET_TENANT_WELCOME' | translate }}</button>
       <ng-template ngbNavContent>
         <div class="tenant-tab">
-          <div class="tenant-panel-section">
+          <div class="tenant-panel-section reveal-item" style="--reveal-i: 1">
             <div class="form-check form-switch mb-3">
               <input class="form-check-input" type="checkbox" id="welcomeOn" [(ngModel)]="welcome.enabled" />
               <label class="form-check-label" for="welcomeOn">{{ 'SET_TENANT_WELCOME_ENABLE' | translate }}</label>
@@ -269,7 +270,7 @@
             </div>
           </div>
           @if (welcome.enabled) {
-            <div class="tenant-panel-section">
+            <div class="tenant-panel-section reveal-item" style="--reveal-i: 2">
               <h3 class="tenant-panel-section__title">{{ 'SET_TENANT_WELCOME_PREVIEW' | translate }}</h3>
               <ngb-alert [type]="welcome.style" [dismissible]="welcome.dismissible">
                 <strong>{{ welcomePreviewTitle() }}</strong>
@@ -293,7 +294,7 @@
       <ng-template ngbNavContent>
         <div class="tenant-tab">
           <p class="text-muted small mb-3">{{ 'SET_TENANT_WIDGET_HINT' | translate }}</p>
-          <div class="tenant-panel-section">
+          <div class="tenant-panel-section reveal-item" style="--reveal-i: 1">
             <div cdkDropList class="tenant-sort-list tenant-widget-grid" (cdkDropListDropped)="onWidgetDrop($event)">
               @for (entry of widgetEntries; track entry.id) {
                 <div class="tenant-sort-row" cdkDrag>
@@ -344,7 +345,7 @@
       <button ngbNavLink type="button">{{ 'SET_TENANT_LABELS' | translate }}</button>
       <ng-template ngbNavContent>
         <div class="tenant-tab tenant-labels-tab">
-          <div class="tenant-tab-save-bar">
+          <div class="tenant-tab-save-bar reveal-item" style="--reveal-i: 1">
             <p class="tenant-tab-save-bar__hint">{{ 'SET_TENANT_SAVE_HINT' | translate }}</p>
             <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveLabels()">
               @if (saving) {
@@ -353,7 +354,7 @@
               {{ 'SAVE' | translate }}
             </button>
           </div>
-          <div class="tenant-labels-intro">
+          <div class="tenant-labels-intro reveal-item" style="--reveal-i: 2">
             <p class="tenant-labels-intro__text">{{ 'SET_TENANT_LABELS_HINT' | translate }}</p>
             <div class="tenant-labels-toolbar">
               <div class="tenant-labels-modules" role="group" [attr.aria-label]="'SET_TENANT_LABELS_MODULE_FILTER' | translate">
@@ -476,7 +477,7 @@
             </div>
           }
 
-          <section class="tenant-panel-section tenant-terminology-block">
+          <section class="tenant-panel-section tenant-terminology-block reveal-item" style="--reveal-i: 3">
             <header class="tenant-terminology-block__head">
               <div>
                 <h3 class="tenant-panel-section__title mb-1">{{ 'SET_TENANT_TERMINOLOGY' | translate }}</h3>
@@ -552,7 +553,7 @@
       <ng-template ngbNavContent>
         <div class="tenant-tab">
           <p class="text-muted small mb-3">{{ 'SET_TENANT_PDF_HINT' | translate }}</p>
-          <div class="tenant-panel-section">
+          <div class="tenant-panel-section reveal-item" style="--reveal-i: 1">
             <div class="form-check form-switch mb-3">
               <input class="form-check-input" type="checkbox" id="pdfLogo" [(ngModel)]="pdf.show_logo" />
               <label class="form-check-label" for="pdfLogo">{{ 'SET_TENANT_PDF_LOGO' | translate }}</label>
@@ -584,5 +585,6 @@
       </ng-template>
     </li>
   </ul>
-  <div [ngbNavOutlet]="nav" class="tenant-settings-outlet"></div>
+  <div [ngbNavOutlet]="nav" class="tenant-settings-outlet reveal-item" style="--reveal-i: 1"></div>
+  </div>
 }

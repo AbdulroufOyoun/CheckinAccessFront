@@ -13,8 +13,7 @@
   Verify → routerLink="/dashboard"  (after success state)
 -->
 
-<!-- <div class="auth-page" [class.auth-page--rtl]="isRTL"> -->
-<div class="auth-page">
+<div class="auth-page" [class.auth-page--rtl]="locale.lang() === 'ar'">
 
   <!-- ═══════════════════════════════════════════════
        BACKGROUND LAYER (identical to login)
@@ -30,6 +29,7 @@
        MAIN CARD
   ═══════════════════════════════════════════════ -->
   <div class="auth-card-wrap">
+    <app-language-toggle variant="auth" />
     <div class="auth-card">
 
       <!-- Top gradient accent bar -->

@@ -1,7 +1,7 @@
 import { ApplicationRef, Injectable, inject, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { firstValueFrom, of, timeout } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Subject, firstValueFrom, of, timeout } from 'rxjs';
+import { catchError, takeUntil } from 'rxjs/operators';
 
 export type AppLang = 'en' | 'ar';
 
@@ -52,6 +52,20 @@ export class LocaleService {
 
   toggle(): Promise<void> {
     return this.use(this.langSignal() === 'ar' ? 'en' : 'ar');
+  }
+
+  isRtl(lang: AppLang = this.langSignal()): boolean {
+    return lang === 'ar';
+  }
+
+  /** Sync component RTL state whenever the user toggles language (shell, settings, login). */
+  observeLang(destroy$: Subject<void>, onChange: (lang: AppLang, rtl: boolean) => void): void {
+    const emit = () => onChange(this.langSignal(), this.isRtl());
+    emit();
+    this.translate.onLangChange.pipe(takeUntil(destroy$)).subscribe((event) => {
+      const lang: AppLang = event.lang === 'ar' ? 'ar' : 'en';
+      onChange(lang, lang === 'ar');
+    });
   }
 
   private resolveInitial(): AppLang {

@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -20,6 +20,7 @@ import { ConfirmDialog } from '../../dialog/confirm-dialog/confirm-dialog';
 import { firstValueFrom } from 'rxjs';
 import { RealtimeService } from '../../services/realtime.service';
 import { TenantDateTimeService } from '../../services/tenant-date-time.service';
+import { LocaleService } from '../../services/locale.service';
 
 interface ReservationRow {
   id: number;
@@ -59,10 +60,10 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly document = inject(DOCUMENT);
   private readonly dialogMobile = inject(DialogMobileService);
   private readonly realtime = inject(RealtimeService);
   private readonly tenantDateTime = inject(TenantDateTimeService);
+  private readonly locale = inject(LocaleService);
   private readonly destroy$ = new Subject<void>();
 
   readonly perPage = 20;
@@ -89,11 +90,8 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
-    this.isRTL =
-      this.document.documentElement.getAttribute('dir') === 'rtl' ||
-      this.translate.getCurrentLang() === 'ar';
-    this.translate.onLangChange.subscribe((e) => {
-      this.isRTL = e.lang === 'ar';
+    this.locale.observeLang(this.destroy$, (_lang, rtl) => {
+      this.isRTL = rtl;
       this.cdr.detectChanges();
     });
     this.search = this.route.snapshot.queryParamMap.get('q') ?? '';
@@ -253,10 +251,17 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
     this.dialogMobile
       .open(AssignBookingLocksDialog, {
         panelClass: ['custom-dialog'],
-        width: '480px',
-        maxWidth: '94vw',
-        maxHeight: '90vh',
-        data: { bookingId: row.id, guestName: row.guestName },
+        width: '540px',
+        maxWidth: '96vw',
+        maxHeight: '92vh',
+        data: {
+          bookingId: row.id,
+          guestName: row.guestName,
+          unitLabel: row.unitLabel,
+          building: row.building,
+          checkIn: row.checkIn,
+          checkOut: row.checkOut,
+        },
       })
       .afterClosed()
       .subscribe((saved) => {

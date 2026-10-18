@@ -51,6 +51,42 @@
   padding: 1.5rem 0;
 }
 
+/* Entrance after skeleton — matches global `.reveal` on list pages */
+.tenant-panel-ready.reveal {
+  animation: contentRevealSoft 0.52s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tenant-panel-ready.reveal .tenant-settings-tabs.reveal-item {
+  animation: contentRevealSoft 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--reveal-i, 0) * 45ms + 60ms);
+}
+
+.tenant-panel-ready.reveal .tenant-settings-outlet.reveal-item {
+  animation: contentRevealSoft 0.52s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--reveal-i, 0) * 45ms + 90ms);
+}
+
+.tenant-panel-ready.reveal .tenant-tab-save-bar.reveal-item,
+.tenant-panel-ready.reveal .tenant-labels-intro.reveal-item,
+.tenant-panel-ready.reveal .tenant-panel-section.reveal-item {
+  animation: contentRevealRow 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--reveal-i, 0) * 52ms + 110ms);
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tenant-panel-ready.reveal,
+  .tenant-panel-ready.reveal .tenant-settings-tabs.reveal-item,
+  .tenant-panel-ready.reveal .tenant-settings-outlet.reveal-item,
+  .tenant-panel-ready.reveal .tenant-tab-save-bar.reveal-item,
+  .tenant-panel-ready.reveal .tenant-labels-intro.reveal-item,
+  .tenant-panel-ready.reveal .tenant-panel-section.reveal-item {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
 .tenant-skeleton__line {
   height: 1rem;
   background: var(--bs-secondary-bg, #e9ecef);

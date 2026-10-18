@@ -13,6 +13,13 @@ import {
 } from './tenant-customization.types';
 import { LocaleService } from './locale.service';
 import { applyTenantBrandCssVariables } from './tenant-brand.util';
+import baseEn from '../../assets/i18n/en.json';
+import baseAr from '../../assets/i18n/ar.json';
+
+const BASE_I18N: Record<'en' | 'ar', Record<string, string>> = {
+  en: baseEn as Record<string, string>,
+  ar: baseAr as Record<string, string>,
+};
 
 @Injectable({ providedIn: 'root' })
 export class TenantCustomizationService {
@@ -24,6 +31,15 @@ export class TenantCustomizationService {
   private readonly publicAppearanceSignal = signal<TenantCustomizationPayload['appearance'] | null>(null);
   private readonly logoCacheBust = signal(0);
   readonly settings = this.settingsSignal.asReadonly();
+
+  constructor() {
+    this.translate.onLangChange.subscribe(() => {
+      const data = this.settingsSignal();
+      if (data) {
+        this.mergeLabelOverrides(data);
+      }
+    });
+  }
 
   /** Same host as admin API — avoids broken APP_URL in Laravel `logo_url`. */
   readonly logoDisplayUrl = computed(() => {
@@ -140,26 +156,37 @@ export class TenantCustomizationService {
   mergeLabelOverrides(data: TenantCustomizationPayload): void {
     const overrides = data.label_overrides;
     const terminology = data.terminology ?? {};
-    if (overrides?.ar) {
-      const merged = { ...overrides.ar };
-      for (const [key, val] of Object.entries(terminology)) {
-        if (val?.ar) {
-          merged[key] = val.ar;
-          merged[`SET_TENANT_TERM_${key}`] = val.ar;
+
+    for (const lang of ['ar', 'en'] as const) {
+      const merged: Record<string, string> = { ...BASE_I18N[lang] };
+
+      for (const [key, val] of Object.entries(overrides?.[lang] ?? {})) {
+        if (typeof val === 'string' && val.trim() !== '') {
+          merged[key] = val.trim();
         }
       }
-      this.translate.setTranslation('ar', merged, true);
-    }
-    if (overrides?.en) {
-      const merged = { ...overrides.en };
+
       for (const [key, val] of Object.entries(terminology)) {
-        if (val?.en) {
-          merged[key] = val.en;
-          merged[`SET_TENANT_TERM_${key}`] = val.en;
+        const text = val?.[lang]?.trim();
+        if (text) {
+          merged[key] = text;
+          merged[`SET_TENANT_TERM_${key}`] = text;
         }
       }
-      this.translate.setTranslation('en', merged, true);
+
+      this.translate.setTranslation(lang, merged, false);
     }
+  }
+
+  /** Sidebar / settings display with base-catalog fallback. */
+  label(key: string): string {
+    const translated = this.translate.instant(key);
+    if (translated !== key) {
+      return translated;
+    }
+    const lang = this.locale.lang();
+    const fallback = BASE_I18N[lang][key];
+    return typeof fallback === 'string' && fallback.trim() ? fallback : key;
   }
 
   appName(lang?: AppLang): string {
@@ -204,12 +231,26 @@ export class TenantCustomizationService {
     return this.settingsSignal()?.onboarding;
   }
 
+  needsProductWelcome(modules: string[], isSuperAdmin: boolean): boolean {
+    if (!modules.includes('property') || !isSuperAdmin) {
+      return false;
+    }
+    const o = this.settingsSignal()?.onboarding;
+    if (o?.completed === true) {
+      return false;
+    }
+    return o?.product_intro_done !== true;
+  }
+
   needsEstablishmentSetup(modules: string[], isSuperAdmin: boolean): boolean {
     if (!modules.includes('property') || !isSuperAdmin) {
       return false;
     }
     const o = this.settingsSignal()?.onboarding;
     if (o?.completed === true) {
+      return false;
+    }
+    if (o?.product_intro_done !== true) {
       return false;
     }
     return o?.establishment_step_done !== true;
@@ -227,6 +268,9 @@ export class TenantCustomizationService {
   }
 
   resolveOnboardingRoute(modules: string[], isSuperAdmin: boolean): string | null {
+    if (this.needsProductWelcome(modules, isSuperAdmin)) {
+      return '/OnboardingWelcome';
+    }
     if (this.needsEstablishmentSetup(modules, isSuperAdmin)) {
       return '/EstablishmentSetup';
     }
@@ -247,10 +291,29 @@ export class TenantCustomizationService {
     if (onboarding?.completed === true) {
       return null;
     }
+    if (onboarding?.product_intro_done !== true) {
+      return '/OnboardingWelcome';
+    }
     if (onboarding?.establishment_step_done !== true) {
       return '/EstablishmentSetup';
     }
     return '/PropertyOnboarding';
+  }
+
+  async completeProductIntro(): Promise<TenantCustomizationPayload | null> {
+    const res = await this.api.post<ApiResponse<TenantCustomizationPayload>>(
+      Apiendpointd.tenantCompleteProductIntro,
+      {},
+    );
+    if (!res.success) {
+      throw new Error(res.message || 'Could not complete product intro');
+    }
+    const data = res.data ?? null;
+    this.settingsSignal.set(data);
+    if (data) {
+      this.applyFullSettings(data);
+    }
+    return data;
   }
 
   async loadEstablishmentPresets(): Promise<EstablishmentPresetCard[]> {

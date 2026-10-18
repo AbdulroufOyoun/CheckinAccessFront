@@ -1,0 +1,96 @@
+.onb-journey {
+  margin-bottom: 1.25rem;
+}
+
+.onb-journey__list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.onb-journey__list--three .onb-journey__label {
+  font-size: 0.68rem;
+}
+
+.onb-journey__item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.onb-journey__dot {
+  flex-shrink: 0;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.onb-journey__item--active .onb-journey__dot {
+  background: var(--onb-accent, var(--tenant-primary, #2563eb));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--onb-accent, #2563eb) 28%, transparent);
+}
+
+.onb-journey__item--done .onb-journey__dot {
+  background: color-mix(in srgb, var(--onb-accent, #38bdf8) 22%, transparent);
+  color: #e2e8f0;
+  border-color: color-mix(in srgb, var(--onb-accent, #38bdf8) 45%, transparent);
+}
+
+.onb-journey__item--upcoming .onb-journey__label {
+  color: #94a3b8;
+}
+
+.onb-journey__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  line-height: 1.25;
+}
+
+.onb-journey__item--active .onb-journey__label {
+  color: #f8fafc;
+}
+
+@media (max-width: 479.98px) {
+  .onb-journey__label {
+    font-size: 0.7rem;
+  }
+}
+
+.onb-journey__connector {
+  flex: 0 0 1.5rem;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 1px;
+}
+
+.onb-journey__connector--done {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--onb-accent, #2563eb) 55%, #cbd5e1),
+    var(--onb-accent, #2563eb)
+  );
+}
+
+[dir='rtl'] .onb-journey__connector--done {
+  background: linear-gradient(
+    270deg,
+    color-mix(in srgb, var(--onb-accent, #2563eb) 55%, #cbd5e1),
+    var(--onb-accent, #2563eb)
+  );
+}

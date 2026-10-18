@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { BookingsService, CreateBookingPeriodPayload } from '../services/bookings.service';
@@ -27,6 +27,13 @@ import {
   SuiteRoomGroup,
 } from '../shared/room-display-groups';
 import { EntityLabelPipe } from '../pipes/entity-label.pipe';
+import { LocaleService } from '../services/locale.service';
+import { TenantDateTimeService } from '../services/tenant-date-time.service';
+import {
+  BookingScenario,
+  BookingScenarioRoomScope,
+  BookingScenariosService,
+} from '../services/booking-scenarios.service';
 
 type BookingMode = 'full_day' | 'hourly';
 type WizardStep = 1 | 2 | 3;
@@ -58,13 +65,16 @@ interface PeriodDraft {
 })
 export class BookingCreatePage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly locale = inject(LocaleService);
+  private readonly tenantDateTime = inject(TenantDateTimeService);
+  private readonly scenariosApi = inject(BookingScenariosService);
   private readonly bookingsApi = inject(BookingsService);
   private readonly roomStatusApi = inject(RoomStatusService);
   private readonly usersApi = inject(UsersService);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly document = inject(DOCUMENT);
   private readonly realtime = inject(RealtimeService);
   private readonly durationsApi = inject(DurationsService);
   private readonly destroy$ = new Subject<void>();
@@ -99,6 +109,10 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   timePresets: DurationPreset[] = [];
   stayPresets: DurationPreset[] = [];
+  scenarios: BookingScenario[] = [];
+  activeScenarioId: number | null = null;
+  scenarioRoomScope: BookingScenarioRoomScope = 'all';
+  scenarioRoomIds = new Set<number>();
 
   readonly weekdays: WeekdayOption[] = [
     { code: 0, labelKey: 'BOOK_DAY_SUN' },
@@ -115,13 +129,20 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   private roomsCacheKey: string | null = null;
   private prefetchPromise: Promise<boolean> | null = null;
   private periodSeq = 1;
+  private pendingRoomId: number | null = null;
+  private deepLinkHandled = false;
 
   ngOnInit(): void {
-    this.isRTL =
-      this.document.documentElement.getAttribute('dir') === 'rtl' ||
-      this.translate.getCurrentLang() === 'ar';
+    this.locale.observeLang(this.destroy$, (_lang, rtl) => {
+      this.isRTL = rtl;
+      this.cdr.detectChanges();
+    });
     this.today = this.localIsoDate();
     this.periods = [this.blankPeriod()];
+    this.applyBookingQueryParams(this.route.snapshot.queryParamMap);
+    this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      this.applyBookingQueryParams(params);
+    });
     void this.loadLists();
     void this.loadDurations();
     this.realtime.occupancyChanged.pipe(takeUntil(this.destroy$)).subscribe(() => {
@@ -269,24 +290,20 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   }
 
   formatDate(value?: string | null): string {
-    if (!value) return '—';
-    const raw = String(value).slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return value;
-    const [y, m, d] = raw.split('-').map(Number);
-    const date = new Date(y, m - 1, d);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString(this.isRTL ? 'ar-SA' : 'en-GB', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
+    return this.tenantDateTime.formatDate(value);
   }
 
   get filteredRooms(): RoomStatusItem[] {
     const rooms = this.availability?.rooms || [];
     const q = this.roomSearch.trim().toLowerCase();
     return rooms.filter((room) => {
+      if (
+        this.scenarioRoomScope === 'selected' &&
+        this.scenarioRoomIds.size > 0 &&
+        !this.scenarioRoomIds.has(room.id)
+      ) {
+        return false;
+      }
       if (this.statusFilter === 'available' && room.status !== 'available') return false;
       if (this.buildingFilter && room.building?.id !== this.buildingFilter) return false;
       if (!q) return true;
@@ -304,6 +321,18 @@ export class BookingCreatePage implements OnInit, OnDestroy {
       floorPrefix: this.translate.instant('ROOM_STATUS_FLOOR'),
       noFloor: this.translate.instant('ROOM_STATUS_NO_FLOOR'),
     });
+  }
+
+  get activeScenarioLabel(): string {
+    if (!this.activeScenarioId) return '';
+    const s = this.scenarios.find((x) => x.id === this.activeScenarioId);
+    if (!s) return '';
+    const name = this.isRTL && s.name_ar?.trim() ? s.name_ar.trim() : s.name;
+    const scope =
+      s.room_scope === 'all'
+        ? this.translate.instant('BOOK_SC_SCOPE_ALL')
+        : this.translate.instant('BOOK_SC_ROOMS_COUNT', { n: s.room_ids?.length ?? 0 });
+    return this.translate.instant('BOOK_SCENARIO_ACTIVE', { name, scope });
   }
 
   get summary() {
@@ -402,6 +431,33 @@ export class BookingCreatePage implements OnInit, OnDestroy {
 
   onAccessRulesChange(): void {
     this.scheduleRoomsPrefetch();
+  }
+
+  onScenarioChange(id: number | null): void {
+    this.activeScenarioId = id;
+    this.applyScenario(id);
+    this.clearSelectedRooms();
+    this.roomsCacheKey = null;
+    this.scheduleRoomsPrefetch();
+    this.cdr.detectChanges();
+  }
+
+  private applyScenario(id: number | null): void {
+    if (!id) {
+      this.scenarioRoomScope = 'all';
+      this.scenarioRoomIds = new Set();
+      return;
+    }
+    const scenario = this.scenarios.find((s) => s.id === id);
+    if (!scenario) {
+      this.scenarioRoomScope = 'all';
+      this.scenarioRoomIds = new Set();
+      return;
+    }
+    this.scenarioRoomScope = scenario.room_scope;
+    this.scenarioRoomIds = new Set(
+      (scenario.room_ids ?? []).map((roomId) => Number(roomId)).filter((roomId) => roomId > 0),
+    );
   }
 
   toggleExcludedDay(period: PeriodDraft, code: number): void {
@@ -798,6 +854,7 @@ export class BookingCreatePage implements OnInit, OnDestroy {
         if (token !== this.prefetchToken) return false;
 
         this.roomsCacheKey = key;
+        void this.tryApplyDeepLinkRoom();
         return true;
       } catch (e: unknown) {
         if (token !== this.prefetchToken) return false;
@@ -929,12 +986,14 @@ export class BookingCreatePage implements OnInit, OnDestroy {
   private async loadLists(): Promise<void> {
     this.loadingLists = true;
     try {
-      const [usersPage, buildings] = await Promise.all([
+      const [usersPage, buildings, scenariosRes] = await Promise.all([
         this.usersApi.list(200),
         this.roomStatusApi.getFilterBuildings(),
+        this.scenariosApi.list(true),
       ]);
       this.users = usersPage.data || [];
       this.buildings = buildings.map((b) => ({ id: b.id, name: b.name }));
+      this.scenarios = scenariosRes.data ?? [];
     } catch {
       this.snackbar.show(this.translate.instant('REQUEST_FAILED'), 'error');
     } finally {
@@ -1063,5 +1122,59 @@ export class BookingCreatePage implements OnInit, OnDestroy {
     const d = new Date(`${iso}T12:00:00`);
     d.setDate(d.getDate() + Math.max(1, days) - 1);
     return d.toISOString().slice(0, 10);
+  }
+
+  private applyBookingQueryParams(params: {
+    get: (key: string) => string | null;
+  }): void {
+    const roomId = Number(params.get('room_id') || 0);
+    this.pendingRoomId = roomId > 0 ? roomId : null;
+    this.deepLinkHandled = false;
+
+    const first = this.periods[0];
+    if (!first) return;
+
+    const checkIn = params.get('check_in')?.slice(0, 10);
+    const checkOut = params.get('check_out')?.slice(0, 10);
+    if (checkIn && /^\d{4}-\d{2}-\d{2}$/.test(checkIn)) {
+      first.check_in_date = checkIn;
+      this.normalizeCheckIn(first, false);
+    }
+    if (checkOut && /^\d{4}-\d{2}-\d{2}$/.test(checkOut)) {
+      first.check_out_date = checkOut;
+      this.normalizeCheckOut(first, false);
+    }
+
+    if (this.pendingRoomId && this.canGoStep2) {
+      this.scheduleRoomsPrefetch();
+    }
+    this.cdr.detectChanges();
+  }
+
+  private async tryApplyDeepLinkRoom(): Promise<void> {
+    const roomId = this.pendingRoomId;
+    if (!roomId || this.deepLinkHandled || !this.roomsReady) {
+      return;
+    }
+
+    const room = (this.availability?.rooms || []).find((r) => r.id === roomId);
+    if (!room) {
+      this.snackbar.show(this.translate.instant('BOOK_DEEP_LINK_ROOM_MISSING'), 'error');
+      this.pendingRoomId = null;
+      this.deepLinkHandled = true;
+      return;
+    }
+
+    this.deepLinkHandled = true;
+    this.step = 2;
+
+    if (room.status === 'available') {
+      this.selectedRooms = [room];
+      this.snackbar.show(this.translate.instant('BOOK_DEEP_LINK_ROOM_SELECTED'), 'success');
+    } else {
+      this.clearSelectedRooms();
+      this.snackbar.show(this.translate.instant('BOOK_DEEP_LINK_ROOM_UNAVAILABLE'), 'error');
+    }
+    this.cdr.detectChanges();
   }
 }

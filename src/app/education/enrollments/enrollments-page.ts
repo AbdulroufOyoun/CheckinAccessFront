@@ -18,15 +18,18 @@ import { AddEnrollment } from '../../dialog/add-enrollment/add-enrollment';
 import { EnrollmentDetail } from '../../dialog/enrollment-detail/enrollment-detail';
 import { PageSkeleton } from '../../shared/page-skeleton/page-skeleton';
 
-interface SimpleUser {
+interface EnrollmentUser {
   id: number;
-  name?: string;
-  email?: string;
+  name?: string | null;
+  email?: string | null;
+  mobile?: string | null;
 }
+
+interface SimpleUser extends EnrollmentUser {}
 
 interface StudentEnrollmentGroup {
   userId: number;
-  user?: { id: number; name?: string; email?: string } | null;
+  user: EnrollmentUser;
   rows: EduEnrollmentRow[];
 }
 
@@ -89,8 +92,31 @@ export class EnrollmentsPage implements OnInit {
     return s.name || s.name_ar || '';
   }
 
+  /** Sort key and fallback label */
   studentLabel(group: StudentEnrollmentGroup): string {
-    return group.user?.name || group.user?.email || `#${group.userId}`;
+    return this.studentPrimaryName(group);
+  }
+
+  studentPrimaryName(group: StudentEnrollmentGroup): string {
+    const u = group.user;
+    if (u.name?.trim()) return u.name.trim();
+    if (u.email?.trim()) return u.email.trim();
+    if (u.mobile?.trim()) return u.mobile.trim();
+    return this.translate.instant('ENR_STUDENT_UNNAMED');
+  }
+
+  studentSecondaryLine(group: StudentEnrollmentGroup): string {
+    const u = group.user;
+    const idPart = this.translate.instant('ENR_STUDENT_ID', { id: group.userId });
+    const parts: string[] = [idPart];
+    const primary = this.studentPrimaryName(group);
+    if (u.email?.trim() && u.email.trim() !== primary) {
+      parts.push(u.email.trim());
+    }
+    if (u.mobile?.trim() && u.mobile.trim() !== primary) {
+      parts.push(u.mobile.trim());
+    }
+    return parts.join(' · ');
   }
 
   statusKey(status: string): string {
@@ -108,6 +134,9 @@ export class EnrollmentsPage implements OnInit {
         allowStale: !force,
       });
       this.applyBundle(bundle);
+      await this.loadUserOptions();
+      this.enrichGroupsWithDirectoryUsers();
+      this.applyFilter();
     } catch (e: unknown) {
       this.snackbar.show(this.err(e), 'error');
     } finally {
@@ -138,11 +167,12 @@ export class EnrollmentsPage implements OnInit {
       const existing = map.get(userId);
       if (existing) {
         existing.rows.push(row);
+        existing.user = this.mergeEnrollmentUsers(existing.user, row.user);
         continue;
       }
       map.set(userId, {
         userId,
-        user: row.user,
+        user: this.normalizeEnrollmentUser(userId, row.user),
         rows: [row],
       });
     }
@@ -163,13 +193,93 @@ export class EnrollmentsPage implements OnInit {
 
   private groupMatchesSearch(group: StudentEnrollmentGroup, q: string): boolean {
     if (!q) return true;
-    if (this.studentLabel(group).toLowerCase().includes(q)) return true;
-    return group.rows.some((row) => {
-      const section = String(row.enrollment.section?.number || row.enrollment.section_id).toLowerCase();
-      const subject = this.subjectLabel(row.enrollment.section?.subject).toLowerCase();
-      const status = (row.enrollment.status || '').toLowerCase();
-      return section.includes(q) || subject.includes(q) || status.includes(q);
-    });
+    const haystack = this.groupSearchHaystack(group);
+    const qNorm = q.replace(/^#/, '').trim();
+    if (haystack.includes(q)) return true;
+    if (qNorm && qNorm !== q && haystack.includes(qNorm)) return true;
+    return false;
+  }
+
+  private groupSearchHaystack(group: StudentEnrollmentGroup): string {
+    const parts: string[] = [];
+    const u = group.user;
+    parts.push(String(group.userId), `#${group.userId}`);
+    if (u.name) parts.push(u.name);
+    if (u.email) parts.push(u.email);
+    if (u.mobile) parts.push(u.mobile);
+    parts.push(this.studentPrimaryName(group), this.studentSecondaryLine(group));
+
+    for (const row of group.rows) {
+      const e = row.enrollment;
+      parts.push(String(e.id), String(e.section_id));
+      if (e.status) {
+        parts.push(e.status);
+        parts.push(this.translate.instant(this.statusKey(e.status)));
+      }
+      if (e.enrolled_at) parts.push(e.enrolled_at);
+
+      const sec = e.section;
+      if (!sec) continue;
+
+      parts.push(String(sec.id), String(sec.number ?? ''));
+      if (sec.room_name) parts.push(sec.room_name);
+      if (sec.room?.name) parts.push(sec.room.name);
+      if (sec.room?.number) parts.push(String(sec.room.number));
+      if (sec.doctor?.name) parts.push(sec.doctor.name);
+
+      const sub = sec.subject;
+      if (sub) {
+        parts.push(sub.name, sub.name_ar ?? '', sub.short_name ?? '');
+      }
+
+      const term = sec.academic_term ?? sec.academicTerm;
+      if (term) {
+        parts.push(term.name, term.name_ar ?? '', String(term.id));
+      }
+    }
+
+    return parts
+      .filter((p) => typeof p === 'string' && p.trim().length > 0)
+      .join('\n')
+      .toLowerCase();
+  }
+
+  private normalizeEnrollmentUser(
+    userId: number,
+    fromRow?: EduEnrollmentRow['user'] | null,
+  ): EnrollmentUser {
+    return this.mergeEnrollmentUsers(
+      { id: userId, name: null, email: null, mobile: null },
+      fromRow,
+    );
+  }
+
+  private mergeEnrollmentUsers(
+    base: EnrollmentUser,
+    extra?: EduEnrollmentRow['user'] | null,
+  ): EnrollmentUser {
+    if (!extra) return base;
+    return {
+      id: base.id,
+      name: base.name ?? extra.name ?? null,
+      email: base.email ?? extra.email ?? null,
+      mobile: base.mobile ?? extra.mobile ?? null,
+    };
+  }
+
+  private enrichGroupsWithDirectoryUsers(): void {
+    if (!this.users.length) return;
+    const byId = new Map(this.users.map((u) => [u.id, u]));
+    for (const group of this.groups) {
+      const dir = byId.get(group.userId);
+      if (!dir) continue;
+      group.user = {
+        id: group.userId,
+        name: group.user.name ?? dir.name ?? null,
+        email: group.user.email ?? dir.email ?? null,
+        mobile: group.user.mobile ?? dir.mobile ?? null,
+      };
+    }
   }
 
   onStatusFilterChange(): void {

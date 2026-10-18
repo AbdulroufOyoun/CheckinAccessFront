@@ -195,6 +195,7 @@ export class AuthService {
   /** Call after `TenantCustomizationService.loadSettings()` post-login. */
   postLoginRoute(onboarding?: {
     completed?: boolean;
+    product_intro_done?: boolean;
     establishment_step_done?: boolean;
   }): string {
     if (!this.hasModule('property') || !this.isSuperAdmin()) {
@@ -202,6 +203,9 @@ export class AuthService {
     }
     if (onboarding?.completed === true) {
       return this.homeRoute();
+    }
+    if (onboarding?.product_intro_done !== true) {
+      return '/OnboardingWelcome';
     }
     if (onboarding?.establishment_step_done !== true) {
       return '/EstablishmentSetup';

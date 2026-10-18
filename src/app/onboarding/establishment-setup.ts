@@ -23,11 +23,19 @@ import { onboardingI18n } from './onboarding-i18n';
 import { Onboarding3dScene } from './onboarding-3d-scene';
 import { previewColorForPreset } from './onboarding-3d-establishment-models';
 import { Onboarding3dVisual, visualFromPresetId } from './onboarding-3d.types';
+import { OnboardingJourneyBar } from './onboarding-journey-bar';
+import { OnboardingPlatformChips } from './onboarding-platform-chips';
 
 @Component({
   selector: 'app-establishment-setup',
   standalone: true,
-  imports: [CommonModule, TranslateModule, Onboarding3dScene],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    Onboarding3dScene,
+    OnboardingJourneyBar,
+    OnboardingPlatformChips,
+  ],
   templateUrl: './establishment-setup.html',
   styleUrls: ['./establishment-setup.css', './onboarding-shell.css'],
 })
@@ -61,7 +69,7 @@ export class EstablishmentSetup implements OnInit, OnDestroy {
     if (this.selectedId()) {
       return previewColorForPreset(this.selectedId());
     }
-    return fromTenant ?? '#2563eb';
+    return fromTenant ?? '#0ea5e9';
   });
 
   readonly sceneCaption = computed(() => {

@@ -5,15 +5,20 @@ import {
   roomGridLayout,
   shouldShowSideRoomGrids,
 } from './onboarding-3d-floor-grid';
+import {
+  ProceduralBuildingResult,
+  buildProceduralBlueprint,
+  establishmentPreviewFloorCount,
+} from './onboarding-3d-procedural-building';
 
 /** Preview accent colors aligned with backend presets (before apply). */
 export const ESTABLISHMENT_PREVIEW_COLORS: Record<string, string> = {
-  hotel: '#1d4ed8',
-  serviced_apartments: '#7c3aed',
-  residential_compound: '#0f766e',
-  corporate_housing: '#0369a1',
-  hospital: '#0284c7',
-  student_housing: '#2563eb',
+  hotel: '#0284c7',
+  serviced_apartments: '#6366f1',
+  residential_compound: '#0d9488',
+  corporate_housing: '#0891b2',
+  hospital: '#0ea5e9',
+  student_housing: '#3b82f6',
 };
 
 export function previewColorForPreset(presetId: string | null | undefined): string {
@@ -355,4 +360,36 @@ function buildStudentDorm(palette: Onboarding3dPalette): THREE.Group {
   g.add(flag);
 
   return g;
+}
+
+/** Blueprint line sketch for establishment step (fixed preview floor count). */
+export function buildEstablishmentBlueprintModel(
+  presetId: string,
+  palette: Onboarding3dPalette,
+  dashed = true,
+): ProceduralBuildingResult {
+  return buildProceduralBlueprint({
+    buildingType: presetId,
+    floorCount: establishmentPreviewFloorCount(),
+    roomsPerFloor: 4,
+    palette,
+    dashed,
+  });
+}
+
+/** Blueprint unit for property layout grid (dynamic floors). */
+export function buildPropertyBlueprintUnit(
+  presetId: string,
+  floorsPerBuilding: number,
+  roomsPerFloor: number,
+  palette: Onboarding3dPalette,
+): ProceduralBuildingResult {
+  return buildProceduralBlueprint({
+    buildingType: presetId,
+    floorCount: floorsPerBuilding,
+    roomsPerFloor,
+    palette,
+    detailed: true,
+    dashed: true,
+  });
 }

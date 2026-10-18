@@ -144,6 +144,26 @@ export class Apiendpointd {
     return `${this.durations}/${id}/inactivate`;
   }
 
+  public static get bookingScenarios(): string {
+    return this.mianUrl + 'booking-scenarios';
+  }
+
+  public static bookingScenarioById(id: number | string): string {
+    return `${this.bookingScenarios}/${id}`;
+  }
+
+  public static bookingScenarioActivate(id: number | string): string {
+    return `${this.bookingScenarios}/${id}/activate`;
+  }
+
+  public static bookingScenarioInactivate(id: number | string): string {
+    return `${this.bookingScenarios}/${id}/inactivate`;
+  }
+
+  public static bookingScenarioRoomOptions(): string {
+    return `${this.bookingScenarios}/room-options`;
+  }
+
   public static roomById(id: number | string): string {
     return `${this.rooms}${id}`;
   }
@@ -299,6 +319,10 @@ export class Apiendpointd {
 
   public static get tenantApplyEstablishmentPreset(): string {
     return this.mianUrl + 'tenant-settings/apply-establishment-preset';
+  }
+
+  public static get tenantCompleteProductIntro(): string {
+    return this.mianUrl + 'tenant-settings/complete-product-intro';
   }
 
   public static get tenantPropertyOnboardingProvision(): string {

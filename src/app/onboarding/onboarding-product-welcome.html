@@ -1,0 +1,92 @@
+<section
+  class="welcome-stage"
+  [class.welcome-stage--rtl]="uiLang() === 'ar'"
+  [attr.dir]="uiLang() === 'ar' ? 'rtl' : 'ltr'"
+  [style.--onb-accent]="'#22d3ee'"
+>
+  <header class="welcome-stage__brand" aria-label="CheckinAccess">
+    <div class="welcome-stage__brand-halo" aria-hidden="true"></div>
+    <img
+      class="welcome-stage__brand-logo"
+      src="assets/branding/checkinaccess-logo.png"
+      width="120"
+      height="120"
+      alt=""
+    />
+    <p class="welcome-stage__brand-name">
+      <span class="welcome-stage__brand-checkin">Checkin</span><span class="welcome-stage__brand-access">Access</span>
+    </p>
+    <p class="welcome-stage__brand-tag">{{ 'WELCOME_EYEBROW' | translate }}</p>
+  </header>
+
+  <button type="button" class="welcome-stage__skip" [disabled]="busy()" (click)="skip()">
+    {{ 'WELCOME_SKIP' | translate }}
+  </button>
+
+  <div class="welcome-stage__glow" aria-hidden="true"></div>
+
+  <div
+    class="welcome-stage__center"
+    role="region"
+    aria-labelledby="welcome-slide-title"
+  >
+    <p class="welcome-stage__index" aria-hidden="true">{{ slideLabel() }}</p>
+
+    <div class="welcome-stage__viewport">
+      <div class="welcome-stage__track" [style.--slide]="trackShift()">
+        @for (slide of slides; track slide.title; let i = $index) {
+          <article
+            class="welcome-stage__slide"
+            [attr.dir]="uiLang() === 'ar' ? 'rtl' : 'ltr'"
+            [attr.aria-hidden]="slideIndex() !== i"
+          >
+            <h1
+              class="welcome-stage__title"
+              [id]="slideIndex() === i ? 'welcome-slide-title' : null"
+              [attr.tabindex]="slideIndex() === i ? -1 : null"
+              [attr.aria-live]="slideIndex() === i ? 'polite' : null"
+              #slideTitle
+            >
+              {{ slide.title | translate }}
+            </h1>
+            <p class="welcome-stage__lead">{{ slide.lead | translate }}</p>
+            <ul class="welcome-stage__lines">
+              @for (key of slide.features; track key) {
+                <li>{{ key | translate }}</li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
+    </div>
+
+    <div class="welcome-stage__dots" role="tablist" [attr.aria-label]="'WELCOME_TOUR_ARIA' | translate">
+      @for (idx of [0, 1, 2, 3]; track idx) {
+        <button
+          type="button"
+          class="welcome-stage__dot"
+          [class.welcome-stage__dot--active]="slideIndex() === idx"
+          [attr.aria-selected]="slideIndex() === idx"
+          [attr.aria-label]="('0' + (idx + 1)).slice(-2)"
+          [disabled]="busy()"
+          (click)="goToSlide(idx)"
+        ></button>
+      }
+    </div>
+
+    <div class="welcome-stage__actions">
+      @if (slideIndex() > 0) {
+        <button type="button" class="btn btn-link welcome-stage__back" [disabled]="busy()" (click)="back()">
+          {{ 'WELCOME_BACK' | translate }}
+        </button>
+      }
+      <button type="button" class="btn welcome-stage__next" [disabled]="busy()" (click)="next()">
+        @if (isLastSlide()) {
+          {{ 'WELCOME_START_SETUP' | translate }}
+        } @else {
+          {{ 'WELCOME_NEXT' | translate }}
+        }
+      </button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,59 @@
+<nav class="onb-journey" [attr.aria-label]="'ONB_JOURNEY_ARIA' | translate">
+  <ol class="onb-journey__list onb-journey__list--three">
+    <li
+      class="onb-journey__item"
+      [class.onb-journey__item--done]="stepState('welcome') === 'done'"
+      [class.onb-journey__item--active]="stepState('welcome') === 'active'"
+      [attr.aria-current]="stepState('welcome') === 'active' ? 'step' : null"
+    >
+      <span class="onb-journey__dot" aria-hidden="true">
+        @if (stepState('welcome') === 'done') {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        } @else {
+          1
+        }
+      </span>
+      <span class="onb-journey__label">{{ 'ONB_JOURNEY_WELCOME' | translate }}</span>
+    </li>
+    <li
+      class="onb-journey__connector"
+      aria-hidden="true"
+      [class.onb-journey__connector--done]="connectorDone('welcome')"
+    ></li>
+    <li
+      class="onb-journey__item"
+      [class.onb-journey__item--done]="stepState('establishment') === 'done'"
+      [class.onb-journey__item--active]="stepState('establishment') === 'active'"
+      [class.onb-journey__item--upcoming]="stepState('establishment') === 'upcoming'"
+      [attr.aria-current]="stepState('establishment') === 'active' ? 'step' : null"
+    >
+      <span class="onb-journey__dot" aria-hidden="true">
+        @if (stepState('establishment') === 'done') {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        } @else {
+          2
+        }
+      </span>
+      <span class="onb-journey__label">{{ 'ONB_JOURNEY_ESTABLISHMENT' | translate }}</span>
+    </li>
+    <li
+      class="onb-journey__connector"
+      aria-hidden="true"
+      [class.onb-journey__connector--done]="connectorDone('establishment')"
+    ></li>
+    <li
+      class="onb-journey__item"
+      [class.onb-journey__item--done]="stepState('property') === 'done'"
+      [class.onb-journey__item--active]="stepState('property') === 'active'"
+      [class.onb-journey__item--upcoming]="stepState('property') === 'upcoming'"
+      [attr.aria-current]="stepState('property') === 'active' ? 'step' : null"
+    >
+      <span class="onb-journey__dot" aria-hidden="true">3</span>
+      <span class="onb-journey__label">{{ 'ONB_JOURNEY_PROPERTY' | translate }}</span>
+    </li>
+  </ol>
+</nav>

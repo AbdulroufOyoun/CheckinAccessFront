@@ -51,6 +51,10 @@ export const NAV_SEARCH_PAGE_META: Record<string, NavSearchPageMeta> = {
     aliases: ['holiday', 'holidays', 'عطله', 'عطل', 'اجازه'],
     capabilities: ['add', 'edit'],
   },
+  '/BookingScenarios': {
+    aliases: ['scenario', 'scenarios', 'booking scenario', 'سيناريو', 'سيناريوهات', 'حجز'],
+    capabilities: ['add', 'edit'],
+  },
   '/Durations': {
     aliases: ['duration', 'durations', 'preset', 'presets', 'مدة', 'مدد', 'فترة', 'فترات'],
     capabilities: ['add', 'edit'],

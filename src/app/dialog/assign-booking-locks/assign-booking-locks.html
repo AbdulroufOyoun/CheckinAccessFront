@@ -1,28 +1,150 @@
-<div class="abl-dialog">
-  <h2>{{ 'BOOK_LOCKS_TITLE' | translate }}</h2>
-  <p class="abl-sub">#{{ bookingId }} · {{ guestName }}</p>
+<div class="abl-shell" [class.rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="abl-head">
+    <div>
+      <p class="abl-eyebrow">{{ 'BOOK_LIST_EYEBROW' | translate }}</p>
+      <h2>{{ 'BOOK_LOCKS_TITLE' | translate }}</h2>
+    </div>
+    <button type="button" class="abl-close" (click)="close()" [disabled]="saving" [attr.aria-label]="'CLOSE' | translate">
+      ×
+    </button>
+  </header>
 
-  @if (loading) {
-  <p>{{ 'LOADING' | translate }}</p>
-  } @else if (!locks.length) {
-  <p>{{ 'BOOK_LOCKS_EMPTY' | translate }}</p>
-  } @else {
-  <div class="abl-list">
-    @for (lock of locks; track lock.id) {
-    <label class="abl-item">
-      <input type="checkbox" [checked]="isChecked(lock.id)" (change)="toggle(lock.id)" />
-      <span>{{ lockLabel(lock) }}</span>
-    </label>
+  <div class="abl-body">
+    <section class="abl-summary" aria-label="booking">
+      <div class="abl-summary__avatar" aria-hidden="true">{{ guestInitials }}</div>
+      <div class="abl-summary__main">
+        <strong>{{ guestName }}</strong>
+        <span class="abl-summary__sub">#{{ bookingId }} · {{ summaryUnit }}</span>
+        @if (summaryDates) {
+        <span class="abl-summary__dates" dir="ltr">{{ summaryDates }}</span>
+        }
+      </div>
+    </section>
+
+    <p class="abl-hint">
+      <strong aria-hidden="true">ℹ</strong>
+      {{ 'BOOK_LOCKS_HINT' | translate }}
+    </p>
+
+    @if (loading) {
+    <div class="abl-skel" role="status" [attr.aria-label]="'PROP_LOCKS_LOADING' | translate">
+      <p class="abl-skel__status">
+        <span class="abl-skel__dot" aria-hidden="true"></span>
+        {{ 'PROP_LOCKS_LOADING' | translate }}
+      </p>
+      <div class="abl-skel__search" aria-hidden="true"></div>
+      @for (row of skelRows; track row) {
+      <div class="abl-skel__row" [style.--skel-i]="row">
+        <span class="abl-skel__check"></span>
+        <span class="abl-skel__lines">
+          <span class="abl-skel__bone abl-skel__bone--title"></span>
+          <span class="abl-skel__bone abl-skel__bone--sub"></span>
+        </span>
+      </div>
+      }
+    </div>
+    } @else if (!locks.length) {
+    <div class="abl-empty">
+      <p>{{ 'BOOK_LOCKS_EMPTY' | translate }}</p>
+    </div>
+    } @else {
+    <div class="abl-toolbar">
+      <label class="abl-search">
+        <span class="visually-hidden">{{ 'BOOK_LOCKS_SEARCH' | translate }}</span>
+        <input type="search" [(ngModel)]="search" name="lockSearch"
+          [placeholder]="'BOOK_LOCKS_SEARCH' | translate" [attr.aria-label]="'BOOK_LOCKS_SEARCH' | translate" />
+      </label>
+      <span class="abl-pill">{{ 'BOOK_LOCKS_SELECTED' | translate: { n: selectedCount } }}</span>
+    </div>
+
+    @if (!hasVisibleLocks) {
+    <p class="abl-empty abl-empty--inline">{{ 'BOOK_EMPTY_SEARCH' | translate }}</p>
+    } @else {
+    @if (visibleUnitLocks.length) {
+    <section class="abl-section">
+      <header class="abl-section__head">
+        <div>
+          <h3>{{ 'BOOK_LOCKS_SECTION_UNIT' | translate }}</h3>
+          <p>{{ 'BOOK_LOCKS_SECTION_UNIT_HINT' | translate }}</p>
+        </div>
+        <button type="button" class="abl-link-btn" (click)="selectAllUnit()" [disabled]="saving">
+          {{ 'BOOK_LOCKS_SELECT_UNIT' | translate }}
+        </button>
+      </header>
+      <ul class="abl-lock-list">
+        @for (lock of visibleUnitLocks; track lock.id) {
+        <li>
+          <label class="abl-lock-row" [class.is-on]="isChecked(lock.id)">
+            <input type="checkbox" [checked]="isChecked(lock.id)" (change)="toggle(lock.id)" />
+            <span class="abl-lock-meta">
+              <strong>{{ lockTitle(lock) }}</strong>
+              @if (lockSub(lock); as sub) {
+              <small>{{ sub }}</small>
+              }
+            </span>
+            @if (wasAssigned(lock.id)) {
+            <span class="abl-badge">{{ 'BOOK_LOCKS_ASSIGNED_BADGE' | translate }}</span>
+            }
+          </label>
+        </li>
+        }
+      </ul>
+    </section>
+    }
+
+    @if (hasVisibleOtherLocks) {
+    <section class="abl-section abl-section--other">
+      <header class="abl-section__head">
+        <div>
+          <h3>{{ 'BOOK_LOCKS_SECTION_OTHER' | translate }}</h3>
+          <p>{{ 'BOOK_LOCKS_SECTION_OTHER_HINT' | translate }}</p>
+        </div>
+        @if (selectedCount) {
+        <button type="button" class="abl-link-btn abl-link-btn--muted" (click)="clearSelection()" [disabled]="saving">
+          {{ 'BOOK_LOCKS_CLEAR' | translate }}
+        </button>
+        }
+      </header>
+
+      @for (group of visibleOtherGroups; track group.id) {
+      <div class="abl-subsection">
+        <header class="abl-subsection__head">
+          <span class="abl-type-pill abl-type-pill--{{ group.id }}">{{ group.labelKey | translate }}</span>
+          <em class="abl-subsection__count">{{ group.locks.length }}</em>
+        </header>
+        <ul class="abl-lock-list">
+          @for (lock of group.locks; track lock.id) {
+          <li>
+            <label class="abl-lock-row" [class.is-on]="isChecked(lock.id)">
+              <input type="checkbox" [checked]="isChecked(lock.id)" (change)="toggle(lock.id)" />
+              <span class="abl-lock-meta">
+                <strong>{{ lockTitle(lock) }}</strong>
+                @if (lockSub(lock); as sub) {
+                <small>{{ sub }}</small>
+                }
+              </span>
+              @if (wasAssigned(lock.id)) {
+              <span class="abl-badge">{{ 'BOOK_LOCKS_ASSIGNED_BADGE' | translate }}</span>
+              }
+            </label>
+          </li>
+          }
+        </ul>
+      </div>
+      }
+    </section>
+    }
+    }
     }
   </div>
-  }
 
-  <div class="abl-actions">
+  <footer class="abl-foot">
     <button type="button" class="abl-btn abl-btn--ghost" (click)="close()" [disabled]="saving">
       {{ 'CANCEL' | translate }}
     </button>
-    <button type="button" class="abl-btn" (click)="save()" [disabled]="loading || saving || !locks.length">
-      {{ saving ? ('LOADING' | translate) : ('SAVE' | translate) }}
+    <button type="button" class="abl-btn abl-btn--primary" (click)="save()"
+      [disabled]="loading || saving || !locks.length || !dirty">
+      {{ saving ? ('SAVING' | translate) : ('SAVE' | translate) }}
     </button>
-  </div>
+  </footer>
 </div>

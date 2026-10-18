@@ -8,7 +8,6 @@ import {
   OnDestroy,
   OnInit,
   PLATFORM_ID,
-  Renderer2,
   ViewChild,
   inject,
 } from '@angular/core';
@@ -35,6 +34,7 @@ import { MobileLayoutService } from '../mobile-layout.service';
 import { DialogMobileService } from '../../services/dialog-mobile.service';
 import { TenantCustomizationService } from '../../services/tenant-customization.service';
 import { applyNavigationCustomization } from '../../services/tenant-nav.util';
+import { LanguageToggle } from '../../shared/language-toggle/language-toggle';
 
 type NavIcon =
   | 'dashboard'
@@ -81,7 +81,15 @@ interface NavSearchHit {
 
 @Component({
   selector: 'app-app-shell',
-  imports: [RouterOutlet, CommonModule, FormsModule, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    RouterLinkActive,
+    TranslateModule,
+    LanguageToggle,
+  ],
   templateUrl: './app-shell.html',
   styleUrls: ['./app-shell.css', './app-shell-mobile.css'],
 })
@@ -123,14 +131,12 @@ export class AppShell implements OnInit, OnDestroy {
   constructor(
     public router: Router,
     private translate: TranslateService,
-    private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document,
     private cdr: ChangeDetectorRef,
     private auth: AuthService,
     @Inject(PLATFORM_ID) private platformId: object,
   ) {
-    this.currentLang = this.locale.lang();
-    this.applyLang();
+    this.syncLocaleUi();
   }
 
   get navSections(): NavSection[] {
@@ -176,6 +182,12 @@ export class AppShell implements OnInit, OnDestroy {
             labelKey: 'HOL_NAV',
             route: '/Holidays',
             icon: 'holidays',
+            visible: this.canProperty('manage bookings'),
+          },
+          {
+            labelKey: 'BOOK_SC_NAV',
+            route: '/BookingScenarios',
+            icon: 'reservations',
             visible: this.canProperty('manage bookings'),
           },
           {
@@ -304,11 +316,13 @@ export class AppShell implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.translate.onLangChange.subscribe(() => {
+      this.syncLocaleUi();
       this.activePage = this.translate.instant('DASHBOARD');
       this.document.title = `${this.activePage} - CheckinAccess`;
       if (this.searchQuery.trim()) {
         this.refreshPageHits(this.searchQuery);
       }
+      this.cdr.detectChanges();
     });
 
     this.user = this.auth.getUser();
@@ -474,15 +488,15 @@ export class AppShell implements OnInit, OnDestroy {
     const pages: NavSearchPage[] = this.navSections.flatMap((section) =>
       section.items.map((item) => ({
         route: item.route,
-        label: this.translate.instant(item.labelKey),
-        hint: this.translate.instant(section.labelKey),
+        label: this.tenantCustomization.label(item.labelKey),
+        hint: this.tenantCustomization.label(section.labelKey),
         meta: NAV_SEARCH_PAGE_META[item.route] ?? { aliases: [], capabilities: [] },
       })),
     );
     pages.push({
       route: '/Settings',
-      label: this.translate.instant('SETTINGS'),
-      hint: this.translate.instant('NAV_SECTION_ADMIN'),
+      label: this.tenantCustomization.label('SETTINGS'),
+      hint: this.tenantCustomization.label('NAV_SECTION_ADMIN'),
       meta: NAV_SEARCH_PAGE_META['/Settings'],
     });
 
@@ -713,26 +727,9 @@ export class AppShell implements OnInit, OnDestroy {
     this.mobileLayout.closeMore();
   }
 
-  applyLang(): void {
-    const html = this.document.documentElement;
-    if (this.currentLang === 'ar') {
-      this.renderer.setAttribute(html, 'dir', 'rtl');
-      this.renderer.setAttribute(html, 'lang', 'ar');
-      this.isRTL = true;
-    } else {
-      this.renderer.setAttribute(html, 'dir', 'ltr');
-      this.renderer.setAttribute(html, 'lang', 'en');
-      this.isRTL = false;
-    }
-  }
-
-  setLang(): void {
-    void this.locale.toggle().then(() => {
-      this.currentLang = this.locale.lang();
-      this.applyLang();
-      this.refreshPageHits(this.searchQuery);
-      this.cdr.detectChanges();
-    });
+  private syncLocaleUi(): void {
+    this.currentLang = this.locale.lang();
+    this.isRTL = this.locale.isRtl(this.currentLang);
   }
 
   closeDropdowns(): void {

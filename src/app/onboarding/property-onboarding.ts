@@ -20,6 +20,7 @@ import { SnackbarService } from '../services/snackbar.service';
 import { onboardingI18n } from './onboarding-i18n';
 import { suggestedRoomTypesForProfile } from './property-onboarding-suggested-types';
 import { Onboarding3dScene } from './onboarding-3d-scene';
+import { OnboardingJourneyBar } from './onboarding-journey-bar';
 import { LayoutFocusField, Onboarding3dVisual, visualFromProfileId } from './onboarding-3d.types';
 import { previewColorForPreset } from './onboarding-3d-establishment-models';
 import { roomGridLayout, roomTypeColorIndex } from './onboarding-3d-floor-grid';
@@ -27,7 +28,7 @@ import { roomGridLayout, roomTypeColorIndex } from './onboarding-3d-floor-grid';
 @Component({
   selector: 'app-property-onboarding',
   standalone: true,
-  imports: [FormsModule, TranslateModule, Onboarding3dScene],
+  imports: [FormsModule, TranslateModule, Onboarding3dScene, OnboardingJourneyBar],
   templateUrl: './property-onboarding.html',
   styleUrls: ['./property-onboarding.css', './onboarding-shell.css'],
 })

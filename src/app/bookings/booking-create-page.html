@@ -61,6 +61,26 @@
   } @else {
   <section class="bc-panel">
     @if (step === 1) {
+    @if (scenarios.length) {
+    <section class="bc-scenario">
+      <label class="bc-field">
+        <span>{{ 'BOOK_SCENARIO_APPLY' | translate }}</span>
+        <select [ngModel]="activeScenarioId" (ngModelChange)="onScenarioChange($event)" name="bookingScenario">
+          <option [ngValue]="null">{{ 'BOOK_SCENARIO_NONE' | translate }}</option>
+          @for (s of scenarios; track s.id) {
+          <option [ngValue]="s.id">
+            {{ isRTL && s.name_ar ? s.name_ar : s.name }}
+            —
+            {{ s.room_scope === 'all' ? ('BOOK_SC_SCOPE_ALL' | translate) : ('BOOK_SC_ROOMS_COUNT' | translate: { n: s.room_ids?.length || 0 }) }}
+          </option>
+          }
+        </select>
+      </label>
+      @if (activeScenarioLabel) {
+      <p class="bc-scenario__note">{{ activeScenarioLabel }}</p>
+      }
+    </section>
+    }
     <p class="bc-help bc-help--top">{{ 'BOOK_PERIODS_HINT' | translate }}</p>
 
     @for (p of periods; track p.id; let i = $index) {
@@ -217,6 +237,18 @@
     <button type="button" class="bc-add-period" (click)="addPeriod()">
       + {{ 'BOOK_ADD_PERIOD' | translate }}
     </button>
+
+    @if (canGoStep2) {
+    <aside class="bc-prefetch" [class.bc-prefetch--ready]="roomsReady" aria-live="polite">
+      @if (roomsPrefetching) {
+      <span>{{ 'BOOK_PREFETCH_LOADING' | translate }}</span>
+      } @else if (roomsReady && accessibleDays > 0) {
+      <span>{{ 'BOOK_PREFETCH_READY' | translate: { days: accessibleDays, available: summary.available } }}</span>
+      } @else if (!roomsPrefetching && !roomsReady) {
+      <span>{{ 'BOOK_PREFETCH_HINT' | translate }}</span>
+      }
+    </aside>
+    }
     } @else if (step === 2) {
     @if (loadingRooms) {
     <div class="bc-skel-rooms" aria-hidden="true" aria-busy="true">

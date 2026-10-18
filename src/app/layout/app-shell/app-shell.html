@@ -27,7 +27,7 @@
       @for (section of navSections; track section.id) {
       <div class="sidebar__section">
         <p class="sidebar__section-label" [class.sidebar__section-label--hidden]="!sidebarOpen">
-          {{ section.labelKey | translate }}
+          {{ tenantCustomization.label(section.labelKey) }}
         </p>
         <div class="sidebar__nav-group">
           @for (item of section.items; track item.route) {
@@ -144,7 +144,7 @@
                 }
                 }
               </svg>
-              <span class="sidebar__nav-label sidebar__nav-label--visible">{{ item.labelKey | translate }}</span>
+              <span class="sidebar__nav-label sidebar__nav-label--visible">{{ tenantCustomization.label(item.labelKey) }}</span>
             </div>
           </a>
           }
@@ -357,16 +357,7 @@
           }
         </div>
 
-        <button class="navbar__lang-btn" (click)="setLang()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
-                     15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          <span>{{ currentLang === 'ar' ? 'English' : 'عربي' }}</span>
-        </button>
+        <app-language-toggle variant="navbar" />
 
         <div class="navbar__user-wrapper">
           <button class="navbar__user-btn" [class.navbar__user-btn--active]="userMenuOpen" (click)="toggleUserMenu()">
@@ -534,12 +525,12 @@
     <div class="more-links">
       @for (section of navSections; track section.id) {
       <div class="more-section">
-        <p class="more-section-label">{{ section.labelKey | translate }}</p>
+        <p class="more-section-label">{{ tenantCustomization.label(section.labelKey) }}</p>
         @for (item of section.items; track item.route) {
         <a [routerLink]="item.route" class="more-link" routerLinkActive="more-link--active"
           [routerLinkActiveOptions]="{ exact: item.route === '/Dashboard' || item.route === '/Reservations' }"
           (click)="onMobileNavClick(item.labelKey)">
-          {{ item.labelKey | translate }}
+          {{ tenantCustomization.label(item.labelKey) }}
         </a>
         }
       </div>
@@ -552,9 +543,7 @@
         </a>
       </div>
     </div>
-    <button type="button" class="navbar__lang-btn more-lang" (click)="setLang()">
-      {{ currentLang === 'ar' ? 'English' : 'عربي' }}
-    </button>
+    <app-language-toggle variant="navbar" class="more-lang" />
     <button type="button" class="sidebar__logout-btn more-logout" (click)="logOut()">{{ 'LOGOUT' | translate }}</button>
   </div>
   }

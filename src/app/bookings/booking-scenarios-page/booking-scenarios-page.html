@@ -1,0 +1,133 @@
+<div class="bsc" [class.bsc--rtl]="isRTL" [dir]="isRTL ? 'rtl' : 'ltr'">
+  <header class="bsc__header">
+    <div>
+      <p class="bsc__eyebrow">{{ 'BOOK_SC_EYEBROW' | translate }}</p>
+      <h1>{{ 'BOOK_SC_TITLE' | translate }}</h1>
+      <p class="bsc__subtitle">{{ 'BOOK_SC_SUBTITLE' | translate }}</p>
+    </div>
+    <button type="button" class="bsc-btn bsc-btn--ghost" (click)="reload()" [disabled]="loading">
+      {{ loading ? ('LOADING' | translate) : ('BOOK_SC_REFRESH' | translate) }}
+    </button>
+  </header>
+
+  @if (loading && !items.length) {
+  <app-page-skeleton variant="table" [rows]="5" [cols]="4" />
+  } @else {
+  <section class="bsc-panel">
+    <header class="bsc-panel__head">
+      <h2>{{ editingId ? ('BOOK_SC_EDIT' | translate) : ('BOOK_SC_ADD' | translate) }}</h2>
+      <p>{{ 'BOOK_SC_FORM_HINT' | translate }}</p>
+    </header>
+
+    <div class="bsc-form">
+      <div class="bsc-form__grid">
+        <label>
+          <span>{{ 'BOOK_SC_NAME' | translate }} *</span>
+          <input type="text" [(ngModel)]="draft.name" name="scName" />
+        </label>
+        <label>
+          <span>{{ 'BOOK_SC_NAME_AR' | translate }}</span>
+          <input type="text" [(ngModel)]="draft.name_ar" name="scNameAr" dir="rtl" />
+        </label>
+      </div>
+
+      <div class="bsc-scope" role="group" [attr.aria-label]="'BOOK_SC_ROOM_SCOPE' | translate">
+        <span class="bsc-scope__label">{{ 'BOOK_SC_ROOM_SCOPE' | translate }}</span>
+        <div class="bsc-scope__modes">
+          <button type="button" class="bsc-scope__mode" [class.is-on]="draft.room_scope === 'all'"
+            (click)="setScope('all')">
+            <strong>{{ 'BOOK_SC_SCOPE_ALL' | translate }}</strong>
+            <small>{{ 'BOOK_SC_SCOPE_ALL_HINT' | translate }}</small>
+          </button>
+          <button type="button" class="bsc-scope__mode" [class.is-on]="draft.room_scope === 'selected'"
+            (click)="setScope('selected')">
+            <strong>{{ 'BOOK_SC_SCOPE_SELECTED' | translate }}</strong>
+            <small>{{ 'BOOK_SC_SCOPE_SELECTED_HINT' | translate }}</small>
+          </button>
+        </div>
+      </div>
+
+      @if (draft.room_scope === 'selected') {
+      <div class="bsc-rooms">
+        <label class="bsc-rooms__search">
+          <span>{{ 'BOOK_SC_PICK_ROOMS' | translate }}</span>
+          <input type="search" [(ngModel)]="roomSearch" name="roomSearch"
+            [placeholder]="'ROOM_STATUS_SEARCH_PH' | translate" />
+        </label>
+        <p class="bsc-rooms__count">
+          {{ 'BOOK_SC_SELECTED_COUNT' | translate: { n: draft.room_ids.length } }}
+        </p>
+        <div class="bsc-rooms__grid">
+          @for (room of filteredRoomOptions; track room.id) {
+          <button type="button" class="bsc-room-chip" [class.is-on]="isRoomPicked(room.id)" (click)="toggleRoom(room.id)">
+            <strong>{{ room.number }}</strong>
+            <small>{{ roomOptionLabel(room) }}</small>
+          </button>
+          }
+        </div>
+      </div>
+      }
+
+      <footer class="bsc-form__actions">
+        @if (editingId) {
+        <button type="button" class="bsc-btn bsc-btn--ghost" (click)="resetDraft()" [disabled]="saving">
+          {{ 'CANCEL' | translate }}
+        </button>
+        }
+        <button type="button" class="bsc-btn bsc-btn--primary" (click)="save()" [disabled]="saving">
+          {{ saving ? ('SAVING' | translate) : (editingId ? ('SAVE' | translate) : ('BOOK_SC_CREATE' | translate)) }}
+        </button>
+      </footer>
+    </div>
+  </section>
+
+  <section class="bsc-list">
+    <h2>{{ 'BOOK_SC_LIST' | translate }}</h2>
+    @if (!items.length) {
+    <p class="bsc-muted">{{ 'BOOK_SC_EMPTY' | translate }}</p>
+    } @else {
+    <div class="bsc-table-wrap">
+      <table class="bsc-table">
+        <thead>
+          <tr>
+            <th>{{ 'BOOK_SC_NAME' | translate }}</th>
+            <th>{{ 'BOOK_SC_ROOM_SCOPE' | translate }}</th>
+            <th>{{ 'BOOK_SC_STATUS' | translate }}</th>
+            <th>{{ 'BOOK_SC_ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of items; track row.id) {
+          <tr [class.is-off]="!row.active">
+            <td>
+              <strong>{{ scenarioLabel(row) }}</strong>
+              @if (row.name_ar && !isRTL) {
+              <small dir="rtl">{{ row.name_ar }}</small>
+              }
+            </td>
+            <td>{{ roomsSummary(row) }}</td>
+            <td>
+              <span class="bsc-badge" [class.bsc-badge--on]="row.active">
+                {{ row.active ? ('BOOK_SC_ACTIVE' | translate) : ('BOOK_SC_INACTIVE' | translate) }}
+              </span>
+            </td>
+            <td class="bsc-table__actions">
+              <button type="button" class="bsc-btn bsc-btn--ghost bsc-btn--sm" (click)="startEdit(row)">
+                {{ 'EDIT' | translate }}
+              </button>
+              <button type="button" class="bsc-btn bsc-btn--ghost bsc-btn--sm" (click)="toggleActive(row)">
+                {{ row.active ? ('BOOK_SC_DEACTIVATE' | translate) : ('BOOK_SC_ACTIVATE' | translate) }}
+              </button>
+              <button type="button" class="bsc-btn bsc-btn--danger bsc-btn--sm" (click)="remove(row)">
+                {{ 'DELETE' | translate }}
+              </button>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </section>
+  }
+</div>

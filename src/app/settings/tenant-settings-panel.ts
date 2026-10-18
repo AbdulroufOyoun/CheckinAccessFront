@@ -57,12 +57,7 @@ import baseAr from '../../assets/i18n/ar.json';
 })
 export class TenantSettingsPanel implements OnInit, OnDestroy {
   private static buildLabelGroupsForUi(groups: TenantLabelGroup[]): TenantLabelGroup[] {
-    return groups
-      .map((group) => ({
-        ...group,
-        keys: group.keys.filter((key) => TENANT_LABEL_META[key]?.kind !== 'nav'),
-      }))
-      .filter((group) => group.keys.length > 0);
+    return groups.filter((group) => group.keys.length > 0);
   }
 
   readonly customization = inject(TenantCustomizationService);
@@ -82,7 +77,6 @@ export class TenantSettingsPanel implements OnInit, OnDestroy {
   loading = true;
 
   readonly labelKeys = TENANT_LABEL_KEYS;
-  /** Page copy only — sidebar menu titles (DUR_NAV, …) are managed under Navigation. */
   readonly labelGroups = TenantSettingsPanel.buildLabelGroupsForUi(TENANT_LABEL_GROUPS);
   readonly labelUiKeys = this.labelGroups.flatMap((g) => g.keys);
   labelSearch = '';

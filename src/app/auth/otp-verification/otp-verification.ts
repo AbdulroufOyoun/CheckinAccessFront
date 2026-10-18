@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
@@ -9,17 +9,20 @@ import { User } from '../../model/User';
 import { AuthService } from '../../services/auth.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { TenantCustomizationService } from '../../services/tenant-customization.service';
-
+import { LocaleService } from '../../services/locale.service';
+import { LanguageToggle } from '../../shared/language-toggle/language-toggle';
 
 @Component({
   selector: 'app-otp-verification',
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule, LanguageToggle],
   templateUrl: './otp-verification.html',
   styleUrl: './otp-verification.css',
 
 })
 
 export class OtpVerification {
+  readonly locale = inject(LocaleService);
+
   otp: string[] = ['', '', '', '', '', ''];
   isLoading: boolean = false;
   isSuccess: boolean = false;
