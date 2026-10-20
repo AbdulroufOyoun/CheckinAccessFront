@@ -626,10 +626,11 @@ export class AppShell implements OnInit, OnDestroy {
   }
 
   private canShowCompoundAccess(): boolean {
-    return (
-      (this.auth.hasModule('property') || this.auth.hasModule('education')) &&
-      this.canManageCompoundAccess()
-    );
+    const canUsers = this.canManageCompoundAccess();
+    const canAdmins =
+      this.auth.hasModule('property') && this.auth.canAny('manage admins', 'manage locks');
+
+    return (this.auth.hasModule('property') || this.auth.hasModule('education')) && (canUsers || canAdmins);
   }
 
   get shellAppName(): string {

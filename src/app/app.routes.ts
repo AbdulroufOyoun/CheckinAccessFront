@@ -232,13 +232,18 @@ export const routes: Routes = [
         path: 'CompoundAccess',
         canActivate: [
           moduleGuardAny('property', 'education'),
-          permissionGuard('manage education', 'manage compounds', 'manage locks'),
+          permissionGuard('manage education', 'manage compounds', 'manage locks', 'manage admins'),
         ],
         loadComponent: () =>
           import('./compound-access/compound-access-page').then((m) => m.CompoundAccessPage),
       },
       {
         path: 'Education/CompoundAccess',
+        redirectTo: 'CompoundAccess',
+        pathMatch: 'full',
+      },
+      {
+        path: 'AdminLockAccess',
         redirectTo: 'CompoundAccess',
         pathMatch: 'full',
       },

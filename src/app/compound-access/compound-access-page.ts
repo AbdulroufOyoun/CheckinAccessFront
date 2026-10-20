@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, DestroyRef, ElementRef, HostListener, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 import { DialogMobileService } from '../services/dialog-mobile.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -41,6 +43,8 @@ type TreeBuilding = {
 type TreeParking = { id: number; name?: string; building_id?: number | null; compound_id?: number | null };
 type TreeGate = { id: number; name?: string; compound_id?: number; building_id?: number | null };
 
+export type CompoundAccessAudience = 'users' | 'admins';
+
 @Component({
   selector: 'app-compound-access-page',
   standalone: true,
@@ -50,6 +54,9 @@ type TreeGate = { id: number; name?: string; compound_id?: number; building_id?:
 })
 export class CompoundAccessPage implements OnInit {
   private readonly compoundAccess = inject(CompoundAccessService);
+  private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly snackbar = inject(SnackbarService);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -65,6 +72,7 @@ export class CompoundAccessPage implements OnInit {
   saving = false;
   rows: CompoundAccessRow[] = [];
   filter = '';
+  audience: CompoundAccessAudience = 'users';
 
   dialogOpen = false;
   treeLoading = false;
@@ -85,6 +93,83 @@ export class CompoundAccessPage implements OnInit {
 
   get showSkeleton(): boolean {
     return this.initialLoad && this.rows.length === 0 && this.loading;
+  }
+
+  get isAdminAudience(): boolean {
+    return this.audience === 'admins';
+  }
+
+  get canManageAdminAudience(): boolean {
+    if (!this.auth.hasModule('property')) {
+      return false;
+    }
+    if (this.auth.isSuperAdmin()) {
+      return true;
+    }
+    return this.auth.canAny(
+      'manage admins',
+      'manage locks',
+      'manage compounds',
+      'manage education',
+      'manage events',
+    );
+  }
+
+  get canManageUserAudience(): boolean {
+    return this.auth.canAny('manage education', 'manage compounds', 'manage locks', 'manage events');
+  }
+
+  /** Show switcher when both audiences are available on this tenant. */
+  get showAudienceTabs(): boolean {
+    return this.canManageAdminAudience && this.canManageUserAudience;
+  }
+
+  get showUsersAudienceTab(): boolean {
+    return this.canManageUserAudience;
+  }
+
+  get showAdminsAudienceTab(): boolean {
+    return this.canManageAdminAudience;
+  }
+
+  get pageSubtitleKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_SUBTITLE_ADMINS' : 'EDU_CA_SUBTITLE';
+  }
+
+  get filterPlaceholderKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_FILTER_ADMINS' : 'EDU_CA_FILTER';
+  }
+
+  get emptyListKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_EMPTY_ADMINS' : 'EDU_CA_EMPTY';
+  }
+
+  get subjectColumnKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_TAB_ADMINS' : 'EDU_CA_STUDENT';
+  }
+
+  get pickSubjectKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_PICK_ADMIN' : 'EDU_CA_PICK_STUDENT';
+  }
+
+  get searchSubjectKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_SEARCH_ADMIN' : 'EDU_CA_SEARCH_STUDENT';
+  }
+
+  get noSubjectHitsKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_NO_ADMINS' : 'EDU_CA_NO_STUDENTS';
+  }
+
+  get savedToastKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_SAVED_ADMIN' : 'EDU_CA_SAVED';
+  }
+
+  get revokedToastKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_REVOKED_ADMIN' : 'EDU_CA_REVOKED';
+  }
+
+  get loadFailedKey(): string {
+    return this.isAdminAudience ? 'EDU_CA_LOAD_FAILED_ADMIN' : 'EDU_CA_LOAD_FAILED';
   }
 
   get filteredRows(): CompoundAccessRow[] {
@@ -161,13 +246,49 @@ export class CompoundAccessPage implements OnInit {
         clearTimeout(this.studentSearchTimer);
       }
     });
+    void this.bootstrapAudience();
+  }
+
+  private async bootstrapAudience(): Promise<void> {
+    try {
+      await this.auth.ensureMe();
+    } catch {
+      /* keep cached profile */
+    }
+    const requested = this.route.snapshot.queryParamMap.get('audience');
+    if (requested === 'admins' && this.canManageAdminAudience) {
+      this.audience = 'admins';
+    } else if (!this.canManageUserAudience && this.canManageAdminAudience) {
+      this.audience = 'admins';
+    } else if (this.canManageUserAudience) {
+      this.audience = 'users';
+    }
+    await this.load();
+    this.cdr.detectChanges();
+  }
+
+  setAudience(next: CompoundAccessAudience): void {
+    if (next === this.audience) {
+      return;
+    }
+    this.audience = next;
+    this.filter = '';
+    this.initialLoad = true;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { audience: next === 'admins' ? 'admins' : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
     void this.load();
   }
 
   async load(): Promise<void> {
     this.loading = true;
     try {
-      const rowsRes = await this.compoundAccess.list();
+      const rowsRes = this.isAdminAudience
+        ? await this.compoundAccess.listAdmins()
+        : await this.compoundAccess.list();
       this.rows = (Array.isArray(rowsRes.data) ? rowsRes.data : []).map((row) => ({
         ...row,
         grants: row.grants ?? [],
@@ -175,7 +296,7 @@ export class CompoundAccessPage implements OnInit {
         compounds: row.compounds ?? [],
       }));
     } catch {
-      this.snackbar.show(this.translate.instant('EDU_CA_LOAD_FAILED'), 'error');
+      this.snackbar.show(this.translate.instant(this.loadFailedKey), 'error');
     } finally {
       this.loading = false;
       this.initialLoad = false;
@@ -514,7 +635,9 @@ export class CompoundAccessPage implements OnInit {
     this.studentMenuOpen = true;
     this.cdr.detectChanges();
     try {
-      const res = await this.compoundAccess.searchUsers(q);
+      const res = this.isAdminAudience
+        ? await this.compoundAccess.searchAdmins(q)
+        : await this.compoundAccess.searchUsers(q);
       if (gen !== this.studentSearchGen) {
         return;
       }
@@ -565,7 +688,7 @@ export class CompoundAccessPage implements OnInit {
   async save(): Promise<void> {
     const userId = this.selectedStudent?.id ?? this.editingUserId;
     if (!userId) {
-      this.snackbar.show(this.translate.instant('EDU_CA_PICK_STUDENT'), 'error');
+      this.snackbar.show(this.translate.instant(this.pickSubjectKey), 'error');
       return;
     }
     if (this.editingUserId == null && this.selectedCount === 0) {
@@ -574,9 +697,13 @@ export class CompoundAccessPage implements OnInit {
     }
     this.saving = true;
     try {
-      await this.compoundAccess.sync(userId, this.grantsFromSelection());
+      if (this.isAdminAudience) {
+        await this.compoundAccess.syncAdmin(userId, this.grantsFromSelection());
+      } else {
+        await this.compoundAccess.sync(userId, this.grantsFromSelection());
+      }
       this.dialogOpen = false;
-      this.snackbar.show(this.translate.instant('EDU_CA_SAVED'), 'success');
+      this.snackbar.show(this.translate.instant(this.savedToastKey), 'success');
       await this.load();
     } catch (e: unknown) {
       const m = (e as { error?: { message?: string } })?.error?.message;
@@ -593,8 +720,12 @@ export class CompoundAccessPage implements OnInit {
 
     this.saving = true;
     try {
-      await this.compoundAccess.sync(row.user_id, []);
-      this.snackbar.show(this.translate.instant('EDU_CA_REVOKED'), 'success');
+      if (this.isAdminAudience) {
+        await this.compoundAccess.syncAdmin(row.user_id, []);
+      } else {
+        await this.compoundAccess.sync(row.user_id, []);
+      }
+      this.snackbar.show(this.translate.instant(this.revokedToastKey), 'success');
       await this.load();
     } catch (e: unknown) {
       const m = (e as { error?: { message?: string } })?.error?.message;

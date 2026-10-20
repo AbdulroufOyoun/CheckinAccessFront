@@ -708,3 +708,50 @@
 .ca-tree__block {
   margin-bottom: 6px;
 }
+
+.ca-header-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ca-audience-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  margin-inline-end: 12px;
+}
+
+.ca-audience-tabs--header {
+  margin-top: 4px;
+  margin-inline-end: 0;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+.ca-audience-tabs__btn {
+  border: 0;
+  background: transparent;
+  color: #4b5563;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ca-audience-tabs__btn--active {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.edu-ui__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}

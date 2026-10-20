@@ -654,6 +654,36 @@ export class Apiendpointd {
     return this.compoundAccess + '/property-tree';
   }
 
+  public static get compoundAccessAdminGrants(): string {
+    return this.compoundAccess + '/admin-grants';
+  }
+
+  public static compoundAccessAdmins(query?: string): string {
+    const qs = query?.trim() ? `?q=${encodeURIComponent(query.trim())}` : '';
+    return `${this.compoundAccess}/admins${qs}`;
+  }
+
+  public static compoundAccessAdmin(adminId: number | string): string {
+    return `${this.compoundAccess}/admins/${adminId}`;
+  }
+
+  public static get adminLockAccess(): string {
+    return this.mianUrl + 'admin-lock-access';
+  }
+
+  public static adminLockAccessAdmins(query?: string): string {
+    const qs = query?.trim() ? `?q=${encodeURIComponent(query.trim())}` : '';
+    return `${this.adminLockAccess}/admins${qs}`;
+  }
+
+  public static adminLockAccessAdmin(adminId: number | string): string {
+    return `${this.adminLockAccess}/admins/${adminId}`;
+  }
+
+  public static get adminLockAccessPropertyTree(): string {
+    return this.adminLockAccess + '/property-tree';
+  }
+
   //---------------------Visitors (admin)------------------
   public static get visitors(): string {
     return this.mianUrl + 'visitors-management/';

@@ -74,6 +74,45 @@ export class CompoundAccessService {
     return this.api.put(Apiendpointd.compoundAccessStudent(userId), { grants });
   }
 
+  async listAdmins(): Promise<ApiResponse<CompoundAccessRow[]>> {
+    const res = await this.api.get<ApiResponse<Array<Record<string, unknown>>>>(Apiendpointd.compoundAccessAdminGrants);
+    const rows = Array.isArray(res.data) ? res.data : [];
+
+    return {
+      ...res,
+      data: rows.map((row) => this.mapAdminRow(row)),
+    };
+  }
+
+  searchAdmins(query: string): Promise<ApiResponse<CompoundAccessUser[]>> {
+    return this.api.get(Apiendpointd.compoundAccessAdmins(query));
+  }
+
+  async syncAdmin(adminId: number, grants: PropertyAccessGrant[]): Promise<ApiResponse<CompoundAccessRow>> {
+    const res = await this.api.put<ApiResponse<Record<string, unknown>>>(
+      Apiendpointd.compoundAccessAdmin(adminId),
+      { grants },
+    );
+
+    return {
+      ...res,
+      data: res.data ? this.mapAdminRow(res.data) : { user_id: adminId, grants: [], compounds: [] },
+    };
+  }
+
+  private mapAdminRow(row: Record<string, unknown>): CompoundAccessRow {
+    const admin = row['admin'] as CompoundAccessUser | null | undefined;
+    const adminId = Number(row['admin_id'] ?? admin?.id ?? 0);
+
+    return {
+      user_id: adminId,
+      user: admin ?? null,
+      grants: (row['grants'] as CompoundAccessRow['grants']) ?? [],
+      grants_display: (row['grants_display'] as CompoundAccessRow['grants_display']) ?? undefined,
+      compounds: (row['compounds'] as CompoundAccessRow['compounds']) ?? [],
+    };
+  }
+
   /** @deprecated Use sync(userId, grants) with compound-type grants */
   syncCompoundIds(userId: number, compoundIds: number[]): Promise<ApiResponse<CompoundAccessRow>> {
     const grants: PropertyAccessGrant[] = compoundIds.map((id) => ({ type: 'compound', id }));

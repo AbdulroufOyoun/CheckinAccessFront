@@ -1,8 +1,30 @@
 <div class="edu-ui" [class.edu-ui--rtl]="isRTL">
   <div class="edu-ui__header">
-    <div>
+    <div class="ca-header-main">
       <h1 class="edu-ui__title">{{ 'EDU_CA_TITLE' | translate }}</h1>
-      <p class="edu-ui__subtitle">{{ 'EDU_CA_SUBTITLE' | translate }}</p>
+      <p class="edu-ui__subtitle">{{ pageSubtitleKey | translate }}</p>
+      <div class="ca-audience-tabs ca-audience-tabs--header" role="tablist" [attr.aria-label]="'EDU_CA_AUDIENCE_TABS' | translate">
+        <button
+          type="button"
+          role="tab"
+          class="ca-audience-tabs__btn"
+          [class.ca-audience-tabs__btn--active]="!isAdminAudience"
+          [attr.aria-selected]="!isAdminAudience"
+          (click)="setAudience('users')"
+        >
+          {{ 'EDU_CA_TAB_USERS' | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="ca-audience-tabs__btn"
+          [class.ca-audience-tabs__btn--active]="isAdminAudience"
+          [attr.aria-selected]="isAdminAudience"
+          (click)="setAudience('admins')"
+        >
+          {{ 'EDU_CA_TAB_ADMINS' | translate }}
+        </button>
+      </div>
     </div>
     <button class="edu-ui__add" type="button" (click)="openCreate()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
@@ -14,7 +36,7 @@
 
   <div class="edu-ui__toolbar">
     <div class="edu-ui__search">
-      <input type="search" [(ngModel)]="filter" [placeholder]="'EDU_CA_FILTER' | translate" />
+      <input type="search" [(ngModel)]="filter" [placeholder]="filterPlaceholderKey | translate" />
     </div>
   </div>
 
@@ -22,7 +44,7 @@
     <app-page-skeleton variant="table" [rows]="6" [cols]="4" />
   } @else if (!filteredRows.length) {
     <div class="edu-ui__empty reveal">
-      <p>{{ (rows.length ? 'EDU_CA_EMPTY_FILTER' : 'EDU_CA_EMPTY') | translate }}</p>
+      <p>{{ (rows.length ? 'EDU_CA_EMPTY_FILTER' : emptyListKey) | translate }}</p>
       @if (!rows.length) {
         <button class="edu-ui__add" type="button" (click)="openCreate()">{{ 'EDU_CA_GRANT' | translate }}</button>
       }
@@ -32,7 +54,7 @@
       <table>
         <thead>
           <tr>
-            <th>{{ 'EDU_CA_STUDENT' | translate }}</th>
+            <th>{{ subjectColumnKey | translate }}</th>
             <th>{{ 'EDU_CA_CONTACT' | translate }}</th>
             <th>{{ 'EDU_CA_GRANTS' | translate }}</th>
             <th>{{ 'EDU_CA_ACTIONS' | translate }}</th>
@@ -133,7 +155,7 @@
 
         <section class="as__section">
           <label class="as__field">
-            <span class="as__label">{{ 'EDU_CA_STUDENT' | translate }} <i>*</i></span>
+            <span class="as__label">{{ subjectColumnKey | translate }} <i>*</i></span>
 
             @if (selectedStudent && !studentMenuOpen) {
               <div class="ca-picked" [class.ca-picked--locked]="!canSearchStudent">
@@ -162,7 +184,7 @@
                   (ngModelChange)="onStudentQueryChange($event)"
                   (focus)="onStudentFocus()"
                   (keydown)="onStudentKeydown($event)"
-                  [placeholder]="'EDU_CA_SEARCH_STUDENT' | translate"
+                  [placeholder]="searchSubjectKey | translate"
                   autocomplete="off"
                   role="combobox"
                   [attr.aria-expanded]="studentMenuOpen"
@@ -179,7 +201,7 @@
                     } @else if (studentQuery.trim().length < 2) {
                       <p class="ca-select__hint">{{ 'EDU_CA_TYPE_MIN' | translate }}</p>
                     } @else if (!studentHits.length) {
-                      <p class="ca-select__hint">{{ 'EDU_CA_NO_STUDENTS' | translate }}</p>
+                      <p class="ca-select__hint">{{ noSubjectHitsKey | translate }}</p>
                     } @else {
                       @for (hit of studentHits; track hit.id; let i = $index) {
                         <button
