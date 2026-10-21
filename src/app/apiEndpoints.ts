@@ -12,6 +12,11 @@ export class Apiendpointd {
     if (!apiHost) {
       throw new Error('Tenant host is required (use e.g. abd.localhost, not plain localhost).');
     }
+    if (environment.production) {
+      const proto =
+        typeof window !== 'undefined' && window.location?.protocol === 'http:' ? 'http:' : 'https:';
+      return `${proto}//${apiHost}/api/admins/`;
+    }
     const port = environment.apiPort ?? 8000;
     return `http://${apiHost}:${port}/api/admins/`;
   }
