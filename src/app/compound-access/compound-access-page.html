@@ -41,7 +41,9 @@
   </div>
 
   @if (showSkeleton) {
-    <app-page-skeleton variant="table" [rows]="6" [cols]="4" />
+    <div aria-busy="true" aria-live="polite">
+      <app-page-skeleton variant="table" [rows]="6" [cols]="4" />
+    </div>
   } @else if (!filteredRows.length) {
     <div class="edu-ui__empty reveal">
       <p>{{ (rows.length ? 'EDU_CA_EMPTY_FILTER' : emptyListKey) | translate }}</p>

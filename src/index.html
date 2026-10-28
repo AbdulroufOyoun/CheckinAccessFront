@@ -6,15 +6,19 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="CheckinAccess tenant admin for bookings, education, locks, and access control.">
-  <meta name="theme-color" content="#142744">
-  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#070b12">
+  <meta name="color-scheme" content="dark">
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
   <link rel="icon" type="image/png" href="favicon-32.png" sizes="32x32">
   <link rel="icon" type="image/png" href="favicon.png" sizes="64x64">
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <style>
-    html, body { margin: 0; min-height: 100%; background: #142744; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070b12;
+    }
     .skip-link {
       position: absolute;
       left: 8px;
@@ -28,34 +32,380 @@
       transform: translateY(-150%);
     }
     .skip-link:focus { transform: none; }
+
     .boot-screen {
+      --boot-accent: #22d3ee;
+      --boot-accent-2: #38bdf8;
+      --boot-teal: #2dd4bf;
+      position: relative;
       min-height: 100vh;
       min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: #f8fafc;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+      background:
+        radial-gradient(ellipse 90% 60% at 50% -15%, rgba(34, 211, 238, 0.18), transparent 55%),
+        radial-gradient(ellipse 55% 45% at 95% 85%, rgba(29, 78, 216, 0.22), transparent 52%),
+        radial-gradient(ellipse 50% 40% at 5% 90%, rgba(13, 148, 136, 0.16), transparent 50%),
+        linear-gradient(165deg, #070b12 0%, #0f172a 42%, #142744 100%);
+    }
+
+    .boot-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .boot-bg__aurora {
+      position: absolute;
+      inset: -40%;
+      background: conic-gradient(
+        from 210deg at 50% 50%,
+        transparent 0deg,
+        rgba(34, 211, 238, 0.07) 55deg,
+        transparent 110deg,
+        rgba(56, 189, 248, 0.06) 200deg,
+        transparent 280deg
+      );
+      animation: boot-aurora 18s linear infinite;
+      opacity: 0.9;
+    }
+    .boot-bg__blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+    }
+    .boot-bg__blob--a {
+      width: min(58vw, 480px);
+      height: min(58vw, 480px);
+      top: -18%;
+      left: -12%;
+      background: rgba(45, 212, 191, 0.28);
+      animation: boot-drift-a 12s ease-in-out infinite;
+    }
+    .boot-bg__blob--b {
+      width: min(52vw, 420px);
+      height: min(52vw, 420px);
+      right: -14%;
+      bottom: -20%;
+      background: rgba(59, 130, 246, 0.26);
+      animation: boot-drift-b 14s ease-in-out infinite;
+    }
+    .boot-bg__grid {
+      position: absolute;
+      inset: 0;
+      opacity: 0.11;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 15%, transparent 78%);
+    }
+    .boot-bg__spark {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.65);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
+      animation: boot-twinkle 3.2s ease-in-out infinite;
+    }
+    .boot-bg__spark--1 { top: 18%; left: 22%; animation-delay: 0s; }
+    .boot-bg__spark--2 { top: 28%; right: 20%; animation-delay: 0.8s; opacity: 0.7; }
+    .boot-bg__spark--3 { bottom: 32%; left: 14%; animation-delay: 1.4s; }
+    .boot-bg__spark--4 { bottom: 22%; right: 28%; animation-delay: 2.1s; opacity: 0.85; }
+
+    .boot-scene {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      animation: boot-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .boot-orbit {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: min(72vw, 320px);
+      height: min(72vw, 320px);
+      transform: translate(-50%, -58%);
+      pointer-events: none;
+    }
+    .boot-orbit__ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(34, 211, 238, 0.12);
+      animation: boot-orbit-spin 22s linear infinite;
+    }
+    .boot-orbit__ring::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: 50%;
+      width: 7px;
+      height: 7px;
+      margin-left: -3.5px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--boot-teal), var(--boot-accent));
+      box-shadow: 0 0 16px rgba(34, 211, 238, 0.9);
+    }
+    .boot-orbit__ring--inner {
+      inset: 18%;
+      border-color: rgba(56, 189, 248, 0.1);
+      animation-duration: 16s;
+      animation-direction: reverse;
+    }
+    .boot-orbit__ring--inner::before {
+      width: 5px;
+      height: 5px;
+      margin-left: -2.5px;
+      top: auto;
+      bottom: -2px;
+      opacity: 0.85;
+    }
+
+    .boot-brand {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0;
+    }
+    .boot-brand__halo {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 13rem;
+      height: 13rem;
+      transform: translate(-50%, -18%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45, 212, 191, 0.28), transparent 68%);
+      filter: blur(14px);
+      animation: boot-halo 3s ease-in-out infinite;
+    }
+
+    .boot-logo-plate {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 5.5rem;
+      height: 5.5rem;
+      border-radius: 1.25rem;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.12),
+        0 28px 56px rgba(2, 6, 23, 0.55),
+        0 0 48px rgba(34, 211, 238, 0.15);
+      animation: boot-logo-float 4.5s ease-in-out infinite;
+    }
+    .boot-logo {
+      width: 4rem;
+      height: 4rem;
+      object-fit: contain;
+    }
+
+    .boot-wordmark {
+      margin: 1.15rem 0 0.35rem;
+      font-size: clamp(1.75rem, 5vw, 2.35rem);
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .boot-wordmark__checkin {
+      color: #e0f2fe;
+      text-shadow: 0 0 28px rgba(56, 189, 248, 0.35);
+    }
+    .boot-wordmark__access {
+      background: linear-gradient(120deg, #5eead4 0%, #22d3ee 42%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .boot-tagline {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .boot-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1.25rem;
+      max-width: 22rem;
+    }
+    .boot-pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(226, 232, 240, 0.92);
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .boot-progress {
+      width: min(16rem, 72vw);
+      margin-top: 1.75rem;
+    }
+    .boot-progress__track {
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+    .boot-progress__bar {
+      height: 100%;
+      width: 42%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--boot-teal), var(--boot-accent), var(--boot-accent-2));
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.55);
+      animation: boot-progress 1.35s ease-in-out infinite;
+    }
+    .boot-status {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #142744;
+      gap: 6px;
+      margin-top: 0.85rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(203, 213, 225, 0.92);
     }
-    .boot-card {
-      width: min(100% - 32px, 400px);
-      padding: 48px 32px;
-      background: #fff;
-      border-radius: 20px;
-      text-align: center;
+    .boot-status__dots span {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      margin-inline: 1px;
+      border-radius: 50%;
+      background: var(--boot-accent);
+      animation: boot-dot 1.2s ease-in-out infinite;
     }
-    .boot-text {
-      margin: 0;
-      font: 700 22px system-ui, 'Segoe UI', sans-serif;
-      color: #111827;
+    .boot-status__dots span:nth-child(2) { animation-delay: 0.15s; }
+    .boot-status__dots span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes boot-rise {
+      from { opacity: 0; transform: translateY(28px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes boot-aurora {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes boot-drift-a {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(18px, -22px); }
+    }
+    @keyframes boot-drift-b {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-16px, 14px); }
+    }
+    @keyframes boot-twinkle {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+    @keyframes boot-orbit-spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes boot-halo {
+      0%, 100% { opacity: 0.65; transform: translate(-50%, -18%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -18%) scale(1.08); }
+    }
+    @keyframes boot-logo-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes boot-progress {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(320%); }
+    }
+    @keyframes boot-dot {
+      0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+      40% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .boot-scene { animation: none; }
+      .boot-bg__aurora,
+      .boot-bg__blob--a,
+      .boot-bg__blob--b,
+      .boot-bg__spark,
+      .boot-orbit__ring,
+      .boot-brand__halo,
+      .boot-logo-plate,
+      .boot-progress__bar,
+      .boot-status__dots span {
+        animation: none;
+      }
+      .boot-progress__bar {
+        width: 55%;
+        transform: none;
+      }
     }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <app-root>
-    <div class="boot-screen" aria-busy="true" aria-label="Loading CheckinAccess">
-      <div class="boot-card">
-        <p class="boot-text">CheckinAccess</p>
+    <div class="boot-screen" aria-busy="true" aria-live="polite" aria-label="Loading CheckinAccess">
+      <div class="boot-bg" aria-hidden="true">
+        <div class="boot-bg__aurora"></div>
+        <div class="boot-bg__blob boot-bg__blob--a"></div>
+        <div class="boot-bg__blob boot-bg__blob--b"></div>
+        <div class="boot-bg__grid"></div>
+        <span class="boot-bg__spark boot-bg__spark--1"></span>
+        <span class="boot-bg__spark boot-bg__spark--2"></span>
+        <span class="boot-bg__spark boot-bg__spark--3"></span>
+        <span class="boot-bg__spark boot-bg__spark--4"></span>
+      </div>
+
+      <div class="boot-scene">
+        <div class="boot-orbit" aria-hidden="true">
+          <div class="boot-orbit__ring"></div>
+          <div class="boot-orbit__ring boot-orbit__ring--inner"></div>
+        </div>
+
+        <div class="boot-brand">
+          <div class="boot-brand__halo" aria-hidden="true"></div>
+          <div class="boot-logo-plate">
+            <img class="boot-logo" src="assets/branding/checkinaccess-logo.png" width="64" height="64" alt="" />
+          </div>
+          <p class="boot-wordmark">
+            <span class="boot-wordmark__checkin">Checkin</span><span class="boot-wordmark__access">Access</span>
+          </p>
+          <p class="boot-tagline">Tenant operations</p>
+
+          <div class="boot-pills" aria-hidden="true">
+            <span class="boot-pill">Bookings</span>
+            <span class="boot-pill">Access</span>
+            <span class="boot-pill">Education</span>
+          </div>
+
+          <div class="boot-progress" role="progressbar" aria-valuetext="Loading">
+            <div class="boot-progress__track">
+              <div class="boot-progress__bar"></div>
+            </div>
+            <p class="boot-status">
+              Preparing your workspace
+              <span class="boot-status__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </app-root>

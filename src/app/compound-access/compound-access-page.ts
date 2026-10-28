@@ -67,7 +67,7 @@ export class CompoundAccessPage implements OnInit {
   @ViewChild('studentInput') private studentInput?: ElementRef<HTMLInputElement>;
 
   isRTL = false;
-  loading = false;
+  loading = true;
   initialLoad = true;
   saving = false;
   rows: CompoundAccessRow[] = [];
@@ -92,7 +92,7 @@ export class CompoundAccessPage implements OnInit {
   private studentSearchGen = 0;
 
   get showSkeleton(): boolean {
-    return this.initialLoad && this.rows.length === 0 && this.loading;
+    return this.rows.length === 0 && (this.initialLoad || this.loading);
   }
 
   get isAdminAudience(): boolean {
@@ -274,6 +274,8 @@ export class CompoundAccessPage implements OnInit {
     this.audience = next;
     this.filter = '';
     this.initialLoad = true;
+    this.loading = true;
+    this.rows = [];
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { audience: next === 'admins' ? 'admins' : null },
