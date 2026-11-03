@@ -237,6 +237,17 @@
   font: inherit;
   color: var(--bc-ink);
   background: #fff;
+  color-scheme: light;
+}
+
+.bc-field input[type='date'] {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.bc-field input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+  cursor: pointer;
 }
 
 .bc-field input:focus,
@@ -1448,6 +1459,11 @@
   background: #fff;
   border: 1px solid var(--bc-line);
   font-size: 0.84rem;
+  color: var(--bc-ink);
+}
+
+.bc-occ-chip strong {
+  color: var(--bc-ink);
 }
 
 .bc-occ-chip em {
@@ -1488,6 +1504,12 @@
   text-align: start;
   cursor: pointer;
   font: inherit;
+  color: var(--bc-ink);
+}
+
+.bc-occ-hits button strong {
+  color: var(--bc-ink);
+  font-weight: 650;
 }
 
 .bc-occ-hits button:hover {

@@ -496,7 +496,7 @@ export class UserDetailPage implements OnInit, OnDestroy {
 
 
   async clearMobileDevice(): Promise<void> {
-    if (!this.user || !this.canManageUsers || this.mobileResetBusy) return;
+    if (!this.user || !this.canManageUsers || !this.hasMobileDevice || this.mobileResetBusy) return;
     const ok = await this.openMobileDeviceResetConfirm();
     if (!ok) return;
     this.mobileResetBusy = true;

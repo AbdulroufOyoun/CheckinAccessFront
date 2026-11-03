@@ -137,6 +137,7 @@
           </div>
         </div>
 
+        @if (hasMobileDevice) {
         <button type="button" class="ud-mobile-card__reset" (click)="clearMobileDevice()" [disabled]="mobileResetBusy">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -148,6 +149,7 @@
           </svg>
           {{ mobileResetBusy ? ('LOADING' | translate) : ('USR_MOBILE_DEVICE_RESET' | translate) }}
         </button>
+        }
       </div>
     </section>
     }

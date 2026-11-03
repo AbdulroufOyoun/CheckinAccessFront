@@ -52,6 +52,9 @@ export function applyTenantBrandCssVariables(
   root: HTMLElement,
   appearance: TenantAppearance | null | undefined,
 ): void {
+  root.setAttribute('data-bs-theme', 'light');
+  root.style.setProperty('color-scheme', 'light');
+
   const primary = normalizeHex(appearance?.primary_color) ?? DEFAULT_PRIMARY;
   const primaryDark = shadeHex(primary, -14);
   const primaryLight = shadeHex(primary, 12);

@@ -155,7 +155,12 @@
   min-height: 100%;
 }
 
+html {
+  color-scheme: light only;
+}
+
 html,
+html[data-bs-theme='light'],
 body {
   height: 100%;
   overflow: hidden;
@@ -164,6 +169,42 @@ body {
   color: var(--gray-800);
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Tenant admin is a light UI — keep native form controls readable (avoid dark OS / scheme bleed). */
+html[data-bs-theme='light'] {
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #1f2937;
+  --bs-secondary-bg: #f3f4f6;
+  --bs-tertiary-bg: #f9fafb;
+  --bs-border-color: #e5e7eb;
+  --bs-emphasis-color: #111827;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):not([type='color']):not([type='button']):not([type='submit']):not([type='reset']),
+textarea,
+select,
+.form-control,
+.form-select {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: var(--gray-800, #1f2937);
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):not([type='color']):not([type='button']):not([type='submit']):not([type='reset']):not([class*='form-input']):not(.navbar__search-input),
+textarea:not([class*='form-input']),
+select {
+  border: 1.5px solid var(--surface-border, #e8edf5);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: var(--gray-800, #1f2937) !important;
+  caret-color: var(--gray-800, #1f2937);
 }
 
 /* ===================Styles Dialog=================== */

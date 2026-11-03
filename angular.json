@@ -45,6 +45,8 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/admin/",
+              "deployUrl": "/admin/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

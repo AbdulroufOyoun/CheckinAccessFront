@@ -31,7 +31,7 @@ interface ReservationRow {
   checkOut: string;
   scheduleLabel: string;
   timed: boolean;
-  status: 'active' | 'paused' | 'cancelled';
+  status: 'active' | 'paused' | 'cancelled' | 'ended';
   raw: Booking;
 }
 
@@ -287,8 +287,13 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
     const unit = units[0];
 
     let status: ReservationRow['status'] = 'active';
-    if (b.cancelled) status = 'cancelled';
-    else if (b.on_hold) status = 'paused';
+    if (b.cancelled) {
+      status = 'cancelled';
+    } else if (b.on_hold) {
+      status = 'paused';
+    } else if (this.isBookingEnded(period?.check_out_date)) {
+      status = 'ended';
+    }
 
     const times = this.periodTimes(period);
     const timed = !!(period?.time_scheduled) && times.length > 0;
@@ -307,6 +312,22 @@ export class ReservationsPageComponent implements OnInit, OnDestroy {
       status,
       raw: b,
     };
+  }
+
+  /** Calendar checkout before tenant-local today → booking ended (matches user profile bookings). */
+  private isBookingEnded(checkOutDate?: string | null): boolean {
+    if (!checkOutDate) {
+      return false;
+    }
+    const checkout = String(checkOutDate).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(checkout)) {
+      return false;
+    }
+    return checkout < this.todayYmd();
+  }
+
+  private todayYmd(): string {
+    return new Date().toISOString().slice(0, 10);
   }
 
   private periodTimes(period?: BookingPeriod): Array<{ start_time: string; end_time: string }> {

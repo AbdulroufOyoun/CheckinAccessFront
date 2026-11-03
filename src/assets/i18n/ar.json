@@ -69,6 +69,7 @@
   "BOOK_STATUS_ACTIVE": "نشط",
   "BOOK_STATUS_PAUSED": "موقوف",
   "BOOK_STATUS_CANCELLED": "ملغى",
+  "BOOK_STATUS_ENDED": "منتهٍ",
   "BOOK_FULL_DAY": "يوم كامل",
   "BOOK_EMPTY": "لا توجد حجوزات بعد",
   "BOOK_EMPTY_HINT": "أنشئ أول حجز لضيف واختر غرفة والفترة المناسبة.",

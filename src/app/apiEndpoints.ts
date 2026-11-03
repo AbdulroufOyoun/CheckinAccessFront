@@ -361,24 +361,25 @@ export class Apiendpointd {
   }
 
   //---------------------Users / Admins--------------------
+  /** No trailing slash — Apache 301 on POST breaks user create on production. */
   public static get users(): string {
-    return this.mianUrl + 'users-management/';
+    return this.mianUrl + 'users-management';
   }
 
   public static userById(id: number | string): string {
-    return `${this.users}${id}`;
+    return `${this.users}/${id}`;
   }
 
   public static userClearMobileDevice(id: number | string): string {
-    return `${this.users}${id}/clear-mobile-device`;
+    return `${this.users}/${id}/clear-mobile-device`;
   }
 
   public static get usersSearchName(): string {
-    return this.users + 'search-name';
+    return `${this.users}/search-name`;
   }
 
   public static get usersSearch(): string {
-    return this.users + 'search';
+    return `${this.users}/search`;
   }
 
   public static get admins(): string {

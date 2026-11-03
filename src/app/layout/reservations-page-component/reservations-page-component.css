@@ -478,6 +478,12 @@
   border-color: #fecaca;
 }
 
+.rp-status--ended {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
 .rp-actions-cell {
   text-align: end;
 }

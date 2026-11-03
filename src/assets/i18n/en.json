@@ -69,6 +69,7 @@
   "BOOK_STATUS_ACTIVE": "Active",
   "BOOK_STATUS_PAUSED": "On hold",
   "BOOK_STATUS_CANCELLED": "Cancelled",
+  "BOOK_STATUS_ENDED": "Ended",
   "BOOK_FULL_DAY": "Full day",
   "BOOK_EMPTY": "No reservations yet",
   "BOOK_EMPTY_HINT": "Create the first booking for a guest with a room and date range.",
